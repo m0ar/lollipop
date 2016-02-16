@@ -42,9 +42,8 @@ data Body = Body Vars Stat
 data Vars = Variable String Vars | VNil
 
 -- Example types ..
-data Type = Int | Double | Boolean | Char
+data Type = Int | Double | Boolean | Char | IO | Void
     deriving Show
-
 
 -- Show functions --
 
