@@ -1,6 +1,6 @@
 type Program = [Declaration]
 
-data Declaration = DFun String Exp
+data Declaration = DFun Func
                     | DConst String Exp
 
 data Exp = Application Exp Exp
@@ -15,11 +15,11 @@ data Exp = Application Exp Exp
 eval :: Program -> IO ()
 eval p = undefined
 
--- A simple datatype for modelling commands, which can
+-- A simple datatype for modelling statements/commands, which can
 -- either be an assign, declaration, a print or a simple
 -- expression
-data Com = Assign String Exp
-            | Declare String Exp Com
+data Stat = Assign String Exp
+            | Declare String Exp Stat
             | Print Exp
             | Exp Exp
     deriving Show
@@ -33,10 +33,10 @@ data Func = Function String Arg Type Body
 -- Arguments
 data Arg = Con Type Arg | ANil
 
--- Function body consists of the function name (String),
+-- Function body consists of
 -- a set of variables (Vars) and
--- the command (Com) to be performed
-data Body = Body String Vars Com
+-- the statement/command (Stat) to be performed
+data Body = Body Vars Stat
 
 -- A set of variables to be used in function bodies
 data Vars = Variable String Vars | VNil
@@ -54,6 +54,7 @@ instance Show Func where
                                  ++ show a
                                  ++ show t
                                  ++ "\n"
+                                 ++ s
                                  ++ show b
 instance Show Arg where
     show a = case a of
@@ -61,7 +62,7 @@ instance Show Arg where
         Con t a' -> (show t) ++ " -> " ++ show a'
 
 instance Show Body where
-    show (Body s vs c) = s ++ " "
+    show (Body vs c) = " "
                         ++ show vs
                         ++ "= "
                         ++ show c
