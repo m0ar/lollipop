@@ -1,3 +1,6 @@
+import Data.Maybe
+import Text.Parsec
+
 type Program = [Declaration]
 
 data Declaration = DFun Func
@@ -8,12 +11,27 @@ data Exp = Application Exp Exp
            | SLit String
            | Add Exp Exp
            | Mult Exp Exp
-   deriving Show
+
+instance Show Exp where
+    show e = case e of
+        Application e1 e2 -> ""
+        Var s             -> s
+        SLit s            -> s
+        Add e1 e2         -> show e1 ++ " + " ++ show e2
+        Mult e1 e2        -> show e1 ++ " * " ++ show e2
 
 -- [DConst "main" (Appl (Var "print") (SLit "hello"))]
 
 eval :: Program -> IO ()
 eval p = undefined
+
+evalFunc :: Func -> IO ()
+evalFunc (Function _ _ _ (Body _ s)) = case s of
+            Assign s e      -> return ()
+            Declare s e st  -> return ()
+            Print e         -> putStrLn (show e)
+            Exp e           -> return ()
+
 
 -- A simple datatype for modelling statements/commands, which can
 -- either be an assign, declaration, a print or a simple
@@ -44,6 +62,12 @@ data Vars = Variable String Vars | VNil
 -- Example types ..
 data Type = Int | Double | Boolean | Char | IO | Void
     deriving Show
+
+
+
+readExpr :: String -> Maybe Func
+readExpr s = Nothing
+
 
 -- Show functions --
 
