@@ -1,6 +1,6 @@
 type Program = [Declaration]
 
-data Declaration = DFun String Pattern |
+data Declaration = DFun String Exp |
                    DConst String Exp
 
 data Exp = Application Exp Exp |
@@ -17,24 +17,22 @@ eval p = undefined
 -- a return type (Type) and a body (Body)
 -- todo add function body
 data Func = Function String Arg Type
-    deriving Show
 
 -- Arguments
 data Arg = Con Type Arg | Nil
-    deriving Show
 
 -- Example types ..
 data Type = Int | Double | Boolean | Char
     deriving Show
 
 
--- A quick parse-function for our function type
-parseF :: Func -> String
-parseF (Function s a t) = "function " ++ s
-                             ++ " : "
-                             ++ parseA a
-                             ++ (show t)
-    where
-        parseA a = case a of
-            Nil         -> ""
-            (Con t a')  -> (show t) ++ " -> " ++ parseA a'
+instance Show Arg where
+    show a = case a of
+        Nil      -> ""
+        Con t a' -> (show t) ++ " -> " ++ show a'
+
+instance Show Func where
+    show (Function s a t) = "function " ++ s
+                                 ++ " : "
+                                 ++ show a
+                                 ++ show t
