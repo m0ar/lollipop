@@ -1,10 +1,10 @@
 import Data.Maybe
 import Text.Parsec
+import Data.Map
 
 type Program = [Declaration]
 
-data Declaration = DFun Func
-                    | DConst String Exp
+data Declaration = DFunc Func
 
 data Exp = EApp Exp Exp
            | EVar Var
@@ -37,7 +37,15 @@ data Body = Body Vars Exp
 data Type = Int | Double | Boolean | Char | IO | Void
     deriving Show
 
-data Value =
+data Value = VInt Int
+        | VDouble Double
+        | VBoolean Bool
+        | VFunc Func
+        | VCon ConID [Value]
+
+type ConID = String
+
+type Env = Map Var Value
 
 data Lit = SLit String
             | ILit Int
@@ -63,7 +71,7 @@ readExpr s = Nothing
 
 instance Show Exp where
     show e = case e of
-        EApp e1 e2 -> ""
+        EApp e1 e2         -> ""
         EVar s             -> s
         ELit l             -> show l
         EAdd e1 e2         -> show e1 ++ " + " ++ show e2
