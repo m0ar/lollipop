@@ -13,3 +13,7 @@ cabal.sandbox.config
 *.prof
 *.aux
 *.hp
+*.bak
+Makefile
+*.y
+*.x
