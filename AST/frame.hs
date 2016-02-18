@@ -73,7 +73,7 @@ addToEnv e var val = case M.lookup var e of
 
 
 lookupInEnv :: Env -> Var -> Maybe Value
-lookupInEnv e var = M.lookup var
+lookupInEnv e var = M.lookup var e
 
 -- Show functions --
 
