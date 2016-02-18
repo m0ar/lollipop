@@ -1,10 +1,15 @@
 import Data.Maybe
 import Text.Parsec
 import Data.Map
+import qualified Data.Map as M
 
 type Program = [Declaration]
 
 data Declaration = DFunc Func
+
+-- A function consists of a name (String)
+-- and a function body (Body)
+data Func = Function String Body
 
 data Exp = EApp Exp Exp
            | EVar Var
@@ -19,14 +24,9 @@ type Var = String
 -- A list of variables to be used in function bodies
 type Vars = [Var]
 
--- A function consists of a name (String),
--- a set of input arguments (Arg),
--- a return type (Type) and a body (Body)
--- todo add function body
-data Func = Function String Arg Type Body
-
 -- Arguments
-data Arg = Con Type Arg | Nil
+--data Arg = Con Type Arg | Nil
+
 
 -- Function body consists of
 -- a set of variables (Vars) and
@@ -59,15 +59,23 @@ eval :: Program -> IO ()
 eval p = undefined
 
 evalFunc :: Func -> IO ()
-evalFunc (Function _ _ _ (Body _ e)) = case e of
-            EPrint e'         -> putStrLn (show e')
+evalFunc (Function _ (Body _ e)) = case e of
+                EPrint e' -> putStrLn (show e')
 
 readExpr :: String -> Maybe Func
 readExpr s = Nothing
 
 
--- Show functions --
+addToEnv :: Env -> Var -> Value -> Env
+addToEnv e var val = case M.lookup var e of
+                Nothing  -> M.insert var val e
+                Just val -> M.insert var val (M.delete var e)
 
+
+lookupInEnv :: Env -> Var -> Maybe Value
+lookupInEnv e var = M.lookup var
+
+-- Show functions --
 
 instance Show Exp where
     show e = case e of
@@ -78,17 +86,14 @@ instance Show Exp where
         EMult e1 e2        -> show e1 ++ " * " ++ show e2
 
 instance Show Func where
-    show (Function e a t b) = "function " ++ e
+    show (Function s b) = "function " ++ s
                                  ++ " : "
-                                 ++ show a
-                                 ++ show t
                                  ++ "\n"
-                                 ++ e
                                  ++ show b
-instance Show Arg where
+{-- instance Show Arg where
     show a = case a of
         Nil      -> ""
-        Con t a' -> (show t) ++ " -> " ++ show a'
+        Con t a' -> (show t) ++ " -> " ++ show a' --}
 
 instance Show Body where
     show (Body vs c) = " "
