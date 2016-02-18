@@ -11,6 +11,7 @@ data Exp = Application Exp Exp
            | SLit String
            | Add Exp Exp
            | Mult Exp Exp
+           | Print Exp
 
 instance Show Exp where
     show e = case e of
@@ -26,21 +27,8 @@ eval :: Program -> IO ()
 eval p = undefined
 
 evalFunc :: Func -> IO ()
-evalFunc (Function _ _ _ (Body _ s)) = case s of
-            Assign s e      -> return ()
-            Declare s e st  -> return ()
-            Print e         -> putStrLn (show e)
-            Exp e           -> return ()
-
-
--- A simple datatype for modelling statements/commands, which can
--- either be an assign, declaration, a print or a simple
--- expression
-data Stat = Assign String Exp
-            | Declare String Exp Stat
-            | Print Exp
-            | Exp Exp
-    deriving Show
+evalFunc (Function _ _ _ (Body _ e)) = case e of
+            Print e'         -> putStrLn (show e')
 
 -- A function consists of a name (String),
 -- a set of input arguments (Arg),
@@ -54,7 +42,7 @@ data Arg = Con Type Arg | ANil
 -- Function body consists of
 -- a set of variables (Vars) and
 -- the statement/command (Stat) to be performed
-data Body = Body Vars Stat
+data Body = Body Vars Exp
 
 -- A set of variables to be used in function bodies
 data Vars = Variable String Vars | VNil
@@ -72,12 +60,12 @@ readExpr s = Nothing
 -- Show functions --
 
 instance Show Func where
-    show (Function s a t b) = "function " ++ s
+    show (Function e a t b) = "function " ++ e
                                  ++ " : "
                                  ++ show a
                                  ++ show t
                                  ++ "\n"
-                                 ++ s
+                                 ++ e
                                  ++ show b
 instance Show Arg where
     show a = case a of
