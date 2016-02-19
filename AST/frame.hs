@@ -24,11 +24,18 @@ type Vars = [Var]
 
 
 data Value = VInt Int
+        | VIO String
+        | VString String
         | VDouble Double
         | VBoolean Bool
         | VLam Exp
         | VCon ConID [Value] -- list of values to be used as parameters
-    deriving Show
+
+instance Show Value where
+    show v = case v of
+        (VInt x)    -> show x
+        (VString s) -> s
+        (VIO s)     -> s
 
 type ConID = String
 
@@ -43,12 +50,17 @@ data Lit = SLit String
 addValues :: Value -> Value -> Value
 addValues (VInt x) (VInt y) = VInt (x+y)
 
+-- test-code :
+-- let p = [(DFunc "main" [] (EApp (ELam "x" (EAdd (EVar "x") (ELit (ILit 4)))) (ELit (ILit 6))))]
+-- interpret p
+-- let p = [(DFunc "main" [] (EPrint (ELit (SLit "hi"))))]
+
 interpret :: Program -> IO Value
 interpret ds =
     do
         let e = addDecsToEnv ds M.empty
-        let value = eval e $ (\(DFunc v vs e) -> e)(head ds)
-        return value
+        let value = eval e $ (\(DFunc v vs e) -> e)(head ds) in
+            return value
 
 addDecsToEnv :: [Declaration] -> Env -> Env
 addDecsToEnv [] env                         = env
@@ -65,13 +77,15 @@ addToEnv env var val = case M.lookup var env of
 
 eval :: Env -> Exp -> Value
 eval env expr = case expr of
+        (EPrint e)                 -> VIO (show $ eval env e)
         (EApp (ELam var expr') e2) -> let env2 = (addToEnv env var (eval env e2)) in eval env2 expr'
-        (EAdd e1 e2)      -> addValues (eval env e1) (eval env e2)
-        (ELam var e)      -> eval env e
-        (EVar var)        -> case lookupInEnv env var of
-            Nothing  -> error $ "variable: " ++ var ++ " not found in environment: \n" ++ show env
-            Just v -> v
-        (ELit (ILit i))   -> (VInt i)
+        (EAdd e1 e2)               -> addValues (eval env e1) (eval env e2)
+        (ELam var e)               -> eval env e
+        (EVar var)                 -> case lookupInEnv env var of
+            Nothing -> error $ "variable: " ++ var ++ " not found in environment: \n" ++ show env
+            Just v  -> v
+        (ELit (ILit i))            -> (VInt i)
+        (ELit (SLit s))            -> (VString s)
 
 
 
@@ -87,51 +101,3 @@ instance Show Exp where
         ELit l             -> show l
         EAdd e1 e2         -> show e1 ++ " + " ++ show e2
         EMult e1 e2        -> show e1 ++ " * " ++ show e2
-
-
-
-
-
-
--- Example types ..
-{--data Type = Int | Double | Boolean | Char | IO | Void
-    deriving Show --}
-
-
-
--- A function consists of a name (String)
--- and a function body (Body)
--- data Func = Function String Body
-
--- Arguments
---data Arg = Con Type Arg | Nil
-
--- Function body consists of
--- a set of variables (Vars) and
--- the statement/command (Stat) to be performed
--- data Body = Body Vars Exp
-
-
-{-- evalFunc :: Func -> IO ()
-evalFunc (Function _ (Body _ e)) = case e of
-                EPrint e' -> putStrLn (show e') --}
-
-{-- readExpr :: String -> Maybe Func
-readExpr s = Nothing --}
-
-
-{-- instance Show Func where
-    show (Function s b) = "function " ++ s
-                                 ++ " : "
-                                 ++ "\n"
-                                 ++ show b
-instance Show Arg where
-    show a = case a of
-        Nil      -> ""
-        Con t a' -> (show t) ++ " -> " ++ show a' --}
-
-{-- instance Show Body where
-    show (Body vs c) = " "
-                    ++ show vs
-                    ++ "= "
-                    ++ show c--}
