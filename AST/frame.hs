@@ -21,19 +21,20 @@ type Var = String
 -- A list of variables to be used in function bodies
 type Vars = [Var]
 
--- Example types ..
-data Type = Int | Double | Boolean | Char | IO | Void
-    deriving Show
 
 data Value = VInt Int
         | VDouble Double
         | VBoolean Bool
-        | VExp Exp
+        | VLam Exp Context
         | VCon ConID [Value] -- list of values to be used as parameters
+    deriving Show
 
 type ConID = String
 
-type Env = Map Var Value
+data Env = Env Decs [Context]
+
+type Decs = Map Var Value
+type Context = Map Var Exp
 
 data Lit = SLit String
         | ILit Int
@@ -41,26 +42,43 @@ data Lit = SLit String
         | BLit Bool
     deriving Show
 
-interpret :: Program -> IO ()
+addValues :: Value -> Value -> Value
+addValues (VInt x) (VInt y) = VInt (x+y)
+
+interpret :: Program -> IO Value
 interpret ds =
     do
-        let e = addDecsToEnv ds M.empty
-        return ()
+        let d = addDecs ds M.empty
+        let e = Env d [M.empty]
+        let value = eval e $ (\(DFunc v vs e) -> e)(head ds)
+        return value
 
-addDecsToEnv :: [Declaration] -> Env -> Env
-addDecsToEnv [] env                         = env
-addDecsToEnv ((DFunc fname vs expr):ds) env = case expr of
-        ELam var expr' -> M.insert fname (VExp expr') env
+addDecs :: [Declaration] -> Decs -> Decs
+addDecs [] decs                         = decs
+addDecs ((DFunc fname vs expr):ds) decs = addDecs ds (addDecs decs fname (VLam expr M.empty))
+    --case expr of
+        --ELam _ _ -> addDecsToEnv ds (addToEnv env fname (VLam expr M.empty))
+        --_        -> env
 
 
-
-addToEnv :: Env -> Var -> Value -> Env
-addToEnv e var val = case M.lookup var e of
+addToCxt :: Env -> Var -> Value -> Env
+addToCxt e var val = case M.lookup var e of
                 Nothing  -> M.insert var val e
                 Just val -> M.insert var val (M.delete var e)
 
-eval :: Program -> IO ()
-eval p = undefined
+eval :: Env -> Exp -> Value
+eval env expr = case expr of
+        (EApp e1 e2)      -> case eval env e1 of
+            (VLam (ELam var expr') cxt) -> eval (addToEnv env var (eval env e2)) expr'
+        (EAdd e1 e2)      -> addValues (eval env e1) (eval env e2)
+        (ELam var e)      -> eval env e
+        (EVar var)        -> fromJust (lookupInEnv env var)
+        (ELit (ILit i))   -> (VInt i)
+        --(EAdd e1 e2) ->
+        --(EApp e1 e2) -> case eval e1 of
+            --VExp (ELam v e') -> eval env e'
+            --_                ->
+
 
 
 lookupInEnv :: Env -> Var -> Maybe Value
@@ -81,6 +99,9 @@ instance Show Exp where
 
 
 
+-- Example types ..
+{--data Type = Int | Double | Boolean | Char | IO | Void
+    deriving Show --}
 
 
 
