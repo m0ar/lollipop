@@ -9,7 +9,7 @@ EInt.   Exp         ::= Integer ;
 EApp.   Exp         ::= Exp Exp ;
 EAbs.   Exp         ::= "\\" Ident "->" Exp ;
 
-separator  Arg "," ;
+separator  Arg " " ;
 terminator Declaration ";" ;
 terminator Ident "" ;
 
