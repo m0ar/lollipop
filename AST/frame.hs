@@ -16,6 +16,7 @@ data Exp = EApp Exp Exp
        | EPrint Exp
        | ELam Var Exp
 
+
 type Var = String
 
 -- A list of variables to be used in function bodies
@@ -25,16 +26,13 @@ type Vars = [Var]
 data Value = VInt Int
         | VDouble Double
         | VBoolean Bool
-        | VLam Exp Context
+        | VLam Exp
         | VCon ConID [Value] -- list of values to be used as parameters
     deriving Show
 
 type ConID = String
 
-data Env = Env Decs [Context]
-
-type Decs = Map Var Value
-type Context = Map Var Exp
+type Env = Map Var Value
 
 data Lit = SLit String
         | ILit Int
@@ -48,36 +46,32 @@ addValues (VInt x) (VInt y) = VInt (x+y)
 interpret :: Program -> IO Value
 interpret ds =
     do
-        let d = addDecs ds M.empty
-        let e = Env d [M.empty]
+        let e = addDecsToEnv ds M.empty
         let value = eval e $ (\(DFunc v vs e) -> e)(head ds)
         return value
 
-addDecs :: [Declaration] -> Decs -> Decs
-addDecs [] decs                         = decs
-addDecs ((DFunc fname vs expr):ds) decs = addDecs ds (addDecs decs fname (VLam expr M.empty))
+addDecsToEnv :: [Declaration] -> Env -> Env
+addDecsToEnv [] env                         = env
+addDecsToEnv ((DFunc fname vs expr):ds) env = addDecsToEnv ds (addToEnv env fname (VLam expr))
     --case expr of
         --ELam _ _ -> addDecsToEnv ds (addToEnv env fname (VLam expr M.empty))
         --_        -> env
 
 
-addToCxt :: Env -> Var -> Value -> Env
-addToCxt e var val = case M.lookup var e of
-                Nothing  -> M.insert var val e
-                Just val -> M.insert var val (M.delete var e)
+addToEnv :: Env -> Var -> Value -> Env
+addToEnv env var val = case M.lookup var env of
+                Nothing  -> M.insert var val env
+                Just val -> M.insert var val (M.delete var env)
 
 eval :: Env -> Exp -> Value
 eval env expr = case expr of
-        (EApp e1 e2)      -> case eval env e1 of
-            (VLam (ELam var expr') cxt) -> eval (addToEnv env var (eval env e2)) expr'
+        (EApp (ELam var expr') e2) -> let env2 = (addToEnv env var (eval env e2)) in eval env2 expr'
         (EAdd e1 e2)      -> addValues (eval env e1) (eval env e2)
         (ELam var e)      -> eval env e
-        (EVar var)        -> fromJust (lookupInEnv env var)
+        (EVar var)        -> case lookupInEnv env var of
+            Nothing  -> error $ "variable: " ++ var ++ " not found in environment: \n" ++ show env
+            Just v -> v
         (ELit (ILit i))   -> (VInt i)
-        --(EAdd e1 e2) ->
-        --(EApp e1 e2) -> case eval e1 of
-            --VExp (ELam v e') -> eval env e'
-            --_                ->
 
 
 
