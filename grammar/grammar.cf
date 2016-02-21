@@ -1,34 +1,42 @@
 -- A program is just a list of declarations
-Prog.   Program     ::= [Declaration] ;
+PDecl.      Program     ::= [Declaration] ;
+terminator  Declaration "" ;
 
 -- A declaration is a list of function definitions
-Func.   Declaration ::= Ident ":" Types ";" [Def] ";" ;
-Def.    Def         ::= Ident [Arg] ":=" Exp ;
+DFunc.      Declaration ::= Id ":" Types ";" [Def] ;
+terminator  Def ";" ;
 
--- Arguments are just expressions
-EArg.   Arg         ::= Exp ;
+-- Function definition
+DDef.       Def         ::= Id [Arg] ":=" Exp ;
+separator   Arg "" ;
+
+-- Arguments can be either a literal or an identifier
+DArg1.      Arg         ::= Literal ;
+DArg2.      Arg         ::= Id ;
+
+-- Predefined token types
+LitInt.     Literal     ::= Integer ;
+LitDouble.  Literal     ::= Double ;
+LitChar.    Literal     ::= Char ;
+LitString.  Literal     ::= [String] ;
+separator nonempty String "" ;
+
+-- Tailor-made token type
+token Id (letter (letter | digit | '_')*) ;
 
 -- Expression types
-EVar.   Exp         ::= Ident ;
-EInt.   Exp         ::= Integer ;
-EApp.   Exp         ::= Exp Exp ;
-EAbs.   Exp         ::= "\\" Ident "->" Exp ;
+ELiteral.   Exp2        ::= Literal ;
+EApp.       Exp1        ::= Exp Exp ;
+EAbs.       Exp1        ::= "\\" Id "->" Exp ;
+coercions Exp 2 ;
 
--- Argument type declarations can be single or several
-SType.  Types       ::= Type ;
-AType.  Types       ::= Type "->" Types ;
+-- Single or multiple argument type declarations
+SType.      Types       ::= Type ;
+AType.      Types       ::= Type "->" Types ;
 
 -- Standard types
-Tbool.  Type        ::= "Bool" ;
-Tint.   Type        ::= "Int" ;
-
--- Arguments are separated by spaces.
--- For inambiguity, declarations are closed by semicolon.
--- The end of an identifier is the end of a string
-separator  Arg " " ;
-separator  Def ";" ;
-terminator Declaration "" ;
-terminator Ident "" ;
+Tbool.      Type        ::= "Bool" ;
+Tint.       Type        ::= "Int" ;
 
 -- Haskell-style comments for now
 comment "--" ;
