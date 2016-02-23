@@ -11,6 +11,7 @@ data Declaration = DFunc Var Vars Exp
 data Exp = EApp Exp Exp
        | EVar Var
        | ELit Lit
+       | EList List
        | EAdd Exp Exp
        | EMult Exp Exp
        | EPrint Exp
@@ -21,6 +22,9 @@ type Var = String
 
 -- A list of variables to be used in function bodies
 type Vars = [Var]
+
+-- A list of listerals
+type List = [Lit]
 
 
 data Value = VInt Int
