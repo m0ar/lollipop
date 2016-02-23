@@ -66,8 +66,8 @@ addValues (VInt x) (VInt y) = VInt (x+y)
 -- let p = [(DFunc "main" [] (EIf (ELit (BLit False)) ((EPrint (ELit (SLit "hi")))) ((EPrint (ELit (SLit "noes"))))))]
 
 -- simple list
--- let l = Cons (ILit 2) (Cons (ILit 3) Nil)
--- let d =[(DFunc "main" [] (EList l))]
+-- let l = Cons (ILit 28) (Cons (ILit 198) (Cons (ILit 2) (Cons (ILit 3) Nil)))
+-- let sumList = [(DFunc "main" [] (EAdd (ELit (ILit 4)) (EList l)))]
 
 
 interpret :: Program -> IO Value
