@@ -16,6 +16,7 @@ data Exp = EApp Exp Exp
        | EMult Exp Exp
        | EPrint Exp
        | ELam Var Exp
+       | EIf Exp Exp Exp
 
 
 type Var = String
@@ -54,10 +55,15 @@ data Lit = SLit String
 addValues :: Value -> Value -> Value
 addValues (VInt x) (VInt y) = VInt (x+y)
 
--- test-code :
+-- lambda-calculus addition with application :
 -- let p = [(DFunc "main" [] (EApp (ELam "x" (EAdd (EVar "x") (ELit (ILit 4)))) (ELit (ILit 6))))]
--- interpret p
+
+-- hello world:
 -- let p = [(DFunc "main" [] (EPrint (ELit (SLit "hi"))))]
+
+-- simple if-statement with printout
+-- let p = [(DFunc "main" [] (EIf (ELit (BLit False)) ((EPrint (ELit (SLit "hi")))) ((EPrint (ELit (SLit "noes"))))))]
+
 
 interpret :: Program -> IO Value
 interpret ds =
@@ -81,6 +87,10 @@ addToEnv env var val = case M.lookup var env of
 
 eval :: Env -> Exp -> Value
 eval env expr = case expr of
+        (EIf e1 e2 e3)             -> case (eval env e1) of
+             (VBoolean True)  -> eval env e2
+             (VBoolean False) -> eval env e3
+             _                -> error " not boolean statement"
         (EPrint e)                 -> VIO (show $ eval env e)
         (EApp (ELam var expr') e2) -> let env2 = (addToEnv env var (eval env e2)) in eval env2 expr'
         (EAdd e1 e2)               -> addValues (eval env e1) (eval env e2)
@@ -90,6 +100,7 @@ eval env expr = case expr of
             Just v  -> v
         (ELit (ILit i))            -> (VInt i)
         (ELit (SLit s))            -> (VString s)
+        (ELit (BLit b))            -> (VBoolean b)
 
 
 
