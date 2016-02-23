@@ -25,7 +25,8 @@ type Var = String
 type Vars = [Var]
 
 -- A list of listerals
-type List = [Lit]
+data List = Cons Lit List | Nil
+    deriving Show
 
 
 data Value = VInt Int
@@ -64,6 +65,10 @@ addValues (VInt x) (VInt y) = VInt (x+y)
 -- simple if-statement with printout
 -- let p = [(DFunc "main" [] (EIf (ELit (BLit False)) ((EPrint (ELit (SLit "hi")))) ((EPrint (ELit (SLit "noes"))))))]
 
+-- simple list
+-- let l = Cons (ILit 2) (Cons (ILit 3) Nil)
+-- let d =[(DFunc "main" [] (EList l))]
+
 
 interpret :: Program -> IO Value
 interpret ds =
@@ -85,15 +90,21 @@ addToEnv env var val = case M.lookup var env of
                 Nothing  -> M.insert var val env
                 Just val -> M.insert var val (M.delete var env)
 
+
+
 eval :: Env -> Exp -> Value
 eval env expr = case expr of
         (EIf e1 e2 e3)             -> case (eval env e1) of
-             (VBoolean True)  -> eval env e2
-             (VBoolean False) -> eval env e3
-             _                -> error " not boolean statement"
+             (VBoolean True)     -> eval env e2
+             (VBoolean False)    -> eval env e3
+             _                   -> error " not boolean statement"
         (EPrint e)                 -> VIO (show $ eval env e)
         (EApp (ELam var expr') e2) -> let env2 = (addToEnv env var (eval env e2)) in eval env2 expr'
-        (EAdd e1 e2)               -> addValues (eval env e1) (eval env e2)
+        (EAdd e1 e2)               -> case e2 of
+            (EList (Cons h Nil)) -> eval env (EAdd e1 (ELit h))
+            (EList (Cons h t))   -> eval env (EAdd e1 (EAdd (ELit h) (EList t)))
+            _                    -> addValues (eval env e1) (eval env e2)
+        --(EAdd e1 e2)               -> addValues (eval env e1) (eval env e2)
         (ELam var e)               -> eval env e
         (EVar var)                 -> case lookupInEnv env var of
             Nothing -> error $ "variable: " ++ var ++ " not found in environment: \n" ++ show env
