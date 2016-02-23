@@ -3,8 +3,8 @@ PDecl.      Program     ::= [Declaration] ;
 terminator  Declaration "" ;
 
 -- A declaration is a list of function definitions
-DFunc.      Declaration ::= Id ":" Types ";" [Def] ;
-terminator  Def ";" ;
+DFunc.      Declaration ::= "function" Id ":" Types ";" [Def] ;
+terminator nonempty Def ";" ;
 
 -- Function definition
 DDef.       Def         ::= Id [Arg] ":=" Exp ;
@@ -25,10 +25,12 @@ separator nonempty String "" ;
 token Id (letter (letter | digit | '_')*) ;
 
 -- Expression types
-ELiteral.   Exp2        ::= Literal ;
-EApp.       Exp1        ::= Exp Exp ;
-EAbs.       Exp1        ::= "\\" Id "->" Exp ;
-coercions Exp 2 ;
+EVar.       Exp3        ::= Id ;
+ELiteral.   Exp3        ::= Literal ;
+EApp.       Exp2        ::= Exp2 Exp3 ;
+EAdd.       Exp1        ::= Exp1 "+" Exp2 ;
+EAbs.       Exp        ::= "\\" Id "->" Exp ;
+coercions Exp 3 ;
 
 -- Single or multiple argument type declarations
 SType.      Types       ::= Type ;
