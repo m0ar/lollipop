@@ -10,11 +10,12 @@ terminator nonempty Def ";" ;
 DDef.       Def         ::= Id [Arg] ":=" Exp ;
 separator   Arg "" ;
 
--- Arguments can be either a literal or an identifier
+-- Arguments can be either a literal, identifier or a list pattern
 DArg1.      Arg         ::= Literal ;
 DArg2.      Arg         ::= Id ;
 DArg3.      Arg         ::= ListPattern ;
 
+-- Pattern matching for lists
 LPattern1.  ListPattern ::= "[]";
 LPattern2.  ListPattern ::= "(" Id ":" Pattern ")";
 LPattern3.  Pattern     ::= "[]" ;
@@ -33,20 +34,28 @@ separator nonempty String "" ;
 token Id (lower (letter | digit | '_' | '\'')*) ;
 
 -- Expression types
-EVar.       Exp3        ::= Id ;
-ELiteral.   Exp3        ::= Literal ;
-EApp.       Exp2        ::= Exp2 Exp3 ;
-EAdd.       Exp1        ::= Exp1 "+" Exp2 ;
-EAbs.       Exp        ::= "\\" Id "->" Exp ;
-coercions Exp 3 ;
+EVar.       Exp4        ::= Id ;
+ELiteral.   Exp4        ::= Literal ;
+EApp.       Exp3        ::= Exp3 Exp4 ;
+EAdd.       Exp2        ::= Exp2 "+" Exp3 ;
+ESub.       Exp2        ::= Exp2 "-" Exp3 ;
+ELt.        Exp1        ::= Exp1 "<" Exp2 ;
+EGt.        Exp1        ::= Exp1 ">" Exp2 ;
+ELtEq.      Exp1        ::= Exp1 "<=" Exp2 ;
+EGtWq.      Exp1        ::= Exp1 ">=" Exp2 ;
+EAbs.       Exp         ::= "\\" Id "->" Exp ;
+coercions Exp 4 ;
 
 -- Single or multiple argument type declarations
 SType.      Types       ::= Type ;
 AType.      Types       ::= Type "->" Types ;
 
 -- Standard types
-Tbool.      Type        ::= "Bool" ;
-Tint.       Type        ::= "Int" ;
+TBool.      Type        ::= "Bool" ;
+TInt.       Type        ::= "Int" ;
+TDouble.    Type        ::= "Double" ;
+TChar.      Type        ::= "Char" ;
+TString.    Type        ::= "String" ;
 
 -- Haskell-style comments for now
 comment "--" ;
