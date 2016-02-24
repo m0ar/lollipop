@@ -13,6 +13,14 @@ separator   Arg "" ;
 -- Arguments can be either a literal or an identifier
 DArg1.      Arg         ::= Literal ;
 DArg2.      Arg         ::= Id ;
+DArg3.      Arg         ::= ListPattern ;
+
+LPattern1.  ListPattern ::= "[]";
+LPattern2.  ListPattern ::= "(" Id ":" Pattern ")";
+LPattern3.  Pattern     ::= "[]" ;
+LPattern4.  Pattern     ::= Id ;
+LPattern5.  Pattern     ::= Id ":" Pattern ;
+
 
 -- Predefined token types
 LitInt.     Literal     ::= Integer ;
