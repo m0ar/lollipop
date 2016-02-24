@@ -1,3 +1,5 @@
+module Frame where
+
 import Data.Maybe
 import Text.Parsec
 import Data.Map
@@ -55,19 +57,6 @@ data Lit = SLit String
 
 addValues :: Value -> Value -> Value
 addValues (VInt x) (VInt y) = VInt (x+y)
-
--- lambda-calculus addition with application :
--- let p = [(DFunc "main" [] (EApp (ELam "x" (EAdd (EVar "x") (ELit (ILit 4)))) (ELit (ILit 6))))]
-
--- hello world:
--- let p = [(DFunc "main" [] (EPrint (ELit (SLit "hi"))))]
-
--- simple if-statement with printout
--- let p = [(DFunc "main" [] (EIf (ELit (BLit False)) ((EPrint (ELit (SLit "hi")))) ((EPrint (ELit (SLit "noes"))))))]
-
--- simple list
--- let l = Cons (ILit 28) (Cons (ILit 198) (Cons (ILit 2) (Cons (ILit 3) Nil)))
--- let sumList = [(DFunc "main" [] (EAdd (ELit (ILit 4)) (EList l)))]
 
 
 interpret :: Program -> IO Value
