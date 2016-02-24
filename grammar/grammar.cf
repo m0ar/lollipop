@@ -22,7 +22,7 @@ LitString.  Literal     ::= [String] ;
 separator nonempty String "" ;
 
 -- Tailor-made token type
-token Id (letter (letter | digit | '_')*) ;
+token Id (lower (letter | digit | '_' | '\'')*) ;
 
 -- Expression types
 EVar.       Exp3        ::= Id ;
