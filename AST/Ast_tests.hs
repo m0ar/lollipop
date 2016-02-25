@@ -16,9 +16,9 @@ main = do
 -- should be: (10,hi,noes,235)
 
 
--- 10
+-- 14
 testLam = interpret lamMain -- lambda-calculus addition with application
-    where lam = EApp (ELam "x" (EAdd (EVar "x") (ELit (ILit 4)))) (ELit (ILit 6))
+    where lam = EApp (ELam "x" (EAdd (EVar "x") (ELit (ILit 4)))) (EApp (ELam "x" (EAdd (EVar "x") (ELit (ILit 4)))) (ELit (ILit 6)))
           lamMain = [(DFunc "main" [] lam)]
 
 -- hi
