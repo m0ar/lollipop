@@ -82,24 +82,28 @@ addToEnv env var val = case M.lookup var env of
 
 eval :: Env -> Exp -> Value
 eval env expr = case expr of
-        (EIf e1 e2 e3)             -> case (eval env e1) of
-             (VBoolean True)     -> eval env e2
-             (VBoolean False)    -> eval env e3
+        EIf e1 e2 e3             -> case (eval env e1) of
+             VBoolean True     -> eval env e2
+             VBoolean False    -> eval env e3
              _                   -> error " not boolean statement"
-        (EPrint e)                 -> VIO (show $ eval env e)
-        (EApp (ELam var expr') e2) -> let env2 = (addToEnv env var (eval env e2)) in eval env2 expr'
-        (EAdd e1 e2)               -> case e2 of
-            (EList (Cons h Nil)) -> eval env (EAdd e1 (ELit h))
-            (EList (Cons h t))   -> eval env (EAdd e1 (EAdd (ELit h) (EList t)))
+        EPrint e                 -> VIO (show $ eval env e)
+        EApp e1 e2               -> case (eval env e1) of
+             VFun v1           -> v1 v2
+                where v2 = eval env e2
+        EAdd e1 e2               -> case e2 of
+            EList (Cons h Nil) -> eval env (EAdd e1 (ELit h))
+            EList (Cons h t)   -> eval env (EAdd e1 (EAdd (ELit h) (EList t)))
             _                    -> addValues (eval env e1) (eval env e2)
         --(EAdd e1 e2)               -> addValues (eval env e1) (eval env e2)
-        (ELam var e)               -> eval env e
-        (EVar var)                 -> case lookupInEnv env var of
+        -- (ELam var e)               -> eval env e
+        ELam var e               -> (VFun f)
+            where f v = eval (addToEnv env var v) e
+        EVar var                 -> case lookupInEnv env var of
             Nothing -> error $ "variable: " ++ var ++ " not found in environment: \n" ++ show env
             Just v  -> v
-        (ELit (ILit i))            -> (VInt i)
-        (ELit (SLit s))            -> (VString s)
-        (ELit (BLit b))            -> (VBoolean b)
+        ELit (ILit i)            -> (VInt i)
+        ELit (SLit s)            -> (VString s)
+        ELit (BLit b)            -> (VBoolean b)
 
 
 
