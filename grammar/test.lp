@@ -1,3 +1,7 @@
+import sugar ;
+
+datatype Tree a := EmptyTree | Node a (Tree a) (Tree a) ;
+
 function f : Int ;
 f := 6 ;
 
