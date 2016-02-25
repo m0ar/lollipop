@@ -38,28 +38,45 @@ separator nonempty String "" ;
 token Id (lower (letter | digit | '_' | '\'')*) ;
 
 -- Expression types
-EVar.       Exp4        ::= Id ;
-ELiteral.   Exp4        ::= Literal ;
-EApp.       Exp3        ::= Exp3 Exp4 ;
-EAdd.       Exp2        ::= Exp2 "+" Exp3 ;
-ESub.       Exp2        ::= Exp2 "-" Exp3 ;
-ELt.        Exp1        ::= Exp1 "<" Exp2 ;
-EGt.        Exp1        ::= Exp1 ">" Exp2 ;
-ELtEq.      Exp1        ::= Exp1 "<=" Exp2 ;
-EGtWq.      Exp1        ::= Exp1 ">=" Exp2 ;
-EAbs.       Exp         ::= "\\" Id "->" Exp ;
-coercions Exp 4 ;
+EVar.       Exp10       ::= Id ;
+ELiteral.   Exp10       ::= Literal ;
+EApp.       Exp9        ::= Exp9 Exp10 ;
+EPow.       Exp8        ::= Exp8 "**" Exp9 ;
+EMul.       Exp7        ::= Exp7 "*" Exp8 ;
+EDiv.       Exp7        ::= Exp7 "/" Exp8 ;
+EAdd.       Exp6        ::= Exp6 "+" Exp7 ;
+ESub.       Exp6        ::= Exp6 "-" Exp7 ;
+ELt.        Exp5        ::= Exp5 "<" Exp6 ;
+EGt.        Exp5        ::= Exp5 ">" Exp6 ;
+ELEQ.       Exp5        ::= Exp5 "<=" Exp6 ;
+EGEQ.       Exp5        ::= Exp5 ">=" Exp6 ;
+EEQ.        Exp4        ::= Exp4 "==" Exp5 ;
+ENEQ.       Exp4        ::= Exp4 "!=" Exp5 ;
+EAND.       Exp3        ::= Exp3 "&&" Exp4 ;
+EOR.        Exp2        ::= Exp2 "||" Exp3 ;
+EAbs.       Exp1        ::= "\\" Id "->" Exp ;
+coercions Exp 10 ;
 
 -- Single or multiple argument type declarations
 SType.      Types       ::= Type ;
 AType.      Types       ::= Type "->" Types ;
+LType.      Types       ::= LType "-o" Types ;
 
 -- Standard types
 TBool.      Type        ::= "Bool" ;
 TInt.       Type        ::= "Int" ;
+TNat.       Type        ::= "Nat"
 TDouble.    Type        ::= "Double" ;
 TChar.      Type        ::= "Char" ;
 TString.    Type        ::= "String" ;
+
+--Linear types
+TLBool.     LType       ::= "iBool" ;
+TLInt.      LType       ::= "iInt" ;
+TLNat.      LType       ::= "iNat"
+TLDouble.   LType       ::= "iDouble" ;
+TLChar.     LType       ::= "iChar" ;
+TLString.   LType       ::= "iString" ;
 
 -- Haskell-style comments for now
 comment "--" ;
