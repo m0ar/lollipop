@@ -79,7 +79,7 @@ LType.      Types       ::= LType "-o" Types ;
 -- Standard types
 TBool.      Type        ::= "Bool" ;
 TInt.       Type        ::= "Int" ;
-TNat.       Type        ::= "Nat"
+TNat.       Type        ::= "Nat" ;
 TDouble.    Type        ::= "Double" ;
 TChar.      Type        ::= "Char" ;
 TString.    Type        ::= "String" ;
@@ -87,7 +87,7 @@ TString.    Type        ::= "String" ;
 --Linear types
 TLBool.     LType       ::= "iBool" ;
 TLInt.      LType       ::= "iInt" ;
-TLNat.      LType       ::= "iNat"
+TLNat.      LType       ::= "iNat" ;
 TLDouble.   LType       ::= "iDouble" ;
 TLChar.     LType       ::= "iChar" ;
 TLString.   LType       ::= "iString" ;
