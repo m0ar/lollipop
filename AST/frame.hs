@@ -36,8 +36,9 @@ data Value = VInt Int
         | VString String
         | VDouble Double
         | VBoolean Bool
-        | VLam Exp
+        -- | VLam Exp
         | VCon ConID [Value] -- list of values to be used as parameters
+        | VFun (Value -> Value)
 
 instance Show Value where
     show v = case v of
@@ -62,17 +63,15 @@ addValues (VInt x) (VInt y) = VInt (x+y)
 interpret :: Program -> IO Value
 interpret ds =
     do
-        let e = addDecsToEnv ds M.empty
+        --let e = addDecsToEnv ds M.empty
+        let e = M.empty
         let value = eval e $ (\(DFunc v vs e) -> e)(head ds) in
             return value
 
 addDecsToEnv :: [Declaration] -> Env -> Env
 addDecsToEnv [] env                         = env
-addDecsToEnv ((DFunc fname vs expr):ds) env = addDecsToEnv ds (addToEnv env fname (VLam expr))
-    --case expr of
-        --ELam _ _ -> addDecsToEnv ds (addToEnv env fname (VLam expr M.empty))
-        --_        -> env
-
+--addDecsToEnv ((DFunc fname vs expr):ds) env = addDecsToEnv ds (addToEnv env fname (VLam expr))
+--addDecsToEnv ((DFunc fname vs expr):ds) env = addDecsToEnv ds (addDecsToEnv env fname (VFun e))
 
 addToEnv :: Env -> Var -> Value -> Env
 addToEnv env var val = case M.lookup var env of
