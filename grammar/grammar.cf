@@ -1,10 +1,14 @@
--- A program is just a list of declarations
-PDecl.      Program     ::= [Declaration] ;
-terminator  Declaration "" ;
+-- A program is a 0 or more imports followed by 
+-- zero or more function declarations
+PImports.   Program     ::= Import ";" Program ;
+PFuncs.     Program1    ::= Func Program1 ;
+PLast.      Program1    ::= Func ;
+coercions   Program 1 ;
 
 -- A declaration is a list of function definitions
-DFunc.      Declaration ::= "function" Id ":" Types ";" [Def] ;
-terminator nonempty Def ";" ;
+DFunc.      Func        ::= "function" Id ":" Types ";" [Def] ;
+DImport.    Import      ::= "import" Id ;
+terminator  nonempty Def ";" ;
 
 -- Function definition
 DDef.       Def         ::= Id [Arg] ":=" Exp ;
