@@ -15,6 +15,9 @@ main = do
 
 -- should be: (10,hi,noes,235)
 
+testCase = interpret caseMain
+    where caseMain = ECase (EVar "x") ps
+          ps = [("x", [], ()),()]
 
 -- 14
 testLam = interpret lamMain -- lambda-calculus addition with application
