@@ -50,6 +50,7 @@ token Id (lower (letter | digit | '_' | '\'')*) ;
 
 -- Tailor-made token type for type identifiers
 token TypeId (upper (letter | digit | '_' | '\'')*) ;
+token TypeLId ('i' (upper (letter | digit | '_' | '\'')*)) ;
 
 -- Expression types
 EVar.       Exp10       ::= Id ;
@@ -76,21 +77,9 @@ SType.      Types       ::= Type ;
 AType.      Types       ::= Type "->" Types ;
 LType.      Types       ::= LType "-o" Types ;
 
--- Standard types
-TBool.      Type        ::= "Bool" ;
-TInt.       Type        ::= "Int" ;
-TNat.       Type        ::= "Nat" ;
-TDouble.    Type        ::= "Double" ;
-TChar.      Type        ::= "Char" ;
-TString.    Type        ::= "String" ;
-
---Linear types
-TLBool.     LType       ::= "iBool" ;
-TLInt.      LType       ::= "iInt" ;
-TLNat.      LType       ::= "iNat" ;
-TLDouble.   LType       ::= "iDouble" ;
-TLChar.     LType       ::= "iChar" ;
-TLString.   LType       ::= "iString" ;
+-- Types
+TId.        Type        ::= TypeId ;
+TLId.       LType       ::= TypeLId ;
 
 -- Haskell-style comments for now
 comment "--" ;
