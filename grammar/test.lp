@@ -1,6 +1,8 @@
 import sugar ;
 
 datatype Tree a := EmptyTree | Node a (Tree a) (Tree a) ;
+datatype Int := False | True ;
+datatype Either a b := Left a | Right b ;
 
 function f : Int ;
 f := 6 ;
