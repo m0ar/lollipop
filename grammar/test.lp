@@ -1,23 +1,28 @@
 import sugar ;
 
-datatype Tree a := EmptyTree | Node a (Tree a) (Tree a) ;
-datatype Int := False | True ;
+datatype Special := False | True ;
 datatype Either a b := Left a | Right b ;
+datatype Tree a := EmptyTree | Node a (Tree a) (Tree a) ;
 
-function f : Int ;
-f := 6 ;
--- function f : iInt ;   DOES NOT WORK!!!
--- f := 6 ;              DOES NOT WORK!!!
+--  test iInt ;    DOES NOT WORK!!! For testing of TypeLId
 
-function g : Int -> Int ;
-g 3 := 9 ;
-g a := a + 3 ;
-g' (x:ys) := x ;
-g (x:y:ys) := y ;
-g (x:y:[]) := y ;
+function zeroArguments : Int ;
+zeroArguments := 6 ;
+-- function zeroArguments : iInt ;   DOES NOT WORK!!! For testing of TypeLId
+-- zeroArguments := 6 ;              DOES NOT WORK!!! For testing of TypeLId
 
-function h : Bool -> Int ;
-h b := undefined ;  -- this is a comment
+function oneArgument : Int -> Int ;
+oneArgument 3 := 9 ;
+oneArgument a := a + 3 ;
 
-function zulu : String -> Char -> Double ;
-zulu hello h := 3.3 ;
+function listArgument : [Int] -> Int ;
+listArgument []       := 0 ;
+listArgument (x:ys)   := x ;
+listArgument (x:y:ys) := y ;
+listArgument (x:y:[]) := y ;
+
+function notYetDefined : Bool -> Int ;
+notYetDefined b := undefined ;  -- this is a comment
+
+function diffTypes : String -> Char -> Double -> Bool ;
+diffTypes "hello" 'h' 3.3 := True && False ;
