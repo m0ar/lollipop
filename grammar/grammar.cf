@@ -1,67 +1,73 @@
 -- A program is 0 or more imports followed by 
 -- zero or more function declarations
-PImports.		Program         ::= Import ";" Program ;
-PFuncs.			Program1        ::= Declaration Program1 ;
-PLast.			Program1        ::= Declaration ;
+PImports.		Program 		::= Import ";" Program ;
+PFuncs.			Program1		::= Declaration Program1 ;
+PLast.			Program1		::= Declaration ;
 coercions Program 1 ;
 
 -- A declaration of function definitions, imports or algebraic data types
-DImport.		Import          ::= "import" Id ;
-DFunc.			Declaration     ::= "function" Id ":" Types ";" [Def] ;
+DImport.		Import 			::= "import" Id ;
+DFunc.			Declaration		::= "function" Id ":" Types ";" [Def] ;
 terminator nonempty Def ";" ;
 -- Test.       Declaration     ::= "test" LType ";" ;   DOES NOT WORK!!! For testing of TypeLId
-DData1.			Declaration     ::= "datatype" Type [Id] ":=" NLDataTypes ;
-DData2.			Declaration     ::= "datatype" LType [Id] ":=" LDataTypes ;
+DData1.			Declaration		::= "datatype" Type [Id] ":=" NLDataTypes ;
+DData2.			Declaration		::= "datatype" LType [Id] ":=" LDataTypes ;
 separator Id "" ;
 
 -- The structure of non-linear algebraic data types
-DDTypes1.		NLDataTypes     ::= NLDPatterns ";" ;
-DDTypes2.		NLDataTypes     ::= NLDPatterns "|" NLDataTypes ;
+DDTypes1.		NLDataTypes		::= NLDPatterns ";" ;
+DDTypes2.		NLDataTypes		::= NLDPatterns "|" NLDataTypes ;
 
 -- The structure of non-linear algebraic data types
-DDTypes4.		NLDPatterns     ::= Type [Id] ;
-DDTypes5.		NLDPatterns     ::= Type [Id] NLDPatterns ;
-DDTypes6.		NLDPatterns     ::= "(" Type [Id] ")" NLDPatterns ;
-DDTypes7.		NLDPatterns     ::= "(" Type [Id] ")" ;
+DDTypes4.		NLDPatterns		::= Type [Id] ;
+DDTypes5.		NLDPatterns		::= Type [Id] NLDPatterns ;
+DDTypes6.		NLDPatterns		::= "(" Type [Id] ")" NLDPatterns ;
+DDTypes7.		NLDPatterns		::= "(" Type [Id] ")" ;
 
 
 -- The structure of linear algebraic data types
-DDTypes8.		LDataTypes     ::= LDPatterns ";" ;
-DDTypes9.		LDataTypes     ::= NLDPatterns ";" ;
-DDTypes10.		LDataTypes     ::= LDPatterns "|" LDataTypes ;
-DDTypes11.		LDataTypes     ::= NLDPatterns "|" LDataTypes ;
+DDTypes8.		LDataTypes		::= LDPatterns ";" ;
+DDTypes9.		LDataTypes		::= NLDPatterns ";" ;
+DDTypes10.		LDataTypes		::= LDPatterns "|" LDataTypes ;
+DDTypes11.		LDataTypes		::= NLDPatterns "|" LDataTypes ;
 
 -- The structure of linear algebraic data types
-DDTypes12.		LDPatterns     ::= LType [Id] ;
-DDTypes13.		LDPatterns     ::= LType [Id] LDPatterns ;
-DDTypes14.		LDPatterns     ::= "(" LType [Id] ")" LDPatterns ;
-DDTypes15.		LDPatterns     ::= "(" LType [Id] ")" ;
+DDTypes12.		LDPatterns 		::= LType [Id] ;
+DDTypes13.		LDPatterns		::= LType [Id] LDPatterns ;
+DDTypes14.		LDPatterns		::= "(" LType [Id] ")" LDPatterns ;
+DDTypes15.		LDPatterns		::= "(" LType [Id] ")" ;
 
 
 -- Function definition
-DDef.			Def             ::= Id [Arg] ":=" Exp ;
+DDef.			Def 			::= Id [Arg] ":=" Exp ;
+DGuardsDef.		Def 			::= Id [Arg] Guards ;
 separator Arg "" ;
 
 -- Arguments can be either a literal, identifier or a list pattern
-DArg1.			Arg             ::= Literal ;
-DArg2.			Arg             ::= Id ;
-DArg3.			Arg             ::= ListPattern ;
+DArg1.			Arg 			::= Literal ;
+DArg2.			Arg 			::= Id ;
+DArg3.			Arg 			::= ListPattern ;
+
+DGuards1.		Guards			::= ":=" Exp "when" Exp Guards1 ;
+DGuards2.		Guards1			::= ":=" Exp "when" Exp Guards1 ;
+DExpGuard.		Guards1			::= ":=" Exp ;
+DEmptyGuard.	Guards1			::= ;
 
 -- Pattern matching for lists
-LPattern1.		ListPattern     ::= "[]";
-LPattern2.		ListPattern     ::= "(" Id ":" Pattern ")";
-LPattern3.		Pattern         ::= "[]" ;
-LPattern4.		Pattern         ::= Id ;
-LPattern5.		Pattern         ::= Id ":" Pattern ;
+LPattern1.		ListPattern 	::= "[]";
+LPattern2.		ListPattern 	::= "(" Id ":" Pattern ")";
+LPattern3.		Pattern 		::= "[]" ;
+LPattern4.		Pattern 		::= Id ;
+LPattern5.		Pattern 		::= Id ":" Pattern ;
 
 
 -- Predefined token types
-LitInt.			Literal         ::= Integer ;
-LitDouble.		Literal         ::= Double ;
-LitChar.		Literal         ::= Char ;
-LitAdTypes.		Literal 		 ::= TypeId ;
-LitAdLTypes.	Literal 		 ::= TypeLId ;
-LitString.		Literal         ::= [String] ;
+LitInt.			Literal  		::= Integer ;
+LitDouble.		Literal 		::= Double ;
+LitChar.		Literal 		::= Char ;
+LitAdTypes.		Literal 		::= TypeId ;
+LitAdLTypes. 	Literal 		::= TypeLId ;
+LitString.		Literal 		::= [String] ;
 separator nonempty String "" ;
 
 -- Tailor-made token type for identifiers
@@ -72,38 +78,38 @@ token TypeId (upper (letter | digit | '_' | '\'')*) ;
 token TypeLId ('i' (upper (letter | digit | '_' | '\'')*)) ;
 
 -- Expression types
-EVar.			Exp10           ::= Id ;
-ELiteral.		Exp10           ::= Literal ;
-EApp.			Exp9            ::= Exp9 Exp10 ;
-EPow.			Exp8            ::= Exp8 "**" Exp9 ;
-EMul.			Exp7            ::= Exp7 "*" Exp8 ;
-EDiv. 			Exp7            ::= Exp7 "/" Exp8 ;
-EAdd.			Exp6            ::= Exp6 "+" Exp7 ;
-ESub.			Exp6            ::= Exp6 "-" Exp7 ;
-ELt. 			Exp5            ::= Exp5 "<" Exp6 ;
-EGt.			Exp5            ::= Exp5 ">" Exp6 ;
-ELEQ.			Exp5            ::= Exp5 "<=" Exp6 ;
-EGEQ.			Exp5            ::= Exp5 ">=" Exp6 ;
-EEQ.			Exp4            ::= Exp4 "==" Exp5 ;
-ENEQ.			Exp4            ::= Exp4 "!=" Exp5 ;
-EAND.			Exp3            ::= Exp3 "&&" Exp4 ;
-EOR.			Exp2            ::= Exp2 "||" Exp3 ;
-EAbs.			Exp1            ::= "\\" Id "->" Exp ;
+EVar.			Exp10			::= Id ;
+ELiteral.		Exp10			::= Literal ;
+EApp.			Exp9			::= Exp9 Exp10 ;
+EPow.			Exp8			::= Exp8 "**" Exp9 ;
+EMul.			Exp7			::= Exp7 "*" Exp8 ;
+EDiv. 			Exp7			::= Exp7 "/" Exp8 ;
+EAdd.			Exp6			::= Exp6 "+" Exp7 ;
+ESub.			Exp6			::= Exp6 "-" Exp7 ;
+ELt. 			Exp5			::= Exp5 "<" Exp6 ;
+EGt.			Exp5			::= Exp5 ">" Exp6 ;
+ELEQ.			Exp5			::= Exp5 "<=" Exp6 ;
+EGEQ.			Exp5			::= Exp5 ">=" Exp6 ;
+EEQ.			Exp4			::= Exp4 "==" Exp5 ;
+ENEQ.			Exp4			::= Exp4 "!=" Exp5 ;
+EAND.			Exp3			::= Exp3 "&&" Exp4 ;
+EOR.			Exp2			::= Exp2 "||" Exp3 ;
+EAbs.			Exp1 			::= "\\" Id "->" Exp ;
 coercions Exp 10 ;
 
 -- Single or multiple argument type declarations for functions
-SType.			Types           ::= TypeId ;
-LSType.			Types 			 ::= "[" TypeId "]" ;
-SLiType.		Types           ::= TypeLId ;
-LSLiType.		Types 			 ::= "[" TypeLId "]" ;
-MType.			Types           ::= TypeId "->" Types ;
-LMType.			Types 			 ::= "[" TypeId "]" "->" Types ;
-MLiType.		Types           ::= TypeLId "-o" Types ;
-LMLitype.		Types 			 ::= "[" TypeLId "]" "-o" Types ;
+SType.			Types 			::= TypeId ;
+LSType.			Types 			::= "[" TypeId "]" ;
+SLiType.		Types 			::= TypeLId ;
+LSLiType.		Types 			::= "[" TypeLId "]" ;
+MType.			Types 			::= TypeId "->" Types ;
+LMType.			Types 			::= "[" TypeId "]" "->" Types ;
+MLiType.		Types 			::= TypeLId "-o" Types ;
+LMLitype.		Types 			::= "[" TypeLId "]" "-o" Types ;
 				
 -- Types
-TId.			Type            ::= TypeId ;
-TLId.			LType           ::= TypeLId ;
+TId.			Type 			::= TypeId ;
+TLId.			LType 			::= TypeLId ;
 
 -- Haskell-style comments for now
 comment "--" ;

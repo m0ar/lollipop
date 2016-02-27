@@ -26,3 +26,8 @@ notYetDefined b := undefined ;  -- this is a comment
 
 function diffTypes : String -> Char -> Double -> Bool ;
 diffTypes "hello" 'h' 3.3 := True && False ;
+
+function bigger : Int -> Int -> Bool ;
+bigger a b := True when a > b
+		   := True when a < b
+		   := False ;
