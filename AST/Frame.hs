@@ -20,6 +20,7 @@ data Exp = EApp Exp Exp
        | ELam Var Exp
        | EIf Exp Exp Exp
        | ECase Exp [Pattern]
+       | ELet Var Exp Exp  -- let var = exp in exp
 
 type Pattern = (ConID, [Var], Exp)
 type Var = String
@@ -94,6 +95,8 @@ addManyToEnv env (v1:vars) (v2:vals) = addManyToEnv (addToEnv env v1 v2) vars va
 
 eval :: Env -> Exp -> Value
 eval env expr = case expr of
+        ELet var e1 e2           -> eval env' e2
+            where env' = addToEnv env var (eval env e1)
         ECase e ps               -> eval env' e'
             where (VCon cid vals)  = eval env e
                   (cid', vars, e') = findPattern ps cid
