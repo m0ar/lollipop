@@ -44,3 +44,6 @@ nestedTuples (a, (c,d)) := (a, d) ;
 -- Gets problematic with custom made types...
 function typesInTuples : (String, False) -> Bool ; 
 typesInTuples ("hello", False) := True ;
+
+function testListComp : [Int] ;
+testListComp := [ x*y | x <- [2,5,10], y <- [8,10,11]] ;

@@ -58,8 +58,8 @@ DExpGuard.		Guards1			::= ":=" Exp ;
 DEmptyGuard.	Guards1			::= ;
 
 -- Pattern matching for lists
-LPattern1.		ListPattern 	::= "[]";
-LPattern2.		ListPattern 	::= "(" Id ":" Pattern ")";
+LPattern1.		ListPattern 	::= "[]" ;
+LPattern2.		ListPattern 	::= "(" Id ":" Pattern ")" ;
 LPattern3.		Pattern 		::= "[]" ;
 LPattern4.		Pattern 		::= Id ;
 LPattern5.		Pattern 		::= Id ":" Pattern ;
@@ -85,6 +85,8 @@ ETypeLId.		Exp10			::= LiTypeId ;
 ELiteral.		Exp10			::= Literal ;
 ETuple.			Exp10			::= Tuple ;
 EApp.			Exp9			::= Exp9 Exp10 ;
+EListComp.		Exp8			::= "[" Exp "|" [LCPattern] "]" ;
+separator nonempty LCPattern "," ;
 EPow.			Exp8			::= Exp8 "**" Exp9 ;
 EMul.			Exp7			::= Exp7 "*" Exp8 ;
 EDiv. 			Exp7			::= Exp7 "/" Exp8 ;
@@ -98,8 +100,17 @@ EEQ.			Exp4			::= Exp4 "==" Exp5 ;
 ENEQ.			Exp4			::= Exp4 "!=" Exp5 ;
 EAND.			Exp3			::= Exp3 "&&" Exp4 ;
 EOR.			Exp2			::= Exp2 "||" Exp3 ;
-EAbs.			Exp1 			::= "\\" Id "->" Exp ;
+EAbs.			Exp1			::= "\\" Id "->" Exp ;
 coercions Exp 10 ;
+
+-- The structure for List comprehension patterns
+ELCPattern1.	LCPattern		::= Id "<-" [LPattern] ;  -- [LPattern] gives 1 shift/reduce conflict
+ELCPattern2.	LCPattern		::= Exp ;
+separator nonempty LPattern "," ;
+
+-- The structure for List patterns
+EIdLPattern.	LPattern		::= Id ;
+ELLPattern.		LPattern		::= Literal ;
 
 -- The structure of type declarations for functions.
 SType.			TypeDecls		::= TypeId ;
