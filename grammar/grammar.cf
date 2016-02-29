@@ -46,7 +46,11 @@ separator Arg "" ;
 -- Arguments can be either a literal, identifier or a list pattern
 DArg1.			Arg 			::= Literal ;
 DArg2.			Arg 			::= Id ;
-DArg3.			Arg 			::= ListPattern ;
+DArg3.			Arg 			::= TypeId ;
+DArg4.			Arg 			::= LiTypeId ;
+DArg5.			Arg 			::= ListPattern ;
+DArg6.			Arg 			::= Tuple ;
+--DArg7.			Arg 			::= LiTuple ;			LiTuple?
 
 DGuards1.		Guards			::= ":=" Exp "when" Exp Guards1 ;
 DGuards2.		Guards1			::= ":=" Exp "when" Exp Guards1 ;
@@ -60,13 +64,10 @@ LPattern3.		Pattern 		::= "[]" ;
 LPattern4.		Pattern 		::= Id ;
 LPattern5.		Pattern 		::= Id ":" Pattern ;
 
-
--- Predefined token types
+-- A literal can be any predefined token type or a tailor-made token type
 LitInt.			Literal  		::= Integer ;
 LitDouble.		Literal 		::= Double ;
 LitChar.		Literal 		::= Char ;
-LitAdTypes.		Literal 		::= TypeId ;
-LitAdLTypes. 	Literal 		::= TypeLId ;
 LitString.		Literal 		::= [String] ;
 separator nonempty String "" ;
 
@@ -75,11 +76,14 @@ token Id (lower (letter | digit | '_' | '\'')*) ;
 
 -- Tailor-made token types for type identifiers
 token TypeId (upper (letter | digit | '_' | '\'')*) ;
-token TypeLId ('i' (upper (letter | digit | '_' | '\'')*)) ;
+token LiTypeId ('i' (upper (letter | digit | '_' | '\'')*)) ;
 
 -- Expression types
 EVar.			Exp10			::= Id ;
+ETypeId.		Exp10			::= TypeId ;
+ETypeLId.		Exp10			::= LiTypeId ;
 ELiteral.		Exp10			::= Literal ;
+ETuple.			Exp10			::= Tuple ;
 EApp.			Exp9			::= Exp9 Exp10 ;
 EPow.			Exp8			::= Exp8 "**" Exp9 ;
 EMul.			Exp7			::= Exp7 "*" Exp8 ;
@@ -97,19 +101,66 @@ EOR.			Exp2			::= Exp2 "||" Exp3 ;
 EAbs.			Exp1 			::= "\\" Id "->" Exp ;
 coercions Exp 10 ;
 
--- Single or multiple argument type declarations for functions
+-- The structure for type declarations of functions.
 SType.			Types 			::= TypeId ;
+SLiType.		Types 			::= LiTypeId ;
+TType.			Types 			::= Tuple ;
+--LiTType.			Types 			::= LiTuple ;						LiTuple?
 LSType.			Types 			::= "[" TypeId "]" ;
-SLiType.		Types 			::= TypeLId ;
-LSLiType.		Types 			::= "[" TypeLId "]" ;
+LSLiType.		Types 			::= "[" LiTypeId "]" ;
+LSTType.		Types 			::= "[" Tuple "]" ;
+--LSLiTType.		Types 			::= "[" LiTuple "]" ;				LiTuple?
 MType.			Types 			::= TypeId "->" Types ;
+MTType.			Types 			::= Tuple "->" Types ;
+MLiType.		Types 			::= LiTypeId "-o" Types ;
+--MTLiType.		Types 			::= LiTuple "-o" Types ;				LiTuple?
 LMType.			Types 			::= "[" TypeId "]" "->" Types ;
-MLiType.		Types 			::= TypeLId "-o" Types ;
-LMLitype.		Types 			::= "[" TypeLId "]" "-o" Types ;
-				
--- Types
+LMTType.		Types 			::= "[" Tuple "]" "->" Types ;
+LMLitype.		Types 			::= "[" LiTypeId "]" "-o" Types ;
+--LMLiTtype.		Types 			::= "[" LiTuple "]" "-o" Types ;	LiTuple?
+
+
+-- Pattern matching for tuples that can be 2- or 3-tuples
+-- with possible nested tuples.
+TupleDef1.			Tuple		::= "(" TupleArgs "," TupleArgs ")" ;
+TupleDef2.			Tuple		::= "(" Tuple "," TupleArgs ")" ;
+TupleDef3.			Tuple		::= "(" TupleArgs "," Tuple ")" ;
+TupleDef4.			Tuple		::= "(" Tuple "," Tuple ")" ;
+TupleDef5.			Tuple		::= "(" TupleArgs "," TupleArgs "," TupleArgs ")" ;
+TupleDef6.			Tuple		::= "(" Tuple "," TupleArgs "," TupleArgs ")" ;
+TupleDef7.			Tuple		::= "(" TupleArgs "," Tuple "," TupleArgs ")" ;
+TupleDef9.			Tuple		::= "(" TupleArgs "," TupleArgs "," Tuple ")" ;
+TupleDef10.			Tuple		::= "(" Tuple "," Tuple "," TupleArgs ")" ;
+TupleDef11.			Tuple		::= "(" TupleArgs "," Tuple "," Tuple ")" ;
+TupleDef12.			Tuple		::= "(" Tuple "," TupleArgs "," Tuple ")" ;
+TupleDef13.			Tuple		::= "(" Tuple "," Tuple "," Tuple ")" ;
+
+-- Linear tuples must contain at least one linear element...?
+--LiTupleDef1.		LiTuple		::= "(" LiTypeId "," TupleArgs ")" ;
+--LiTupleDef2.		LiTuple		::= "(" TupleArgs "," LiTypeId ")" ;
+--LiTupleDef3.		LiTuple		::= "(" LiTuple "," TupleArgs ")" ;
+--LiTupleDef4.		LiTuple		::= "(" TupleArgs "," LiTuple ")" ;
+--LiTupleDef5.		LiTuple		::= "(" LiTuple "," LiTuple ")" ;
+--LiTupleDef6.		LiTuple		::= "(" LiTypeId "," TupleArgs "," TupleArgs ")" ;
+--LiTupleDef7.		LiTuple		::= "(" TupleArgs "," LiTypeId "," TupleArgs ")" ;
+--LiTupleDef8.		LiTuple		::= "(" TupleArgs "," TupleArgs "," LiTypeId ")" ;
+--LiTupleDef9.		LiTuple		::= "(" LiTuple "," TupleArgs "," TupleArgs ")" ;
+--LiTupleDef10.		LiTuple		::= "(" TupleArgs "," LiTuple "," TupleArgs ")" ;
+--LiTupleDef11.		LiTuple		::= "(" TupleArgs "," TupleArgs "," LiTuple ")" ;
+--LiTupleDef12.		LiTuple		::= "(" LiTuple "," LiTuple "," TupleArgs ")" ;
+--LiTupleDef13.		LiTuple		::= "(" LiTuple "," TupleArgs "," LiTuple ")" ;
+--LiTupleDef14.		LiTuple		::= "(" TupleArgs "," LiTuple "," LiTuple ")" ;
+--LiTupleDef15.		LiTuple		::= "(" LiTuple "," LiTuple "," LiTuple ")" ;
+
+-- Tuple arguments
+TITupleArgs.		TupleArgs	::= Id ;
+TLTupleArgs.		TupleArgs	::= Literal ;
+TTTupleArgs.		TupleArgs	::= TypeId ;
+TTLTupleArgs.		TupleArgs	::= LiTypeId ;
+
+-- Types, either regular or linear
 TId.			Type 			::= TypeId ;
-TLId.			LType 			::= TypeLId ;
+TLId.			LType 			::= LiTypeId ;
 
 -- Haskell-style comments for now
 comment "--" ;

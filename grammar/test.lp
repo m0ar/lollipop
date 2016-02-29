@@ -24,10 +24,23 @@ listArgument (x:y:[]) := y ;
 function notYetDefined : Bool -> Int ;
 notYetDefined b := undefined ;  -- this is a comment
 
-function diffTypes : String -> Char -> Double -> Bool ;
-diffTypes "hello" 'h' 3.3 := True && False ;
+function diffTypes : String -> Char -> Double -> Bool -> Bool ;
+diffTypes "hello" 'h' 3.3 True := True && False ;
 
-function bigger : Int -> Int -> Bool ;
-bigger a b := True when a > b
-		   := True when a < b
-		   := False ;
+function biggerThan : Int -> Int -> Bool ;
+biggerThan a b := True when a > b
+			   := False when a < b
+			   := False ;
+
+function swap : (a, b) -> (b, a) ;
+swap (a, b) := (b, a) ;
+
+function nestedTuples : (a, (c,d)) -> (a, d) ;
+nestedTuples (a, (c,d)) := (a, d) ;
+
+-- Should we allow erronous type identifiers, like False below,
+-- in argument type declarations for functions? not just in tuples
+-- as below, but for all of them.
+-- Gets problematic with custom made types...
+function typesInTuples : (String, False) -> Bool ; 
+typesInTuples ("hello", False) := True ;
