@@ -19,6 +19,19 @@ main = do
     --where caseMain = ECase (EVar "x") ps
     --      ps = [("x", [], ()),()]
 
+-- main-test functions
+testFuncs = interpret funcMain
+    where funcMain = [
+                        (DFunc "main" [] (EApp (EApp (EVar "add") (ELit (ILit 5))) (ELit (ILit 2)))),
+                        (DFunc "add" ["","x","y"] (EAdd (EVar "x") (EVar "y")))
+                    ]
+
+-- main-test functions
+testFuncs1 = interpret funcMain
+    where funcMain = [  (DFunc "main" [] (EApp (EVar "add") (ELit (ILit 3)))),
+                        (DFunc "add" ["x"] (EAdd (EVar "x") (ELit (ILit 2))))
+                    ]
+
 -- 14
 testLam = interpret lamMain -- lambda-calculus addition with application
     where lam = EApp (ELam "x" (EAdd (EVar "x") (ELit (ILit 4)))) (EApp (ELam "x" (EAdd (EVar "x") (ELit (ILit 4)))) (ELit (ILit 6)))

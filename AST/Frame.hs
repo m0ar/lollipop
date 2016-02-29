@@ -20,6 +20,7 @@ data Exp = EApp Exp Exp
        | ELam Var Exp
        | EIf Exp Exp Exp
        | ECase Exp [Pattern]
+       | ELet Var Exp Exp  -- let var = exp in exp
 
 type Pattern = (ConID, [Var], Exp)
 type Var = String
@@ -45,6 +46,7 @@ instance Show Value where
         (VInt x)    -> show x
         (VString s) -> s
         (VIO s)     -> s
+        (VFun f)    -> "gotta function"
 
 type ConID = String
 
@@ -56,22 +58,29 @@ data Lit = SLit String
         | BLit Bool
     deriving Show
 
-addValues :: Value -> Value -> Value
-addValues (VInt x) (VInt y) = VInt (x+y)
-
 
 interpret :: Program -> IO Value
 interpret ds =
     do
-        --let e = addDecsToEnv ds M.empty
-        let e = M.empty
-        let value = eval e $ (\(DFunc v vs e) -> e)(head ds) in
-            return value
+        let e = addDecsToEnv M.empty ds
+        let value = eval e $ (\(DFunc v vs e) -> e)(head ds)
+        return value
 
-addDecsToEnv :: [Declaration] -> Env -> Env
-addDecsToEnv [] env                         = env
---addDecsToEnv ((DFunc fname vs expr):ds) env = addDecsToEnv ds (addToEnv env fname (VLam expr))
---addDecsToEnv ((DFunc fname vs expr):ds) env = addDecsToEnv ds (addDecsToEnv env fname (VFun e))
+-- Adds declarations to the environment
+addDecsToEnv :: Env -> [Declaration] -> Env
+addDecsToEnv env []     = env
+addDecsToEnv env (d:ds) = addDecsToEnv (addDecToEnv env d) ds
+
+addDecToEnv :: Env -> Declaration -> Env
+addDecToEnv env (DFunc fname [] expr)   = M.insert fname (eval env expr) env
+addDecToEnv env (DFunc fname vars expr) = M.insert fname (fst (createContext vars expr)) env
+
+createContext :: [Var] -> Exp -> (Value, Env)
+createContext (v:[]) expr = (value, (addToEnv M.empty v value))
+    where value = (VFun (\val -> eval (M.insert v val M.empty) expr))
+createContext (v:vs) expr = (value, (addToEnv (snd (valEnv)) v value))
+    where valEnv = createContext vs expr
+          value = (VFun (\val -> (fst valEnv)))
 
 addToEnv :: Env -> Var -> Value -> Env
 addToEnv env var val = case M.lookup var env of
@@ -86,6 +95,8 @@ addManyToEnv env (v1:vars) (v2:vals) = addManyToEnv (addToEnv env v1 v2) vars va
 
 eval :: Env -> Exp -> Value
 eval env expr = case expr of
+        ELet var e1 e2           -> eval env' e2
+            where env' = addToEnv env var (eval env e1)
         ECase e ps               -> eval env' e'
             where (VCon cid vals)  = eval env e
                   (cid', vars, e') = findPattern ps cid
@@ -98,10 +109,8 @@ eval env expr = case expr of
         EApp e1 e2               -> case (eval env e1) of
              VFun v1           -> v1 v2
                 where v2 = eval env e2
-        EAdd e1 e2               -> case e2 of
-            EList (Cons h Nil) -> eval env (EAdd e1 (ELit h))
-            EList (Cons h t)   -> eval env (EAdd e1 (EAdd (ELit h) (EList t)))
-            _                    -> addValues (eval env e1) (eval env e2)
+             _                 -> error "NOT FUNCTION!!!!"
+        EAdd e1 e2               -> addValues (eval env e1) (eval env e2)
         ELam var e               -> (VFun f)
             where f v = eval (addToEnv env var v) e
         EVar var                 -> case lookupInEnv env var of
@@ -110,6 +119,10 @@ eval env expr = case expr of
         ELit (ILit i)            -> (VInt i)
         ELit (SLit s)            -> (VString s)
         ELit (BLit b)            -> (VBoolean b)
+
+
+addValues :: Value -> Value -> Value
+addValues (VInt x) (VInt y) = VInt (x+y)
 
 findPattern :: [Pattern] -> ConID -> Pattern
 findPattern [] _                          = error "could not find pattern"
