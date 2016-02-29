@@ -45,7 +45,7 @@ instance Show Value where
         (VInt x)    -> show x
         (VString s) -> s
         (VIO s)     -> s
-        (VFun f )   -> ""
+        (VFun f)    -> "gotta function"
 
 type ConID = String
 
