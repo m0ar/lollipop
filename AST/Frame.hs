@@ -62,8 +62,8 @@ interpret :: Program -> IO Value
 interpret ds =
     do
         let e = addDecsToEnv M.empty ds
-        let value = eval e $ (\(DFunc v vs e) -> e)(head ds) in
-            return value
+        let value = eval e $ (\(DFunc v vs e) -> e)(head ds)
+        return value
 
 -- Adds declarations to the environment
 addDecsToEnv :: Env -> [Declaration] -> Env
