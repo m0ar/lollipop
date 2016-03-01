@@ -34,11 +34,28 @@ testCon = interpret conMain
 --      Cons x xs -> x + 0
 --      Nil       -> 0
 testCase = interpret caseMain
-    where econ = ECon "Cons" [eTwo, (ECon "Nil" [])]
+    where elist = ECon "Cons" [eTwo, (ECon "Nil" [])]
           p1 = ("Cons", ["x", "xs"], (EAdd (EVar "x") eZero)) 
           p2 = ("Nil", [], eZero)
-          ecase = ECase econ [p1, p2]
+          ecase = ECase elist [p1, p2]
           caseMain = [(DFunc "main" [] ecase)]
+
+{-
+main = sum (Cons 2 Nil)
+
+sum xs = case xs of
+    Cons x xs2  ->  x + sum xs2
+    Nil         -> 0
+-}
+testSumList = interpret [dMain, dSum]
+    where elist = ECon "Cons" [eTwo, (ECon "Nil" [])]
+          dMain = DFunc "main" [] (EApp (EVar "sum") elist)
+          p1 = ("Cons", ["x", "xs2"], (EAdd (EVar "x") (EApp (EVar "sum") (EVar "xs2")))) 
+          p2 = ("Nil", [], eZero)
+          ecase = ECase (EVar "xs") [p1, p2]
+          dSum = DFunc "sum" ["xs"] ecase
+          
+          
     
 -- main-test functions
 testFuncs = interpret funcMain
@@ -71,7 +88,9 @@ testIf = interpret ifTestMain -- simple if-statement with printout
         ifTestMain = [(DFunc "main" [] ifTest)]
 
 --235
+{-
 testSumList = interpret sumListMain -- simple list
     where
         sumList = Cons (ILit 28) (Cons (ILit 198) (Cons (ILit 2) (Cons (ILit 3) Nil)))
         sumListMain = [(DFunc "main" [] (EAdd (ELit (ILit 4)) (EList sumList)))]
+-}
