@@ -7,11 +7,9 @@ main = do
     a <- testLam
     b <- testHello
     c <- testIf
-    d <- testSumList
     return (a
            ,b
-           ,c
-           ,d)
+           ,c)
 
 -- should be: (10,hi,noes,235)
 
@@ -35,7 +33,8 @@ testCon = interpret conMain
 --      Nil       -> 0
 testCase = interpret caseMain
     where elist = ECon "Cons" [eTwo, (ECon "Nil" [])]
-          p1 = ("Cons", ["x", "xs"], (EAdd (EVar "x") eZero)) 
+          -- elist = ECon "Nil" []
+          p1 = ("Cons", ["x", "xs"], (EAdd (EVar "x") eZero))
           p2 = ("Nil", [], eZero)
           ecase = ECase elist [p1, p2]
           caseMain = [(DFunc "main" [] ecase)]
@@ -47,13 +46,22 @@ sum xs = case xs of
     Cons x xs2  ->  x + sum xs2
     Nil         -> 0
 -}
+
 testSumList = interpret [dMain, dSum]
     where elist = ECon "Cons" [eTwo, (ECon "Nil" [])]
           dMain = DFunc "main" [] (EApp (EVar "sum") elist)
-          p1 = ("Cons", ["x", "xs2"], (EAdd (EVar "x") (EApp (EVar "sum") (EVar "xs2")))) 
+          p1 = ("Cons", ["x", "xs2"], (EAdd (EVar "x") (EApp (EVar "sum") (EVar "xs2"))))
           p2 = ("Nil", [], eZero)
           ecase = ECase (EVar "xs") [p1, p2]
           dSum = DFunc "sum" ["xs"] ecase
+
+testSumList2 = interpret [dmain]
+    where
+        dmain = DFunc "sum" ["xs"] (ECase (ECon "Cons" [eTwo, (ECon "Nil" [])]) [p1, p2])
+            where
+                p1 = ("Nil", [], eZero)
+                p2 = ("Cons", ["x", "xs"], (EAdd (EVar "x") (EApp (EVar "sum") (EVar "xs"))))
+
           
           
     
