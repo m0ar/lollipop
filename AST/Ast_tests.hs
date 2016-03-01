@@ -61,7 +61,7 @@ testSumList = interpret [dMain, dSum]
 testFuncs = interpret funcMain
     where funcMain = [
                         (DFunc "main" [] (EApp (EApp (EVar "add") (ELit (ILit 5))) (ELit (ILit 2)))),
-                        (DFunc "add" ["","x","y"] (EAdd (EVar "x") (EVar "y")))
+                        (DFunc "add" ["x","y"] (EAdd (EVar "x") (EVar "y")))
                     ]
 
 -- main-test functions

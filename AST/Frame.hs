@@ -67,22 +67,30 @@ interpret ds =
         let e = addDecsToEnv M.empty ds
         let value = eval e $ (\(DFunc v vs e) -> e)(head ds)
         return value
-
 -- Adds declarations to the environment
 addDecsToEnv :: Env -> [Declaration] -> Env
 addDecsToEnv env []     = env
-addDecsToEnv env (d:ds) = addDecsToEnv (addDecToEnv env d) ds
+addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
+    where
+        e' = addDecsToEnv env ds
 
-addDecToEnv :: Env -> Declaration -> Env
-addDecToEnv env (DFunc fname [] expr)   = M.insert fname (eval env expr) env
-addDecToEnv env (DFunc fname vars expr) = M.insert fname (fst (createContext vars expr)) env
+-- addDecToEnv :: Env -> Declaration -> Env
+-- addDecToEnv env (DFunc fname [] expr)   = M.insert fname (eval env expr) env
+-- addDecToEnv env (DFunc fname vars expr) = M.insert fname (fst (createContext vars expr)) env
 
-createContext :: [Var] -> Exp -> (Value, Env)
-createContext (v:[]) expr = (value, (addToEnv M.empty v value))
-    where value = (VFun (\val -> eval (M.insert v val M.empty) expr))
-createContext (v:vs) expr = (value, (addToEnv (snd (valEnv)) v value))
-    where valEnv = createContext vs expr
-          value = (VFun (\val -> (fst valEnv)))
+-- createContext :: [Var] -> Exp -> (Value, Env)
+-- createContext (v:[]) expr = (value, (addToEnv M.empty v value))
+--     where value = (VFun (\val -> eval (M.insert v val M.empty) expr))
+-- createContext (v:vs) expr = (value, (addToEnv (snd (valEnv)) v value))
+--    where valEnv = createContext vs expr
+--          value = (VFun (\val -> (fst valEnv)))
+
+makeBinding :: Declaration -> Env -> (Var, Value)
+makeBinding (DFunc name vs e) env = (name, eval env (addLams vs e))
+    where
+        addLams [] e     = e
+        addLams (v:vs) e = ELam v (addLams vs e)
+
 
 addToEnv :: Env -> Var -> Value -> Env
 addToEnv env var val = case M.lookup var env of
