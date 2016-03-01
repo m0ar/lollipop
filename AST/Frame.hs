@@ -19,6 +19,7 @@ data Exp = EApp Exp Exp
        | EPrint Exp
        | ELam Var Exp
        | EIf Exp Exp Exp
+       | ECon ConID [Exp]
        | ECase Exp [Pattern]
        | ELet Var Exp Exp  -- let var = exp in exp
 
@@ -47,6 +48,7 @@ instance Show Value where
         (VString s) -> s
         (VIO s)     -> s
         (VFun f)    -> "gotta function"
+        (VCon cid vs) -> cid ++ " " ++ concat (Prelude.map show vs)
 
 type ConID = String
 
@@ -97,6 +99,7 @@ eval :: Env -> Exp -> Value
 eval env expr = case expr of
         ELet var e1 e2           -> eval env' e2
             where env' = addToEnv env var (eval env e1)
+        ECon cid es              -> VCon cid $ Prelude.map (\e -> eval env e) es
         ECase e ps               -> eval env' e'
             where (VCon cid vals)  = eval env e
                   (cid', vars, e') = findPattern ps cid

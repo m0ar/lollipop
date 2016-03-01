@@ -19,6 +19,13 @@ main = do
     --where caseMain = ECase (EVar "x") ps
     --      ps = [("x", [], ()),()]
 
+eTwo = ELit (ILit 2)
+
+-- test ECon
+testCon = interpret conMain
+    where con = ECon "Cons" [eTwo, (ECon "Nil" [])]
+          conMain = [(DFunc "main" [] con)]
+    
 -- main-test functions
 testFuncs = interpret funcMain
     where funcMain = [
