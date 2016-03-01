@@ -64,7 +64,7 @@ LPattern3.		Pattern 		::= "[]" ;
 LPattern4.		Pattern 		::= Id ;
 LPattern5.		Pattern 		::= Id ":" Pattern ;
 
--- A literal can be any predefined token type or a tailor-made token type
+-- A literal can be any predefined token type
 LitInt.			Literal  		::= Integer ;
 LitDouble.		Literal 		::= Double ;
 LitChar.		Literal 		::= Char ;
@@ -85,12 +85,12 @@ ETypeLId.		Exp10			::= LiTypeId ;
 ELiteral.		Exp10			::= Literal ;
 ETuple.			Exp10			::= Tuple ;
 EApp.			Exp9			::= Exp9 Exp10 ;
-EListComp.		Exp8			::= "[" Exp "|" LCPatterns "]" ;
 EPow.			Exp8			::= Exp8 "**" Exp9 ;
 EMul.			Exp7			::= Exp7 "*" Exp8 ;
 EDiv. 			Exp7			::= Exp7 "/" Exp8 ;
 EAdd.			Exp6			::= Exp6 "+" Exp7 ;
 ESub.			Exp6			::= Exp6 "-" Exp7 ;
+EListComp.		Exp5			::= "[" Exp "|" LCPatterns "]" ;
 ELt. 			Exp5			::= Exp5 "<" Exp6 ;
 EGt.			Exp5			::= Exp5 ">" Exp6 ;
 ELEQ.			Exp5			::= Exp5 "<=" Exp6 ;
