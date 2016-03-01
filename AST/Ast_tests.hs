@@ -19,12 +19,26 @@ main = do
     --where caseMain = ECase (EVar "x") ps
     --      ps = [("x", [], ()),()]
 
+eZero = ELit (ILit 0)
+eOne = ELit (ILit 1)
 eTwo = ELit (ILit 2)
 
 -- test ECon
+-- main = Cons 2 Nil
 testCon = interpret conMain
     where con = ECon "Cons" [eTwo, (ECon "Nil" [])]
           conMain = [(DFunc "main" [] con)]
+
+-- test ECase
+-- main = case (Cons 2 Nil) of
+--      Cons x xs -> x + 0
+--      Nil       -> 0
+testCase = interpret caseMain
+    where econ = ECon "Cons" [eTwo, (ECon "Nil" [])]
+          p1 = ("Cons", ["x", "xs"], (EAdd (EVar "x") eZero)) 
+          p2 = ("Nil", [], eZero)
+          ecase = ECase econ [p1, p2]
+          caseMain = [(DFunc "main" [] ecase)]
     
 -- main-test functions
 testFuncs = interpret funcMain
