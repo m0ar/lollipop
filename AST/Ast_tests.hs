@@ -17,6 +17,7 @@ main = do
     i <- testSumList
     j <- testCase
     k <- testCon
+    l <- testGuard
     return (a
            ,b
            ,c
@@ -27,7 +28,8 @@ main = do
            ,h
            ,i
            ,j
-           ,k)
+           ,k
+           ,l)
 
 eZero   = ELit (ILit 0)
 eOne    = ELit (ILit 1)
@@ -45,9 +47,19 @@ eList2 = ECon "Cons" [eTwo, ECon "Cons" [eThree, ECon "Cons" [eNine, (ECon "Nil"
 
 -- test ECon
 -- main = Cons 2 Nil
+
+
 testCon = interpret conMain
     where con = ECon "Cons" [eTwo, (ECon "Nil" [])]
           conMain = [(DFunc "main" [] con)]
+
+-- should return "second guard reached"
+testGuard = interpret guardMain
+    where ts = [((ELit (BLit False)), (EPrint (ELit (SLit "first case reached")))),
+                ((ELit (BLit True)), (EPrint (ELit (SLit "second case reached"))))]
+          guard = EGuard ts (EPrint (ELit (SLit "otherwise case reached")))
+          guardMain = [(DFunc "main" [] guard)]
+
 
 -- test ECase
 -- main = case (Cons 2 Nil) of
@@ -105,7 +117,7 @@ test2 = interpret ds >>= putStrLn . take 1000 . show where
             ,("Nil",[],ECon "Nil" [])
             ]
 
-    
+
 -- main-test functions
 testFuncs = interpret funcMain
     where funcMain = [
