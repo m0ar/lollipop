@@ -3,6 +3,9 @@ module DataTypes where
 
 type Program = [Declaration]
 
+-- type Declaration = (Var, Vars, [Definition])
+
+-- data Definition = DFunc Vars Exp
 data Declaration = DFunc Var Vars Exp
 
 data Exp = EApp Exp Exp
