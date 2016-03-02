@@ -18,6 +18,7 @@ main = do
     j <- testCase
     k <- testCon
     l <- testGuard
+    m <- testLetIn
     return (a
            ,b
            ,c
@@ -29,7 +30,8 @@ main = do
            ,i
            ,j
            ,k
-           ,l)
+           ,l
+           ,m)
 
 eZero   = ELit (ILit 0)
 eOne    = ELit (ILit 1)
@@ -53,8 +55,6 @@ testLetIn = interpret letInMain
 
 -- test ECon
 -- main = Cons 2 Nil
-
-
 testCon = interpret conMain
     where con = ECon "Cons" [eTwo, (ECon "Nil" [])]
           conMain = [(DFunc "main" [] con)]
