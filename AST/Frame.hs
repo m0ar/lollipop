@@ -45,7 +45,9 @@ eval env expr = case expr of
             where env' = addToEnv env var (eval env e2)
         ELetIn var e1 e2           -> eval env' e2
             where env' = addToEnv env var (eval env e1)
-        ECon cid es              -> VCon cid $ Prelude.map (\e -> eval env e) es
+        ECon cid []              -> VString cid
+        ECon cid (e:es)             -> eval env e
+        -- ECon cid es              -> VCon cid $ Prelude.map (\e -> eval env e) es
         ECase e ps               -> eval env' e'
             where (VCon cid vals)  = eval env e
                   (cid', vars, e') = findPattern ps cid
