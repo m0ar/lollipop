@@ -7,7 +7,6 @@ import qualified Data.Map as M
 
 type Program = [Declaration]
 
-
 data Declaration = DFunc Var Vars Exp
 
 data Exp = EApp Exp Exp
@@ -32,7 +31,6 @@ type Vars = [Var]
 -- A list of listerals
 data List = Cons Lit List | Nil
     deriving Show
-
 
 data Value = VInt Int
         | VIO String
@@ -60,16 +58,16 @@ data Lit = SLit String
         | BLit Bool
     deriving Show
 
-
 interpret :: Program -> IO Value
 interpret ds =
     do
-        let e = addDecsToEnv M.empty ds
+        let e = addDecsToEnv e ds
         let value = eval e $ (\(DFunc v vs e) -> e)(head ds)
         return value
+
 -- Adds declarations to the environment
 addDecsToEnv :: Env -> [Declaration] -> Env
-addDecsToEnv env []     = env
+addDecsToEnv env []     = M.empty
 addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
     where
         e' = addDecsToEnv env ds
@@ -90,7 +88,6 @@ makeBinding (DFunc name vs e) env = (name, eval env (addLams vs e))
     where
         addLams [] e     = e
         addLams (v:vs) e = ELam v (addLams vs e)
-
 
 addToEnv :: Env -> Var -> Value -> Env
 addToEnv env var val = case M.lookup var env of
@@ -131,7 +128,6 @@ eval env expr = case expr of
         ELit (SLit s)            -> (VString s)
         ELit (BLit b)            -> (VBoolean b)
 
-
 addValues :: Value -> Value -> Value
 addValues (VInt x) (VInt y) = VInt (x+y)
 
@@ -143,7 +139,6 @@ findPattern (p@(cid, vs, expr):ps) cid'
 
 lookupInEnv :: Env -> Var -> Maybe Value
 lookupInEnv e var = M.lookup var e
-
 
 -- Show functions --
 instance Show Exp where
