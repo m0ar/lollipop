@@ -29,7 +29,7 @@ DGuardsDef.		Def 			::= Id [Arg] Guards ;
 separator Arg "" ;
 
 -- Arguments in function definitions can be either a literal,
--- identifier, Type, list pattern or a Tuple
+-- identifier, type (linear or non-linear), list pattern or a tuple
 DArg1.			Arg 			::= Literal ;
 DArg2.			Arg 			::= Id ;
 DArg3.			Arg 			::= Type ;
@@ -37,6 +37,7 @@ DArg4.			Arg 			::= ListPattern ;
 DArg5.			Arg 			::= Tuple ;
 DArg6.			Arg 			::= LiTuple ;
 
+-- Structure of guards in function definitions
 DGuards1.		Guards			::= ":=" Exp "when" Exp Guards1 ;
 DGuards2.		Guards1			::= ":=" Exp "when" Exp Guards1 ;
 DExpGuard.		Guards1			::= ":=" Exp ;
@@ -111,27 +112,23 @@ LCPredicate.	Predicate		::= Exp ;
 LCPredicates.	Predicate		::= Exp "," Predicate ;
 
 -- The structure of type declarations for functions.
-SType.			TypeDecls		::= TypeId ;
-SLiType.		TypeDecls		::= LiTypeId ;
-TType.			TypeDecls		::= Tuple ;
-LiTType.		TypeDecls		::= LiTuple ;
-IdType.			TypeDecls		::= Id ;
-LSType.			TypeDecls		::= "[" TypeId "]" ;
-LSLiType.		TypeDecls		::= "[" LiTypeId "]" ;
-LSTType.		TypeDecls		::= "[" Tuple "]" ;
-LSLiTType.		TypeDecls		::= "[" LiTuple "]" ;
-LSIdType.		TypeDecls		::= "[" Id "]" ;
-MType.			TypeDecls		::= TypeId "->" TypeDecls ;
-MTType.			TypeDecls		::= Tuple "->" TypeDecls ;
-MIdType.		TypeDecls		::= Id "->" TypeDecls ;
-MLiType.		TypeDecls		::= LiTypeId "-o" TypeDecls ;
-MTLiType.		TypeDecls		::= LiTuple "-o" TypeDecls ;
-LMType.			TypeDecls		::= "[" TypeId "]" "->" TypeDecls ;
-LMTType.		TypeDecls		::= "[" Tuple "]" "->" TypeDecls ;
-LMIdType.		TypeDecls		::= "[" Id "]" "->" TypeDecls ;
-LMLitype.		TypeDecls		::= "[" LiTypeId "]" "-o" TypeDecls ;
-LMLiTtype.		TypeDecls		::= "[" LiTuple "]" "-o" TypeDecls ;
+TypeDecl.		TypeDecls		::= NLiTDPat ;
+LiTypeDecl.		TypeDecls		::= LiTDPat ;
+LSTypeDecl.		TypeDecls		::= "[" NLiTDPat "]" ;
+LSLiTypeDecl.	TypeDecls		::= "[" LiTDPat "]" ;
+MTypeDecl.		TypeDecls		::= NLiTDPat "->" TypeDecls ;
+MLiTypeDecl.	TypeDecls		::= LiTDPat "-o" TypeDecls ;
+LMTypeDecl.		TypeDecls		::= "[" NLiTDPat "]" "->" TypeDecls ;
+LMLiTypeDecl.	TypeDecls		::= "[" LiTDPat "]" "-o" TypeDecls ;
 
+-- Non-linear inputs for type declarations of functions.
+NLiTDPat1.		NLiTDPat		::= Id ;
+NLiTDPat2.		NLiTDPat		::= TypeId ;
+NLiTDPat3.		NLiTDPat		::= Tuple ;
+
+-- Linear inputs for type declarations of functions.
+LiTDPat1.		LiTDPat			::= LiTypeId ;
+LiTDPat2.		LiTDPat			::= LiTuple ;
 
 -- All the possible permutations for regular tuples that can be either 
 -- of size 2 or 3, with possible nested tuples. Regular tuples cannot
