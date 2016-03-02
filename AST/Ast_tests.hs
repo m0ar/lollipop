@@ -91,15 +91,13 @@ test1 = interpret ds >>= putStrLn . take 1000 . show where
 
 test2 = interpret ds >>= putStrLn . take 1000 . show where
     cons = "Cons"
-    ds = [main,go,map]
+    ds   = [main,go,map]
     main = DFunc "main" [] body where
         body = EApp (EVar "go") (ELit (ILit 1))
-
-    go = DFunc "go" ["x"] body where
-    x = EVar "x"
-    body = ECon cons [x, EVar "go" `EApp` (x `EAdd` x)]
-
-    map = DFunc "map" [f,"xs0"] body where
+    go   = DFunc "go" ["x"] body where
+        x    = EVar "x"
+        body = ECon cons [x, EVar "go" `EApp` (x `EAdd` x)]
+    map  = DFunc "map" [f,"xs0"] body where
         (f,x,xs) = ("f","x","xs")
         body = ECase (EVar "xs0")
             [(cons,[x,xs],ECon cons [EVar f `EApp` EVar x,
