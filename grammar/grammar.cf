@@ -10,33 +10,18 @@ DImport.		Import 			::= "import" Id ;
 DFunc.			Declaration		::= "function" Id ":" TypeDecls ";" [Def] ;
 terminator nonempty Def ";" ;
 -- Test.       Declaration     ::= "test" LType ";" ;   DOES NOT WORK!!! For testing of TypeLId
-DData1.			Declaration		::= "datatype" Type [Id] ":=" NLDataTypes ;
-DData2.			Declaration		::= "datatype" LType [Id] ":=" LDataTypes ;
+DData1.			Declaration		::= "datatype" Type [Id] ":=" DataTypes ;
 separator Id "" ;
 
 -- The structure of non-linear algebraic data types
-DDTypes1.		NLDataTypes		::= NLDPatterns ";" ;
-DDTypes2.		NLDataTypes		::= NLDPatterns "|" NLDataTypes ;
+DDTypes1.		DataTypes		::= DPatterns ";" ;
+DDTypes2.		DataTypes		::= DPatterns "|" DataTypes ;
 
 -- The structure of non-linear algebraic data types
-DDTypes4.		NLDPatterns		::= Type [Id] ;
-DDTypes5.		NLDPatterns		::= Type [Id] NLDPatterns ;
-DDTypes6.		NLDPatterns		::= "(" Type [Id] ")" NLDPatterns ;
-DDTypes7.		NLDPatterns		::= "(" Type [Id] ")" ;
-
-
--- The structure of linear algebraic data types
-DDTypes8.		LDataTypes		::= LDPatterns ";" ;
-DDTypes9.		LDataTypes		::= NLDPatterns ";" ;
-DDTypes10.		LDataTypes		::= LDPatterns "|" LDataTypes ;
-DDTypes11.		LDataTypes		::= NLDPatterns "|" LDataTypes ;
-
--- The structure of linear algebraic data types
-DDTypes12.		LDPatterns 		::= LType [Id] ;
-DDTypes13.		LDPatterns		::= LType [Id] LDPatterns ;
-DDTypes14.		LDPatterns		::= "(" LType [Id] ")" LDPatterns ;
-DDTypes15.		LDPatterns		::= "(" LType [Id] ")" ;
-
+DDTypes4.		DPatterns		::= Type [Id] ;
+DDTypes5.		DPatterns		::= Type [Id] DPatterns ;
+DDTypes6.		DPatterns		::= "(" Type [Id] ")" DPatterns ;
+DDTypes7.		DPatterns		::= "(" Type [Id] ")" ;
 
 -- Function definition
 DDef.			Def 			::= Id [Arg] ":=" Exp ;
@@ -186,8 +171,8 @@ LiTupleArgs3.		LiTupleArgs	::= TypeId ;
 LiTupleArgs4.		LiTupleArgs	::= LiTypeId ;
 
 -- Types, either regular or linear
-TId.			Type 			::= TypeId ;
-TLId.			LType 			::= LiTypeId ;
+TTypeId.			Type		::= TypeId ;
+TLiTypeId.			Type		::= LiTypeId ;
 
 -- Haskell-style comments for now
 comment "--" ;

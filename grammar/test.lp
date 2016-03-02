@@ -39,8 +39,6 @@ function head : [a] -> a ;
 head (x:_) := x ;
 head []	   := error ;
 
-
-
 -- Test for guards
 function biggerThan : Int -> Int -> Bool ;
 biggerThan a b := True when a > b
