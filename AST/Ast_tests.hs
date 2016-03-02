@@ -70,7 +70,28 @@ testSumList2 = interpret [dmain]
                 p1 = ("Nil", [], eZero)
                 p2 = ("Cons", ["x", "xs"], (EAdd (EVar "x") (EApp (EVar "sum") (EVar "xs"))))
 
-          
+test1 = interpret ds >>= putStrLn . take 1000 . show where
+  ds = [main]
+  main = DFunc "main" [] body
+  body = ECon "Cons" [(ELit (ILit 1)), EVar "main"]
+
+
+test2 = interpret ds >>= putStrLn . take 1000 . show where
+  cons = "Cons"
+  ds = [main,go,map]
+  main = DFunc "main" [] body where
+    body = EApp (EVar "go") (ELit (ILit 1))
+
+  go = DFunc "go" ["x"] body where
+    x = EVar "x"
+    body = ECon cons [x, EVar "go" `EApp` (x `EAdd` x)]
+
+  map = DFunc "map" [f,"xs0"] body where
+    (f,x,xs) = ("f","x","xs")
+    body = ECase (EVar "xs0")
+     [(cons,[x,xs],ECon cons [EVar f `EApp` EVar x,EVar "map" `EApp` EVar f `EApp` EVar xs])
+     ,("Nil",[],ECon "Nil" [])
+     ]
           
     
 -- main-test functions
