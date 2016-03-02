@@ -45,6 +45,12 @@ eNine   = ELit (ILit 9)
 eList1 = ECon "Cons" [eTwo, ECon "Cons" [eOne, ECon "Cons" [eNine, (ECon "Nil" [])]]]
 eList2 = ECon "Cons" [eTwo, ECon "Cons" [eThree, ECon "Cons" [eNine, (ECon "Nil" [])]]]
 
+-- Test Let
+testLetIn = interpret letInMain
+    where
+        let' = ELetIn "x" (EAdd eFive eNine) (EAdd (EVar "x") eThree)
+        letInMain = [DFunc "main" [] let']
+
 -- test ECon
 -- main = Cons 2 Nil
 
