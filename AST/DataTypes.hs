@@ -16,7 +16,8 @@ data Exp = EApp Exp Exp
        | EIf Exp Exp Exp
        | ECon ConID [Exp]
        | ECase Exp [Pattern]
-       | ELet Var Exp Exp  -- let var = exp in exp
+       | ELetIn Var Exp Exp  -- let var = exp in exp
+       | EWhere Var Exp Exp
 
 type Pattern = (ConID, [Var], Exp)
 type Var = String

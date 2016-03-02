@@ -36,7 +36,9 @@ makeBinding (DFunc name vs e) env = (name, eval env (addLams vs e))
 -- evaluation of an expression in an environment
 eval :: Env -> Exp -> Value
 eval env expr = case expr of
-        ELet var e1 e2           -> eval env' e2
+        EWhere var e1 e2         -> eval env' e1
+            where env' = addToEnv env var (eval env e2)
+        ELetIn var e1 e2           -> eval env' e2
             where env' = addToEnv env var (eval env e1)
         ECon cid es              -> VCon cid $ Prelude.map (\e -> eval env e) es
         ECase e ps               -> eval env' e'
