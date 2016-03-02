@@ -57,12 +57,14 @@ DGuards2.		Guards1			::= ":=" Exp "when" Exp Guards1 ;
 DExpGuard.		Guards1			::= ":=" Exp ;
 DEmptyGuard.	Guards1			::= ;
 
--- Pattern matching for lists in function arguments
+-- Pattern matching for lists in function definition arguments
 LPattern1.		ListPattern 	::= "[]" ;
 LPattern2.		ListPattern 	::= "(" Id ":" Pattern ")" ;
-LPattern3.		Pattern 		::= "[]" ;
-LPattern4.		Pattern 		::= Id ;
-LPattern5.		Pattern 		::= Id ":" Pattern ;
+LPattern3.		ListPattern 	::= "(" "_" ":" Pattern ")" ;
+LPattern4.		Pattern 		::= "[]" ;
+LPattern5.		Pattern 		::= Id ;
+LPattern6.		Pattern 		::= Id ":" Pattern ;
+LPattern7.		Pattern 		::= "_" ;
 
 -- A literal can be any predefined token type
 LitInt.			Literal  		::= Integer ;
@@ -91,6 +93,8 @@ EDiv. 			Exp7			::= Exp7 "/" Exp8 ;
 EAdd.			Exp6			::= Exp6 "+" Exp7 ;
 ESub.			Exp6			::= Exp6 "-" Exp7 ;
 EListComp.		Exp5			::= "[" Exp "|" LCPatterns "]" ;
+EList.			Exp5			::= "[" [Exp] "]" ;
+separator Exp "," ;
 ELt. 			Exp5			::= Exp5 "<" Exp6 ;
 EGt.			Exp5			::= Exp5 ">" Exp6 ;
 ELEQ.			Exp5			::= Exp5 "<=" Exp6 ;
@@ -113,22 +117,25 @@ separator nonempty Literal "," ;
 LCPredicate.	Predicate		::= Exp ;
 LCPredicates.	Predicate		::= Exp "," Predicate ;
 
-
 -- The structure of type declarations for functions.
 SType.			TypeDecls		::= TypeId ;
 SLiType.		TypeDecls		::= LiTypeId ;
 TType.			TypeDecls		::= Tuple ;
 LiTType.		TypeDecls		::= LiTuple ;
+IdType.			TypeDecls		::= Id ;
 LSType.			TypeDecls		::= "[" TypeId "]" ;
 LSLiType.		TypeDecls		::= "[" LiTypeId "]" ;
 LSTType.		TypeDecls		::= "[" Tuple "]" ;
 LSLiTType.		TypeDecls		::= "[" LiTuple "]" ;
+LSIdType.		TypeDecls		::= "[" Id "]" ;
 MType.			TypeDecls		::= TypeId "->" TypeDecls ;
 MTType.			TypeDecls		::= Tuple "->" TypeDecls ;
+MIdType.		TypeDecls		::= Id "->" TypeDecls ;
 MLiType.		TypeDecls		::= LiTypeId "-o" TypeDecls ;
 MTLiType.		TypeDecls		::= LiTuple "-o" TypeDecls ;
 LMType.			TypeDecls		::= "[" TypeId "]" "->" TypeDecls ;
 LMTType.		TypeDecls		::= "[" Tuple "]" "->" TypeDecls ;
+LMIdType.		TypeDecls		::= "[" Id "]" "->" TypeDecls ;
 LMLitype.		TypeDecls		::= "[" LiTypeId "]" "-o" TypeDecls ;
 LMLiTtype.		TypeDecls		::= "[" LiTuple "]" "-o" TypeDecls ;
 

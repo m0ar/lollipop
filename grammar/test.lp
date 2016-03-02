@@ -34,6 +34,13 @@ listArgument (x:ys)   := x ;
 listArgument (x:y:ys) := y ;
 listArgument (x:y:[]) := y ;
 
+-- Another test for pattern matching of lists
+function head : [a] -> a ;
+head (x:_) := x ;
+head []	   := error ;
+
+
+
 -- Test for guards
 function biggerThan : Int -> Int -> Bool ;
 biggerThan a b := True when a > b
@@ -51,6 +58,10 @@ nestedTuples (a, (c,d)) := (a, d) ;
 -- Test for tuples with datatypes as arguments
 function typesInTuples : (String, Bool) -> Bool ; 
 typesInTuples ("hello", False) := True ;
+
+-- Test for lists as expressions
+function names : [a] ;
+names := ["Blick", "Flick", "Glick", "Plick", "Quee", "Snick", "Whick"] ;
 
 -- Test for only input sets in list comprehensions
 function testListComp : [Int] ;
