@@ -1,6 +1,8 @@
 module Ast_tests where
 
 import Frame
+import Environment
+import DataTypes
 import Test.QuickCheck
 
 main = do
@@ -92,8 +94,8 @@ test2 = interpret ds >>= putStrLn . take 1000 . show where
      [(cons,[x,xs],ECon cons [EVar f `EApp` EVar x,EVar "map" `EApp` EVar f `EApp` EVar xs])
      ,("Nil",[],ECon "Nil" [])
      ]
-          
-    
+
+
 -- main-test functions
 testFuncs = interpret funcMain
     where funcMain = [
