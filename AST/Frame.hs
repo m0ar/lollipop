@@ -36,6 +36,11 @@ makeBinding (DFunc name vs e) env = (name, eval env (addLams vs e))
 -- evaluation of an expression in an environment
 eval :: Env -> Exp -> Value
 eval env expr = case expr of
+        EGuard [] e              -> eval env e
+        EGuard ((e1,e2):ts) e      -> case (eval env e1) of
+            VBoolean True     -> eval env e2
+            VBoolean False    -> eval env (EGuard ts e)
+            _                 -> error " not boolean statement"
         EWhere var e1 e2         -> eval env' e1
             where env' = addToEnv env var (eval env e2)
         ELetIn var e1 e2           -> eval env' e2
@@ -48,7 +53,7 @@ eval env expr = case expr of
         EIf e1 e2 e3             -> case (eval env e1) of
              VBoolean True     -> eval env e2
              VBoolean False    -> eval env e3
-             _                   -> error " not boolean statement"
+             _                 -> error " not boolean statement"
         EPrint e                 -> VIO (show $ eval env e)
         EApp e1 e2               -> case (eval env e1) of
              VFun v1           -> v1 v2
