@@ -12,15 +12,18 @@ terminator nonempty Def ";" ;
 DData1.			Declaration		::= "datatype" Type [Id] ":=" DataTypes ;
 separator Id "" ;
 
--- The structure of non-linear algebraic data types
-DDTypes1.		DataTypes		::= DPatterns ";" ;
-DDTypes2.		DataTypes		::= DPatterns "|" DataTypes ;
+-- The structure of type declarations for functions.
+STypeDecl.		TypeDecls		::= TDParam ;
+LSTypeDecl.		TypeDecls		::= "[" TDParam "]" ;
+MTypeDecl.		TypeDecls		::= TDParam "->" TypeDecls ;
+MLiTypeDecl.	TypeDecls		::= TDParam "-o" TypeDecls ;
+MLTypeDecl.		TypeDecls		::= "[" TDParam "]" "->" TypeDecls ;
+MLiLTypeDecl.	TypeDecls		::= "[" TDParam "]" "-o" TypeDecls ;
 
--- The structure of non-linear algebraic data types
-DDTypes4.		DPatterns		::= Type [Id] ;
-DDTypes5.		DPatterns		::= Type [Id] DPatterns ;
-DDTypes6.		DPatterns		::= "(" Type [Id] ")" DPatterns ;
-DDTypes7.		DPatterns		::= "(" Type [Id] ")" ;
+-- Type parameters for type declarations
+TypeDeclParam1.	TDParam			::= Id ;
+TypeDeclParam2.	TDParam			::= Type ;
+TypeDeclParam3.	TDParam			::= Tuple ;
 
 -- Function definition
 DDef.			Def 			::= Id [Arg] ":=" Exp ;
@@ -41,14 +44,26 @@ DGuards2.		Guards1			::= ":=" Exp "when" Exp Guards1 ;
 DExpGuard.		Guards1			::= ":=" Exp ;
 DEmptyGuard.	Guards1			::= ;
 
+-- The structure of algebraic data types
+DDTypes1.		DataTypes		::= DPatterns ";" ;
+DDTypes2.		DataTypes		::= DPatterns "|" DataTypes ;
+
+-- The structure of algebraic data types
+DDTypes4.		DPatterns		::= Type [Id] ;
+DDTypes5.		DPatterns		::= Type [Id] DPatterns ;
+DDTypes6.		DPatterns		::= "(" Type [Id] ")" DPatterns ;
+DDTypes7.		DPatterns		::= "(" Type [Id] ")" ;
+
 -- Pattern matching for lists in function definition arguments
 LPattern1.		ListPattern 	::= "[]" ;
-LPattern2.		ListPattern 	::= "(" Id ":" Pattern ")" ;
-LPattern3.		ListPattern 	::= "(" "_" ":" Pattern ")" ;
+LPattern2.		ListPattern 	::= "(" Pat ":" Pattern ")" ;
 LPattern4.		Pattern 		::= "[]" ;
-LPattern5.		Pattern 		::= "_" ;
-LPattern6.		Pattern 		::= Id ;
-LPattern7.		Pattern 		::= Id ":" Pattern ;
+LPattern5.		Pattern 		::= Pat ;
+LPattern7.		Pattern 		::= Pat ":" Pattern ;
+
+-- categroy for every case when an underscore or an identifier is accepted
+Pwild.			Pat				::= "_" ;
+PId.			Pat				::= Id ;
 
 -- A literal can be any predefined token type
 LitInt.			Literal  		::= Integer ;
@@ -56,12 +71,8 @@ LitDouble.		Literal 		::= Double ;
 LitChar.		Literal 		::= Char ;
 LitString.		Literal 		::= String ;
 
-
 -- Tailor-made token type for identifiers
 token Id (lower (letter | digit | '_' | '\'')*) ;
-
--- Tailor-made token type for list comprehensions
---token ListCompId ('_' | (lower (letter | digit | '_' | '\'')*)) ;  -- WHY NOT WORK!??
 
 -- Tailor-made token types for type identifiers
 token TypeId (upper (letter | digit | '_' | '\'')*) ;
@@ -92,7 +103,9 @@ EOR.			Exp2			::= Exp2 "||" Exp3 ;
 EAbs.			Exp1			::= "\\" Id "->" Exp ;
 coercions Exp 10 ;
 
--- Structure of list comprehensions input set(s) and predicates
+-- Structure of list comprehensions input set(s) and predicates.
+-- The elements drawn from the input set are either bound
+-- to an identifier or a wild-card.
 ELCPatterns1.	LCPatterns		::= Pat "<-" Id ;
 ELCPatterns2.	LCPatterns		::= Pat "<-" Id "," LCPatterns ;
 ELCPatterns3.	LCPatterns		::= Pat "<-" Id "," Predicate ;
@@ -102,22 +115,6 @@ ELCPatterns6.	LCPatterns		::= Pat "<-" "[" [Literal] "]" "," Predicate ;
 separator nonempty Literal "," ;
 LCPredicate.	Predicate		::= Exp ;
 LCPredicates.	Predicate		::= Exp "," Predicate ;
-
-Pwild.			Pat				::= "_" ;
-PId.			Pat				::= Id ;
-
--- The structure of type declarations for functions.
-STypeDecl.		TypeDecls		::= TDParam ;
-LSTypeDecl.		TypeDecls		::= "[" TDParam "]" ;
-MTypeDecl.		TypeDecls		::= TDParam "->" TypeDecls ;
-MLiTypeDecl.	TypeDecls		::= TDParam "-o" TypeDecls ;
-MLTypeDecl.		TypeDecls		::= "[" TDParam "]" "->" TypeDecls ;
-MLiLTypeDecl.	TypeDecls		::= "[" TDParam "]" "-o" TypeDecls ;
-
--- Type parameters for type declarations
-TypeDeclParam1.	TDParam			::= Id ;
-TypeDeclParam2.	TDParam			::= Type ;
-TypeDeclParam3.	TDParam			::= Tuple ;
 
 -- Tuples
 TTuple.			Tuple		    ::= "(" [Exp] ")";
