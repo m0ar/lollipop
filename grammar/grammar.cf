@@ -9,7 +9,6 @@ coercions Program 1 ;
 DImport.		Import 			::= "import" Id ;
 DFunc.			Declaration		::= "function" Id ":" TypeDecls ";" [Def] ;
 terminator nonempty Def ";" ;
---Test.			Declaration     ::= "test" LiTypeId ";" ;   --DOES NOT WORK!!! For testing of TypeLId
 DData1.			Declaration		::= "datatype" Type [Id] ":=" DataTypes ;
 separator Id "" ;
 
@@ -68,9 +67,6 @@ token Id (lower (letter | digit | '_' | '\'')*) ;
 token TypeId (upper (letter | digit | '_' | '\'')*) ;
 token LiTypeId ('i' (upper (letter | digit | '_' | '\'')*)) ;  -- WHY NOT WORK!??
 
-Pwild.			Pat				::= "_" ;
-PId.			Pat				::= Id ;
-
 -- Expression types
 EVar.			Exp10			::= Id ;
 EType.			Exp10			::= Type ;
@@ -107,23 +103,21 @@ separator nonempty Literal "," ;
 LCPredicate.	Predicate		::= Exp ;
 LCPredicates.	Predicate		::= Exp "," Predicate ;
 
+Pwild.			Pat				::= "_" ;
+PId.			Pat				::= Id ;
+
 -- The structure of type declarations for functions.
-TypeDecl.		TypeDecls		::= NLiTDPat ;
-LiTypeDecl.		TypeDecls		::= LiTDPat ;
-LSTypeDecl.		TypeDecls		::= "[" NLiTDPat "]" ;
-LSLiTypeDecl.	TypeDecls		::= "[" LiTDPat "]" ;
-MTypeDecl.		TypeDecls		::= NLiTDPat "->" TypeDecls ;
-MLiTypeDecl.	TypeDecls		::= LiTDPat "-o" TypeDecls ;
-LMTypeDecl.		TypeDecls		::= "[" NLiTDPat "]" "->" TypeDecls ;
-LMLiTypeDecl.	TypeDecls		::= "[" LiTDPat "]" "-o" TypeDecls ;
+STypeDecl.		TypeDecls		::= TDParam ;
+LSTypeDecl.		TypeDecls		::= "[" TDParam "]" ;
+MTypeDecl.		TypeDecls		::= TDParam "->" TypeDecls ;
+MLiTypeDecl.	TypeDecls		::= TDParam "-o" TypeDecls ;
+MLTypeDecl.		TypeDecls		::= "[" TDParam "]" "->" TypeDecls ;
+MLiLTypeDecl.	TypeDecls		::= "[" TDParam "]" "-o" TypeDecls ;
 
--- Non-linear inputs for type declarations of functions.
-NLiTDPat1.		NLiTDPat		::= Id ;
-NLiTDPat2.		NLiTDPat		::= TypeId ;
-NLiTDPat3.		NLiTDPat		::= Tuple ;
-
--- Linear inputs for type declarations of functions.
-LiTDPat1.		LiTDPat			::= LiTypeId ;
+-- Type parameters for type declarations
+TypeDeclParam1.	TDParam			::= Id ;
+TypeDeclParam2.	TDParam			::= Type ;
+TypeDeclParam3.	TDParam			::= Tuple ;
 
 -- Tuples
 TTuple.			Tuple		    ::= "(" [Exp] ")";
