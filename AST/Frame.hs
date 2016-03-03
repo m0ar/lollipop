@@ -11,6 +11,7 @@ interpret :: Program -> IO Value
 interpret ds =
     do
         let e = addDecsToEnv e ds
+        -- putStrLn (show e.toList)
         let value = eval e $ (\(DFunc v vs e) -> e)(head ds)
         return value
 
@@ -19,6 +20,7 @@ interpret ds =
 -- Adds declarations to the environment
 addDecsToEnv :: Env -> [Declaration] -> Env
 addDecsToEnv env []     = M.empty
+addDecsToEnv env ((DConstr cid val):ds) = addDecsToEnv (M.insert cid val env) ds
 addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
     where
         e' = addDecsToEnv env ds
@@ -45,8 +47,9 @@ eval env expr = case expr of
             where env' = addToEnv env var (eval env e2)
         ELetIn var e1 e2           -> eval env' e2
             where env' = addToEnv env var (eval env e1)
-        ECon cid []              -> VString cid
-        ECon cid (e:es)             -> eval env e
+        ECon cid                 -> lookupInEnv env cid
+        -- ECon cid []              -> VString cid
+        -- ECon cid (e:es)             -> eval env e
         -- ECon cid es              -> VCon cid $ Prelude.map (\e -> eval env e) es
         ECase e ps               -> eval env' e'
             where (VCon cid vals)  = eval env e

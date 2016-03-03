@@ -6,7 +6,9 @@ type Program = [Declaration]
 -- type Declaration = (Var, Vars, [Definition])
 
 -- data Definition = DFunc Vars Exp
-data Declaration = DFunc Var Vars Exp
+data Declaration = 
+         DFunc Var Vars Exp
+       | DConstr ConID Value
 
 data Exp = EApp Exp Exp
        | EVar Var
@@ -17,7 +19,7 @@ data Exp = EApp Exp Exp
        | EPrint Exp
        | ELam Var Exp
        | EIf Exp Exp Exp
-       | ECon ConID [Exp]
+       | ECon ConID --[Exp]
        | ECase Exp [Pattern]
        | ELetIn Var Exp Exp  -- let var = exp in exp
        | EWhere Var Exp Exp
@@ -55,7 +57,7 @@ instance Show Exp where
         EApp e1 e2         -> ""
         EVar s             -> s
         ELit l             -> show l
-        ECon cid es        -> " " ++ cid ++ " " ++ concat (Prelude.map show es)
+        ECon cid           -> show cid
         EAdd e1 e2         -> show e1 ++ " + " ++ show e2
         EMult e1 e2        -> show e1 ++ " * " ++ show e2
 

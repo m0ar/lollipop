@@ -4,7 +4,7 @@ import Frame
 import Environment
 import DataTypes
 import Test.QuickCheck
-
+{-
 main = do
     a <- testIf
     b <- testHello
@@ -32,7 +32,7 @@ main = do
            ,k
            ,l
            ,m)
-
+-}
 eZero   = ELit (ILit 0)
 eOne    = ELit (ILit 1)
 eTwo    = ELit (ILit 2)
@@ -44,9 +44,10 @@ eSeven  = ELit (ILit 7)
 eEight  = ELit (ILit 8)
 eNine   = ELit (ILit 9)
 
+{-
 eList1 = ECon "Cons" [eTwo, ECon "Cons" [eOne, ECon "Cons" [eNine, (ECon "Nil" [])]]]
 eList2 = ECon "Cons" [eTwo, ECon "Cons" [eThree, ECon "Cons" [eNine, (ECon "Nil" [])]]]
-
+-}
 -- Test Where
 testWhere = interpret whereMain
     where
@@ -58,7 +59,7 @@ testLetIn = interpret letInMain
     where
         let' = ELetIn "x" (EAdd eFive eNine) (EAdd (EVar "x") eThree)
         letInMain = [DFunc "main" [] let']
-
+{-
 -- test ECon
 -- main = Cons 2 Nil
 testCon = interpret conMain
@@ -128,7 +129,7 @@ test2 = interpret ds >>= putStrLn . take 1000 . show where
               EVar "map" `EApp` EVar f `EApp` EVar xs])
             ,("Nil",[],ECon "Nil" [])
             ]
-
+-}
 
 -- main-test functions
 testFuncs = interpret funcMain
@@ -162,3 +163,11 @@ testIf = interpret ifTestMain -- simple if-statement with printout
         ifTest = EIf (ELit (BLit False))
             ((EPrint (ELit (SLit "hi")))) ((EPrint (ELit (SLit "noes"))))
         ifTestMain = [(DFunc "main" [] ifTest)]
+
+        
+testECon2 = interpret [econMain, dcon, dnil]
+    where
+        econMain = DFunc "main" [] (EApp (EApp (ECon "cons") (eFive)) (ECon "nil"))
+        dcon = DConstr "cons" (VFun (\v1 -> VFun (\v2 -> VCon "cons" [v1,v2])))
+        dnil = DConstr "nil" (VCon "nil" [])
+        
