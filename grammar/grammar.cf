@@ -69,6 +69,9 @@ token ListCompId ('_' | (lower (letter | digit | '_' | '\'')*)) ;  -- WHY NOT WO
 token TypeId (upper (letter | digit | '_' | '\'')*) ;
 token LiTypeId ('i' (upper (letter | digit | '_' | '\'')*)) ;  -- WHY NOT WORK!??
 
+Pwild.			Pat				::= "_" ;
+PId.			Pat				::= Id ;
+
 -- Expression types
 EVar.			Exp10			::= Id ;
 EType.			Exp10			::= Type ;
@@ -95,18 +98,12 @@ EAbs.			Exp1			::= "\\" Id "->" Exp ;
 coercions Exp 10 ;
 
 -- Structure of list comprehensions input set(s) and predicates
-ELCPatterns1.	LCPatterns		::= Id "<-" Id ;
-Temp1.			LCPatterns		::= "_" "<-" Id ;   			   -- can remove when ListCompId works
-ELCPatterns2.	LCPatterns		::= Id "<-" Id "," LCPatterns ;
-Temp2.			LCPatterns		::= "_" "<-" Id "," LCPatterns ;   -- can remove when ListCompId works
-ELCPatterns3.	LCPatterns		::= Id "<-" Id "," Predicate ;
-Temp3.			LCPatterns		::= "_" "<-" Id "," Predicate ;    -- can remove when ListCompId works
-ELCPatterns4.	LCPatterns		::= Id "<-" "[" [Literal] "]" ;
-Temp4.			LCPatterns		::= "_" "<-" "[" [Literal] "]" ;   -- can remove when ListCompId works
-ELCPatterns5.	LCPatterns		::= Id "<-" "[" [Literal] "]" "," LCPatterns ;
-Temp5.			LCPatterns		::= "_" "<-" "[" [Literal] "]" "," LCPatterns ;   -- can remove when ListCompId works
-ELCPatterns6.	LCPatterns		::= Id "<-" "[" [Literal] "]" "," Predicate ;
-Temp6.			LCPatterns		::= "_" "<-" "[" [Literal] "]" "," Predicate ;   -- can remove when ListCompId works
+ELCPatterns1.	LCPatterns		::= Pat "<-" Id ;
+ELCPatterns2.	LCPatterns		::= Pat "<-" Id "," LCPatterns ;
+ELCPatterns3.	LCPatterns		::= Pat "<-" Id "," Predicate ;
+ELCPatterns4.	LCPatterns		::= Pat "<-" "[" [Literal] "]" ;
+ELCPatterns5.	LCPatterns		::= Pat "<-" "[" [Literal] "]" "," LCPatterns ;
+ELCPatterns6.	LCPatterns		::= Pat "<-" "[" [Literal] "]" "," Predicate ;
 separator nonempty Literal "," ;
 LCPredicate.	Predicate		::= Exp ;
 LCPredicates.	Predicate		::= Exp "," Predicate ;
@@ -174,6 +171,23 @@ LiTupleArgs1.		LiTupleArgs	::= Id ;
 LiTupleArgs2.		LiTupleArgs	::= Literal ;
 LiTupleArgs3.		LiTupleArgs	::= TypeId ;
 LiTupleArgs4.		LiTupleArgs	::= LiTypeId ;
+
+
+-- Ideas for Tuples:
+--TTuple.		Tuple 		::= "(" [TuplePattern] ")" ;
+--separator nonempty TuplePattern "," ;
+--TPatternDef1.	TuplePattern	::= Id ;
+--TPatternDef2.	TuplePattern	::= Literal ;
+--TPatternDef3.	TuplePattern	::= TypeId ;
+--TPatternDef4.	TuplePattern	::= Tuple ;
+
+
+--TTuple.		Tuple 		::= "(" TuplePatterns ")" ;
+--TPatternDef1.	TuplePatterns	::= TupleArgs ;
+--TPatternDef2.	TuplePatterns	::= Tuple ;
+--TPatternDef3.	TuplePatterns	::= TupleArgs "," TuplePatterns ;
+--TPatternDef4.	TuplePatterns	::= Tuple "," TuplePatterns ;
+
 
 -- Types, either regular or linear
 TTypeId.			Type		::= TypeId ;
