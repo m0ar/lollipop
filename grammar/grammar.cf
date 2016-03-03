@@ -57,6 +57,7 @@ LitDouble.		Literal 		::= Double ;
 LitChar.		Literal 		::= Char ;
 LitString.		Literal 		::= String ;
 
+
 -- Tailor-made token type for identifiers
 token Id (lower (letter | digit | '_' | '\'')*) ;
 
@@ -124,48 +125,12 @@ NLiTDPat3.		NLiTDPat		::= Tuple ;
 -- Linear inputs for type declarations of functions.
 LiTDPat1.		LiTDPat			::= LiTypeId ;
 
--- All the possible permutations for regular tuples that can be either 
--- of size 2 or 3, with possible nested tuples. Regular tuples cannot
--- contain linear elements.
-TupleDef1.			Tuple		::= "(" TupleArgs "," TupleArgs ")" ;
-TupleDef2.			Tuple		::= "(" Tuple "," TupleArgs ")" ;
-TupleDef3.			Tuple		::= "(" TupleArgs "," Tuple ")" ;
-TupleDef4.			Tuple		::= "(" Tuple "," Tuple ")" ;
-TupleDef5.			Tuple		::= "(" TupleArgs "," TupleArgs "," TupleArgs ")" ;
-TupleDef6.			Tuple		::= "(" Tuple "," TupleArgs "," TupleArgs ")" ;
-TupleDef7.			Tuple		::= "(" TupleArgs "," Tuple "," TupleArgs ")" ;
-TupleDef9.			Tuple		::= "(" TupleArgs "," TupleArgs "," Tuple ")" ;
-TupleDef10.			Tuple		::= "(" Tuple "," Tuple "," TupleArgs ")" ;
-TupleDef11.			Tuple		::= "(" TupleArgs "," Tuple "," Tuple ")" ;
-TupleDef12.			Tuple		::= "(" Tuple "," TupleArgs "," Tuple ")" ;
-TupleDef13.			Tuple		::= "(" Tuple "," Tuple "," Tuple ")" ;
-
--- Tuple arguments
-TupleArgs1.			TupleArgs	::= Id ;
-TupleArgs2.			TupleArgs	::= Literal ;
-TupleArgs3.			TupleArgs	::= TypeId ;
-
-
-
--- Ideas for Tuples:
---TTuple.		Tuple 		::= "(" [TuplePattern] ")" ;
---separator nonempty TuplePattern "," ;
---TPatternDef1.	TuplePattern	::= Id ;
---TPatternDef2.	TuplePattern	::= Literal ;
---TPatternDef3.	TuplePattern	::= TypeId ;
---TPatternDef4.	TuplePattern	::= Tuple ;
-
-
---TTuple.		Tuple 		::= "(" TuplePatterns ")" ;
---TPatternDef1.	TuplePatterns	::= TupleArgs ;
---TPatternDef2.	TuplePatterns	::= Tuple ;
---TPatternDef3.	TuplePatterns	::= TupleArgs "," TuplePatterns ;
---TPatternDef4.	TuplePatterns	::= Tuple "," TuplePatterns ;
-
+-- Tuples
+TTuple.			Tuple		    ::= "(" [Exp] ")";
 
 -- Types, either regular or linear
-TTypeId.			Type		::= TypeId ;
-TLiTypeId.			Type		::= LiTypeId ;
+TTypeId.		Type		::= TypeId ;
+TLiTypeId.		Type		::= LiTypeId ;
 
 -- Haskell-style comments for now
 comment "--" ;
