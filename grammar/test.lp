@@ -7,7 +7,7 @@ datatype Either a b := Left a | Right b ;
 datatype Tree a := EmptyTree | Node a (Tree a) (Tree a) ;
 
 
---  test iInt ;    DOES NOT WORK!!! For testing of TypeLId
+--test iInt ;    --DOES NOT WORK!!! For testing of TypeLId
 
 
 -- Test for a function with zero arguments

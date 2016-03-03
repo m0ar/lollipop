@@ -9,7 +9,7 @@ coercions Program 1 ;
 DImport.		Import 			::= "import" Id ;
 DFunc.			Declaration		::= "function" Id ":" TypeDecls ";" [Def] ;
 terminator nonempty Def ";" ;
--- Test.       Declaration     ::= "test" LType ";" ;   DOES NOT WORK!!! For testing of TypeLId
+--Test.			Declaration     ::= "test" LiTypeId ";" ;   --DOES NOT WORK!!! For testing of TypeLId
 DData1.			Declaration		::= "datatype" Type [Id] ":=" DataTypes ;
 separator Id "" ;
 
@@ -35,7 +35,6 @@ DArg2.			Arg 			::= Id ;
 DArg3.			Arg 			::= Type ;
 DArg4.			Arg 			::= ListPattern ;
 DArg5.			Arg 			::= Tuple ;
-DArg6.			Arg 			::= LiTuple ;
 
 -- Structure of guards in function definitions
 DGuards1.		Guards			::= ":=" Exp "when" Exp Guards1 ;
@@ -63,7 +62,7 @@ separator nonempty String "" ;
 token Id (lower (letter | digit | '_' | '\'')*) ;
 
 -- Tailor-made token type for list comprehensions
-token ListCompId ('_' | (lower (letter | digit | '_' | '\'')*)) ;  -- WHY NOT WORK!??
+--token ListCompId ('_' | (lower (letter | digit | '_' | '\'')*)) ;  -- WHY NOT WORK!??
 
 -- Tailor-made token types for type identifiers
 token TypeId (upper (letter | digit | '_' | '\'')*) ;
@@ -125,7 +124,6 @@ NLiTDPat3.		NLiTDPat		::= Tuple ;
 
 -- Linear inputs for type declarations of functions.
 LiTDPat1.		LiTDPat			::= LiTypeId ;
-LiTDPat2.		LiTDPat			::= LiTuple ;
 
 -- All the possible permutations for regular tuples that can be either 
 -- of size 2 or 3, with possible nested tuples. Regular tuples cannot
@@ -143,34 +141,11 @@ TupleDef11.			Tuple		::= "(" TupleArgs "," Tuple "," Tuple ")" ;
 TupleDef12.			Tuple		::= "(" Tuple "," TupleArgs "," Tuple ")" ;
 TupleDef13.			Tuple		::= "(" Tuple "," Tuple "," Tuple ")" ;
 
--- Linear tuples must contain at least one linear element, with
--- the possibility of the other elements being non-linear.
-LiTupleDef1.		LiTuple		::= "(" LiTypeId "," TupleArgs ")" ;
-LiTupleDef2.		LiTuple		::= "(" TupleArgs "," LiTypeId ")" ;
-LiTupleDef3.		LiTuple		::= "(" LiTuple "," TupleArgs ")" ;
-LiTupleDef4.		LiTuple		::= "(" TupleArgs "," LiTuple ")" ;
-LiTupleDef5.		LiTuple		::= "(" LiTuple "," LiTuple ")" ;
-LiTupleDef6.		LiTuple		::= "(" LiTypeId "," TupleArgs "," TupleArgs ")" ;
-LiTupleDef7.		LiTuple		::= "(" TupleArgs "," LiTypeId "," TupleArgs ")" ;
-LiTupleDef8.		LiTuple		::= "(" TupleArgs "," TupleArgs "," LiTypeId ")" ;
-LiTupleDef9.		LiTuple		::= "(" LiTuple "," TupleArgs "," TupleArgs ")" ;
-LiTupleDef10.		LiTuple		::= "(" TupleArgs "," LiTuple "," TupleArgs ")" ;
-LiTupleDef11.		LiTuple		::= "(" TupleArgs "," TupleArgs "," LiTuple ")" ;
-LiTupleDef12.		LiTuple		::= "(" LiTuple "," LiTuple "," TupleArgs ")" ;
-LiTupleDef13.		LiTuple		::= "(" LiTuple "," TupleArgs "," LiTuple ")" ;
-LiTupleDef14.		LiTuple		::= "(" TupleArgs "," LiTuple "," LiTuple ")" ;
-LiTupleDef15.		LiTuple		::= "(" LiTuple "," LiTuple "," LiTuple ")" ;
-
--- Non-linear tuple arguments
+-- Tuple arguments
 TupleArgs1.			TupleArgs	::= Id ;
 TupleArgs2.			TupleArgs	::= Literal ;
 TupleArgs3.			TupleArgs	::= TypeId ;
 
--- Linear tuple arguments
-LiTupleArgs1.		LiTupleArgs	::= Id ;
-LiTupleArgs2.		LiTupleArgs	::= Literal ;
-LiTupleArgs3.		LiTupleArgs	::= TypeId ;
-LiTupleArgs4.		LiTupleArgs	::= LiTypeId ;
 
 
 -- Ideas for Tuples:
