@@ -55,8 +55,7 @@ LPattern7.		Pattern 		::= Id ":" Pattern ;
 LitInt.			Literal  		::= Integer ;
 LitDouble.		Literal 		::= Double ;
 LitChar.		Literal 		::= Char ;
-LitString.		Literal 		::= [String] ;
-separator nonempty String "" ;
+LitString.		Literal 		::= String ;
 
 -- Tailor-made token type for identifiers
 token Id (lower (letter | digit | '_' | '\'')*) ;
