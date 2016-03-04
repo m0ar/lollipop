@@ -73,3 +73,10 @@ testListComp2 := [ x == y | x <- ['a','b','c'], y <- ['c','a','f'], x != 'b', y 
 -- Test of '_' in list comprehensions
 function length' : Int ;
 length' xs := sum [1 | _ <- xs] ;
+
+-- Test of let bindings
+function cylinder : a -> a -> a ;
+cylinder r h := 
+    let sideArea := 2 * pi * r * h ;
+        topArea := pi * r^2 ;
+    in  sideArea + 2 * topArea ; ;

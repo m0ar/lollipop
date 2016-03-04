@@ -121,6 +121,7 @@ separator nonempty Literal "," ;
 LCPredicate.	Predicate		::= Exp ;
 LCPredicates.	Predicate		::= Exp "," Predicate ;
 
+-- Let bindings, this is requires an additional ';' at the very end of the binding.
 ELetBinding1.	LetBinding		::= "let" [LetBinding1] "in" Exp ";" ;
 ELetBinding2.	LetBinding1		::= Id ":=" Exp ;
 terminator nonempty LetBinding1 ";" ;
