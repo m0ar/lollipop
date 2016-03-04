@@ -6,6 +6,11 @@ datatype Special := False | True ;
 datatype Either a b := Left a | Right b ;
 datatype Tree a := EmptyTree | Node a (Tree a) (Tree a) ;
 
+-- Test for type synonyms
+type String := [Char] ;
+type AssocList k v := [(k,v)] ;
+type IntMap v := Map Int v ;
+
 -- Test for a function with zero arguments
 function zeroArguments : Int ;
 zeroArguments := 6 ;
