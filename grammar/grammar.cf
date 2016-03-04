@@ -8,9 +8,7 @@ coercions Program 1 ;
 -- A declaration of function definitions, imports or algebraic data types
 DImport.		Import 			::= "import" Id ;
 DFunc.			Declaration		::= "function" Id ":" TypeDecls ";" [Def] ;
-terminator nonempty Def ";" ;
 DData.			Declaration		::= "datatype" Type [Id] ":=" DataTypes ;
-separator Id "" ;
 DSyn.			Declaration		::= "type" Type [Id] ":=" DataTypes ;
 
 
@@ -30,7 +28,7 @@ TypeDeclParam3.	TDParam			::= Tuple ;
 -- Function definition
 DDef.			Def 			::= Id [Arg] ":=" Exp ;
 DGuardsDef.		Def 			::= Id [Arg] Guards ;
-separator Arg "" ;
+terminator nonempty Def ";" ;
 
 -- Arguments in function definitions can be either a literal,
 -- identifier, type (linear or non-linear), list pattern or a tuple
@@ -39,6 +37,7 @@ DArg2.			Arg 			::= Id ;
 DArg3.			Arg 			::= Type ;
 DArg4.			Arg 			::= ListPattern ;
 DArg5.			Arg 			::= Tuple ;
+separator Arg "" ;
 
 -- Structure of guards in function definitions
 DGuards1.		Guards			::= ":=" Exp "when" Exp Guards1 ;
@@ -78,6 +77,7 @@ LitString.		Literal 		::= String ;
 
 -- Tailor-made token type for identifiers
 token Id (lower (letter | digit | '_' | '\'')*) ;
+separator Id "" ;
 
 -- Tailor-made token types for type identifiers
 token TypeId (upper (letter | digit | '_' | '\'')*) ;
@@ -90,7 +90,6 @@ ELiteral.		Exp10			::= Literal ;
 ETuple.			Exp10			::= Tuple ;
 EListComp.		Exp10			::= "[" Exp "|" LCPatterns "]" ;
 EList.			Exp10			::= List ;
-ELet.			Exp10			::= LetBinding ;
 EApp.			Exp9			::= Exp9 Exp10 ;
 EPow.			Exp8			::= Exp8 "^" Exp9 ;
 EMul.			Exp7			::= Exp7 "*" Exp8 ;
@@ -107,9 +106,10 @@ EAND.			Exp3			::= Exp3 "&&" Exp4 ;
 EOR.			Exp2			::= Exp2 "||" Exp3 ;
 EAbs.			Exp1			::= "\\" Id "->" Exp ;
 coercions Exp 10 ;
+separator Exp "," ;
 
 -- Structure of list comprehensions input set(s) and predicates.
--- The elements drawn from the input set are either bound
+-- The elements drawn from the input set are either bound 
 -- to an identifier or a wild-card.
 ELCPatterns1.	LCPatterns		::= Pat "<-" Id ;
 ELCPatterns2.	LCPatterns		::= Pat "<-" Id "," LCPatterns ;
@@ -128,7 +128,6 @@ terminator nonempty LetBinding1 ";" ;
 
 -- Lists
 ListDef.		List			::= "[" [Exp] "]" ;
-separator Exp "," ;
 
 -- Tuples
 TTuple.			Tuple		    ::= "(" [Exp] ")";
@@ -136,6 +135,7 @@ TTuple.			Tuple		    ::= "(" [Exp] ")";
 -- Types, either regular or linear
 TTypeId.		Type		::= TypeId ;
 TLiTypeId.		Type		::= LiTypeId ;
+
 
 -- Haskell-style comments for now
 comment "--" ;
