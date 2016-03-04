@@ -61,13 +61,14 @@ DDTypes8.		DPatterns		::= Tuple DPatterns ;
 -- Pattern matching for lists in function definition arguments
 LPattern1.		ListPattern 	::= "[]" ;
 LPattern2.		ListPattern 	::= "(" Pat ":" Pattern ")" ;
-LPattern4.		Pattern 		::= "[]" ;
-LPattern5.		Pattern 		::= Pat ;
-LPattern7.		Pattern 		::= Pat ":" Pattern ;
+LPattern3.		Pattern 		::= "[]" ;
+LPattern4.		Pattern 		::= Pat ;
+LPattern5.		Pattern 		::= Pat ":" Pattern ;
 
 -- categroy for every case when an underscore or an identifier is accepted
 Pwild.			Pat				::= "_" ;
 PId.			Pat				::= Id ;
+PLit.           Pat             ::= Literal ;
 
 -- A literal can be any predefined token type
 LitInt.			Literal  		::= Integer ;
