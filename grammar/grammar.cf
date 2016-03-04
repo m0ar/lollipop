@@ -8,9 +8,10 @@ coercions Program 1 ;
 -- A declaration of function definitions, imports or algebraic data types
 DImport.		Import 			::= "import" Id ;
 DFunc.			Declaration		::= "function" Id ":" TypeDecls ";" [Def] ;
-DData.			Declaration		::= "datatype" Type [Id] ":=" DataTypes ;
-DSyn.			Declaration		::= "type" Type [Id] ":=" DataTypes ;
-
+terminator nonempty Def ";" ;
+DData.			Declaration		::= "datatype" Type [Id] ":=" DataTypes Deriving ;
+separator Id "" ;
+DSyn.			Declaration		::= "type" Type [Id] ":=" DataTypes Deriving ;
 
 -- The structure of type declarations for functions.
 STypeDecl.		TypeDecls		::= TDParam ;
@@ -56,6 +57,20 @@ DDTypes5.		DPatterns		::= Tuple ;
 DDTypes6.		DPatterns		::= Type [Id] DPatterns ;
 DDTypes7.		DPatterns		::= List DPatterns ;
 DDTypes8.		DPatterns		::= Tuple DPatterns ;
+
+-- Deriving structure
+DDeriving1.		Deriving		::= ;
+DDeriving2.		Deriving		::= "deriving" "(" [DerArg] ")" ;
+separator nonempty DerArg "," ;
+DDerArg1.		DerArg			::= "Show" ;
+DDerArg2.		DerArg			::= "Read" ;
+DDerArg3.		DerArg			::= "Eq" ;
+DDerArg4.		DerArg			::= "Ord" ;
+DDerArg5.		DerArg			::= "Num" ;
+DDerArg6.		DerArg			::= "Integral" ;
+DDerArg7.		DerArg			::= "Floating" ;
+DDerArg8.		DerArg			::= "Enum" ;
+DDerArg9.		DerArg			::= "Bounded" ;
 
 -- Pattern matching for lists in function definition arguments
 LPattern1.		ListPattern 	::= "[]" ;
