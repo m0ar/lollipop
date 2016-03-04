@@ -165,9 +165,8 @@ testIf = interpret ifTestMain -- simple if-statement with printout
         ifTestMain = [(DFunc "main" [] ifTest)]
 
         
-testECon2 = interpret [econMain, dcon, dnil]
+testECon2 = interpret [econMain]
     where
         econMain = DFunc "main" [] (EApp (EApp (ECon "cons") (eFive)) (ECon "nil"))
-        dcon = DConstr "cons" (VFun (\v1 -> VFun (\v2 -> VCon "cons" [v1,v2])))
-        dnil = DConstr "nil" (VCon "nil" [])
+
         

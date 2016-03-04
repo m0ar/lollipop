@@ -11,8 +11,9 @@ interpret :: Program -> IO Value
 interpret ds =
     do
         let e = addDecsToEnv e ds
-        -- putStrLn (show e.toList)
-        let value = eval e $ (\(DFunc v vs e) -> e)(head ds)
+        let e1 = M.insert "cons" (VFun (\v1 -> VFun (\v2 -> VCon "cons" [v1,v2]))) e
+        let e2 = M.insert "nil" (VCon "nil" []) e1
+        let value = eval e2 $ (\(DFunc v vs e2) -> e2)(head ds)
         return value
 
 -- addDecsToEnv is a helper function to interpret
@@ -20,7 +21,7 @@ interpret ds =
 -- Adds declarations to the environment
 addDecsToEnv :: Env -> [Declaration] -> Env
 addDecsToEnv env []     = M.empty
-addDecsToEnv env ((DConstr cid val):ds) = addDecsToEnv (M.insert cid val env) ds
+-- addDecsToEnv env ((DConstr cid val):ds) = addDecsToEnv (M.insert cid val env) ds
 addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
     where
         e' = addDecsToEnv env ds
