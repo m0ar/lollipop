@@ -8,7 +8,7 @@ type Program = [Declaration]
 -- data Definition = DFunc Vars Exp
 data Declaration = 
          DFunc Var Vars Exp
-       | DConstr ConID Value
+       | DConstr ConstrID Vars --Value
 
 data Exp = EApp Exp Exp
        | EVar Var
@@ -19,13 +19,13 @@ data Exp = EApp Exp Exp
        | EPrint Exp
        | ELam Var Exp
        | EIf Exp Exp Exp
-       | ECon ConID --[Exp]
+       | EConstr ConstrID --[Exp]
        | ECase Exp [Pattern]
        | ELetIn Var Exp Exp  -- let var = exp in exp
        | EWhere Var Exp Exp
        | EGuard [(Exp, Exp)] Exp
 
-type Pattern = (ConID, [Var], Exp)
+type Pattern = (ConstrID, [Var], Exp)
 type Var = String
 
 -- A list of variables to be used in function bodies
@@ -40,10 +40,10 @@ data Value = VInt Int
         | VString String
         | VDouble Double
         | VBoolean Bool
-        | VCon ConID [Value] -- list of values to be used as parameters
+        | VConstr ConstrID [Value] -- list of values to be used as parameters
         | VFun (Value -> Value)
 
-type ConID = String
+type ConstrID = String
 
 data Lit = SLit String
         | ILit Int
@@ -57,7 +57,7 @@ instance Show Exp where
         EApp e1 e2         -> ""
         EVar s             -> s
         ELit l             -> show l
-        ECon cid           -> show cid
+        EConstr cid           -> show cid
         EAdd e1 e2         -> show e1 ++ " + " ++ show e2
         EMult e1 e2        -> show e1 ++ " * " ++ show e2
 
@@ -67,4 +67,4 @@ instance Show Value where
         (VString s) -> s
         (VIO s)     -> s
         (VFun f)    -> "gotta function"
-        (VCon cid vs) -> cid ++ " " ++ concat (Prelude.map show vs)
+        (VConstr cid vs) -> cid ++ " " ++ concat (Prelude.map show vs)

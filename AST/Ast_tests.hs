@@ -45,8 +45,8 @@ eEight  = ELit (ILit 8)
 eNine   = ELit (ILit 9)
 
 {-
-eList1 = ECon "Cons" [eTwo, ECon "Cons" [eOne, ECon "Cons" [eNine, (ECon "Nil" [])]]]
-eList2 = ECon "Cons" [eTwo, ECon "Cons" [eThree, ECon "Cons" [eNine, (ECon "Nil" [])]]]
+eList1 = EConstr "Cons" [eTwo, EConstr "Cons" [eOne, EConstr "Cons" [eNine, (EConstr "Nil" [])]]]
+eList2 = EConstr "Cons" [eTwo, EConstr "Cons" [eThree, EConstr "Cons" [eNine, (EConstr "Nil" [])]]]
 -}
 -- Test Where
 testWhere = interpret whereMain
@@ -60,16 +60,16 @@ testLetIn = interpret letInMain
         let' = ELetIn "x" (EAdd eFive eNine) (EAdd (EVar "x") eThree)
         letInMain = [DFunc "main" [] let']
 {-
--- test ECon
+-- test EConstr
 -- main = Cons 2 Nil
 testCon = interpret conMain
-    where con = ECon "Cons" [eTwo, (ECon "Nil" [])]
+    where con = EConstr "Cons" [eTwo, (EConstr "Nil" [])]
           conMain = [(DFunc "main" [] con)]
 
--- should return "second guard reached"
+-- should return "sEConstrd guard reached"
 testGuard = interpret guardMain
     where ts = [((ELit (BLit False)), (EPrint (ELit (SLit "first case reached")))),
-                ((ELit (BLit True)), (EPrint (ELit (SLit "second case reached"))))]
+                ((ELit (BLit True)), (EPrint (ELit (SLit "sEConstrd case reached"))))]
           guard = EGuard ts (EPrint (ELit (SLit "otherwise case reached")))
           guardMain = [(DFunc "main" [] guard)]
 
@@ -79,8 +79,8 @@ testGuard = interpret guardMain
 --      Cons x xs -> x + 0
 --      Nil       -> 0
 testCase = interpret caseMain
-    where elist    = ECon "Cons" [eTwo, (ECon "Nil" [])]
-          -- elist = ECon "Nil" []
+    where elist    = EConstr "Cons" [eTwo, (EConstr "Nil" [])]
+          -- elist = EConstr "Nil" []
           p1       = ("Cons", ["x", "xs"], (EAdd (EVar "x") eZero))
           p2       = ("Nil", [], eZero)
           ecase    = ECase elist [p1, p2]
@@ -112,7 +112,7 @@ testSumList2 = interpret [dMain, dSum]
 test1 = interpret ds >>= putStrLn . take 1000 . show where
   ds   = [main]
   main = DFunc "main" [] body
-  body = ECon "Cons" [(ELit (ILit 1)), EVar "main"]
+  body = EConstr "Cons" [(ELit (ILit 1)), EVar "main"]
 
 test2 = interpret ds >>= putStrLn . take 1000 . show where
     cons = "Cons"
@@ -121,13 +121,13 @@ test2 = interpret ds >>= putStrLn . take 1000 . show where
         body = EApp (EVar "go") (ELit (ILit 1))
     go   = DFunc "go" ["x"] body where
         x    = EVar "x"
-        body = ECon cons [x, EVar "go" `EApp` (x `EAdd` x)]
+        body = EConstr cons [x, EVar "go" `EApp` (x `EAdd` x)]
     map  = DFunc "map" [f,"xs0"] body where
         (f,x,xs) = ("f","x","xs")
         body = ECase (EVar "xs0")
-            [(cons,[x,xs],ECon cons [EVar f `EApp` EVar x,
+            [(cons,[x,xs],EConstr cons [EVar f `EApp` EVar x,
               EVar "map" `EApp` EVar f `EApp` EVar xs])
-            ,("Nil",[],ECon "Nil" [])
+            ,("Nil",[],EConstr "Nil" [])
             ]
 -}
 
@@ -165,8 +165,8 @@ testIf = interpret ifTestMain -- simple if-statement with printout
         ifTestMain = [(DFunc "main" [] ifTest)]
 
         
-testECon2 = interpret [econMain]
+testEConstr2 = interpret [econstrMain]
     where
-        econMain = DFunc "main" [] (EApp (EApp (ECon "cons") (eFive)) (ECon "nil"))
+        econstrMain = DFunc "main" [] (EApp (EApp (EConstr "cons") (eFive)) (EConstr "nil"))
 
         

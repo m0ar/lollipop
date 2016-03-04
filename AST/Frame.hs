@@ -11,8 +11,8 @@ interpret :: Program -> IO Value
 interpret ds =
     do
         let e = addDecsToEnv e ds
-        let e1 = M.insert "cons" (VFun (\v1 -> VFun (\v2 -> VCon "cons" [v1,v2]))) e
-        let e2 = M.insert "nil" (VCon "nil" []) e1
+        let e1 = M.insert "cons" (VFun (\v1 -> VFun (\v2 -> VConstr "cons" [v1,v2]))) e
+        let e2 = M.insert "nil" (VConstr "nil" []) e1
         let value = eval e2 $ (\(DFunc v vs e2) -> e2)(head ds)
         return value
 
@@ -48,12 +48,12 @@ eval env expr = case expr of
             where env' = addToEnv env var (eval env e2)
         ELetIn var e1 e2           -> eval env' e2
             where env' = addToEnv env var (eval env e1)
-        ECon cid                 -> lookupInEnv env cid
-        -- ECon cid []              -> VString cid
-        -- ECon cid (e:es)             -> eval env e
-        -- ECon cid es              -> VCon cid $ Prelude.map (\e -> eval env e) es
+        EConstr cid                 -> lookupInEnv env cid
+        -- EConstr cid []              -> VString cid
+        -- EConstr cid (e:es)             -> eval env e
+        -- EConstr cid es              -> VConstr cid $ Prelude.map (\e -> eval env e) es
         ECase e ps               -> eval env' e'
-            where (VCon cid vals)  = eval env e
+            where (VConstr cid vals)  = eval env e
                   (cid', vars, e') = findPattern ps cid
                   env'             = addManyToEnv env vars vals
         EIf e1 e2 e3             -> case (eval env e1) of
@@ -78,7 +78,7 @@ evalAddition :: Value -> Value -> Value
 evalAddition (VInt x) (VInt y) = VInt (x+y)
 
 -- finds pattern based on constructor ID
-findPattern :: [Pattern] -> ConID -> Pattern
+findPattern :: [Pattern] -> ConstrID -> Pattern
 findPattern [] _                          = error "could not find pattern"
 findPattern (p@(cid, vs, expr):ps) cid'
                             | cid == cid' = p
