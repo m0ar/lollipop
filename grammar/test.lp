@@ -6,6 +6,11 @@ datatype Special := False | True ;
 datatype Either a b := Left a | Right b ;
 datatype Tree a := EmptyTree | Node a (Tree a) (Tree a) ;
 
+-- Test for deriving
+datatype Point := Point Float Float deriving (Show) ;
+datatype Day := Monday | Tuesday | Wednesday | Thursday | Friday | Saturday | Sunday 
+           deriving (Eq, Ord, Show, Read, Bounded, Enum) ;
+
 -- Test for type synonyms
 type String := [Char] ;
 type AssocList k v := [(k,v)] ;
