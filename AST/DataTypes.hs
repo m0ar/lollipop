@@ -3,23 +3,20 @@ module DataTypes where
 
 type Program = [Declaration]
 
--- type Declaration = (Var, Vars, [Definition])
 
--- data Definition = DFunc Vars Exp
 data Declaration = 
          DFunc Var Vars Exp
-       | DConstr ConstrID Value --Value
+       | DConstr ConstrID Value -- change Value to something else later
 
 data Exp = EApp Exp Exp
        | EVar Var
        | ELit Lit
-       -- | EList List
        | EAdd Exp Exp
        | EMult Exp Exp
        | EPrint Exp
        | ELam Var Exp
        | EIf Exp Exp Exp
-       | EConstr ConstrID --[Exp]
+       | EConstr ConstrID
        | ECase Exp [Pattern]
        | ELetIn Var Exp Exp  -- let var = exp in exp
        | EWhere Var Exp Exp
@@ -31,9 +28,6 @@ type Var = String
 -- A list of variables to be used in function bodies
 type Vars = [Var]
 
--- A list of listerals
--- data List = Cons Lit List | Nil
---     deriving Show
 
 data Value = VInt Int
         | VIO String
@@ -57,7 +51,7 @@ instance Show Exp where
         EApp e1 e2         -> ""
         EVar s             -> s
         ELit l             -> show l
-        EConstr cid           -> show cid
+        EConstr cid        -> show cid
         EAdd e1 e2         -> show e1 ++ " + " ++ show e2
         EMult e1 e2        -> show e1 ++ " * " ++ show e2
 

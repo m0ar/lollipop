@@ -17,8 +17,8 @@ addToEnv env var val = case M.lookup var env of
 -- Used in case and pattern matching
 addManyToEnv :: Env -> [Var] -> [Value] -> Env
 addManyToEnv env   []        []      = env
-addManyToEnv env   []        _       = error "variables and variabels not same length"
-addManyToEnv env   _        []       = error "variables and variabels not same length"
+addManyToEnv env   []        _       = error "variables and values not same length"
+addManyToEnv env   _        []       = error "variables and values not same length"
 addManyToEnv env (v1:vars) (v2:vals) = addManyToEnv (addToEnv env v1 v2) vars vals
 
 lookupInEnv :: Env -> Var -> Value
