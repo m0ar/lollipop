@@ -89,6 +89,7 @@ ELiteral.		Exp10			::= Literal ;
 ETuple.			Exp10			::= Tuple ;
 EListComp.		Exp10			::= "[" Exp "|" LCPatterns "]" ;
 EList.			Exp10			::= List ;
+ELet.			Exp10			::= LetBinding ;
 EApp.			Exp9			::= Exp9 Exp10 ;
 EPow.			Exp8			::= Exp8 "**" Exp9 ;
 EMul.			Exp7			::= Exp7 "*" Exp8 ;
@@ -118,6 +119,10 @@ ELCPatterns6.	LCPatterns		::= Pat "<-" "[" [Literal] "]" "," Predicate ;
 separator nonempty Literal "," ;
 LCPredicate.	Predicate		::= Exp ;
 LCPredicates.	Predicate		::= Exp "," Predicate ;
+
+ELetBinding1.	LetBinding		::= "let" [LetBinding1] "in" Exp ";" ;
+ELetBinding2.	LetBinding1		::= Id ":=" Exp ;
+terminator nonempty LetBinding1 ";" ;
 
 -- Lists
 ListDef.		List			::= "[" [Exp] "]" ;
