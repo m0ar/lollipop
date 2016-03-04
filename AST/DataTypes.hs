@@ -8,7 +8,7 @@ type Program = [Declaration]
 -- data Definition = DFunc Vars Exp
 data Declaration = 
          DFunc Var Vars Exp
-       | DConstr ConstrID Vars --Value
+       | DConstr ConstrID Value --Value
 
 data Exp = EApp Exp Exp
        | EVar Var

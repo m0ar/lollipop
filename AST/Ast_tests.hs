@@ -66,10 +66,10 @@ testCon = interpret conMain
     where con = EConstr "Cons" [eTwo, (EConstr "Nil" [])]
           conMain = [(DFunc "main" [] con)]
 
--- should return "sEConstrd guard reached"
+-- should return "second guard reached"
 testGuard = interpret guardMain
     where ts = [((ELit (BLit False)), (EPrint (ELit (SLit "first case reached")))),
-                ((ELit (BLit True)), (EPrint (ELit (SLit "sEConstrd case reached"))))]
+                ((ELit (BLit True)), (EPrint (ELit (SLit "second case reached"))))]
           guard = EGuard ts (EPrint (ELit (SLit "otherwise case reached")))
           guardMain = [(DFunc "main" [] guard)]
 
@@ -165,8 +165,8 @@ testIf = interpret ifTestMain -- simple if-statement with printout
         ifTestMain = [(DFunc "main" [] ifTest)]
 
         
-testEConstr2 = interpret [econstrMain]
+testECon2 = interpret [econMain,dcon,dnil]
     where
-        econstrMain = DFunc "main" [] (EApp (EApp (EConstr "cons") (eFive)) (EConstr "nil"))
-
-        
+        econMain = DFunc "main" [] (EApp (EApp (EConstr "cons") (eFive)) (EConstr "nil"))
+        dcon = DConstr "cons" (VFun (\v1 -> VFun (\v2 -> VConstr "cons" [v1,v2])))
+        dnil = DConstr "nil" (VConstr "nil" [])
