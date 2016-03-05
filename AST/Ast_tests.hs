@@ -50,9 +50,14 @@ eNine   = ELit (ILit 9)
 -- Cons 5 Nil
 list1 = (EApp (EApp (EConstr "Cons") (eFive)) (EConstr "Nil"))
 -- Cons 5 (Cons 2 Nil)
-list2 = (EApp  
-            (EApp (EConstr "Cons") (eFive)) 
+list2 = (EApp
+            (EApp (EConstr "Cons") (eFive))
             (EApp (EApp (EConstr "Cons") (eTwo)) (EConstr "Nil"))
+        )
+
+list3 = (EApp
+            (EApp (EConstr "Cons") (eFive))
+            (EApp (EApp (EConstr "Cons") (eTwo)) (EApp (EApp (EConstr "Cons") (eThree)) (EConstr "Nil")))
         )
 
 {-
@@ -96,8 +101,9 @@ sum xs = case xs of
     Cons x xs2  ->  x + sum xs2
     Nil         -> 0
 -}
-testSumList = interpret [dMain, dSum, dCon, dNil]
-    where dMain = DFunc "main" [] (EApp (EVar "sum") list2)
+testSumList :: Exp -> IO Value
+testSumList l = interpret [dMain, dSum, dCon, dNil]
+    where dMain = DFunc "main" [] (EApp (EVar "sum") l)
           p1    = ("Cons", ["x", "xs2"], (EAdd (EVar "x")
                   (EApp (EVar "sum") (EVar "xs2"))))
           p2    = ("Nil", [], eZero)
@@ -169,7 +175,7 @@ testIf = interpret ifTestMain -- simple if-statement with printout
             ((EPrint (ELit (SLit "hi")))) ((EPrint (ELit (SLit "noes"))))
         ifTestMain = [(DFunc "main" [] ifTest)]
 
-        
+
 testECon2 = interpret [econMain,dcon,dnil]
     where
         econMain = DFunc "main" [] (EApp (EApp (EConstr "cons") (eFive)) (EConstr "nil"))
