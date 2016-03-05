@@ -4,7 +4,7 @@ module DataTypes where
 type Program = [Declaration]
 
 
-data Declaration = 
+data Declaration =
          DFunc Var Vars Exp
        | DConstr ConstrID Value -- change Value to something else later
 
@@ -22,12 +22,17 @@ data Exp = EApp Exp Exp
        | EWhere Var Exp Exp
        | EGuard [(Exp, Exp)] Exp
 
-type Pattern = (ConstrID, [Var], Exp)
+data Pattern = Constr ConstrID [Var] Exp
+            | Simple (SimpleValue, Exp)
+
 type Var = String
 
 -- A list of variables to be used in function bodies
 type Vars = [Var]
 
+data SimpleValue = SimpleInt Int
+        | SimpleChar Char
+        | SimpleBool Bool
 
 data Value = VInt Int
         | VIO String

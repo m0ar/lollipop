@@ -102,8 +102,8 @@ testGuard = interpret guardMain
 testCase = interpret caseMain
     where elist    = list1
           -- elist = EConstr "Nil" []
-          p1       = ("Cons", ["x", "xs"], (EAdd (EVar "x") eZero))
-          p2       = ("Nil", [], eZero)
+          p1       = (Constr "Cons" ["x", "xs"] (EAdd (EVar "x") eZero))
+          p2       = (Constr "Nil" [] eZero)
           ecase    = ECase elist [p1, p2]
           caseMain = [(DFunc "main" [] ecase), dCon, dNil]
 
@@ -115,9 +115,9 @@ sum xs = case xs of
 testSumList :: Exp -> IO Value
 testSumList l = interpret [dMain, dSum, dCon, dNil]
     where dMain = DFunc "main" [] (EApp (EVar "sum") l)
-          p1    = ("Cons", ["x", "xs2"], (EAdd (EVar "x")
+          p1    = (Constr "Cons" ["x", "xs2"] (EAdd (EVar "x")
                   (EApp (EVar "sum") (EVar "xs2"))))
-          p2    = ("Nil", [], eZero)
+          p2    = (Constr "Nil" [] eZero)
           ecase = ECase (EVar "xs") [p1, p2]
           dSum  = DFunc "sum" ["xs"] ecase
 
@@ -127,8 +127,8 @@ testSumList2 = interpret [dMain, dSum, dCon, dNil]
         dMain = DFunc "main" [] (EApp (EVar "sum") list1)
         dSum  = DFunc "sum" ["xs"] (ECase (EVar "xs") [p1, p2])
             where
-                p1 = ("Nil", [], eZero)
-                p2 = ("Cons", ["x", "xs'"], (EAdd (EVar "x")
+                p1 = (Constr "Nil" [] eZero)
+                p2 = (Constr "Cons" ["x", "xs'"] (EAdd (EVar "x")
                      (EApp (EVar "sum") (EVar "xs'"))))
 {-
 test1 = interpret ds >>= putStrLn . take 1000 . show where

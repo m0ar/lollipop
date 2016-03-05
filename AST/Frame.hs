@@ -49,7 +49,7 @@ eval env expr = case expr of
         EConstr cid                 -> lookupInEnv env cid
         ECase e ps               -> eval env' e'
             where (VConstr cid vals)  = eval env e
-                  (cid', vars, e') = findPattern ps cid
+                  (Constr cid' vars e') = findPattern ps cid
                   env'             = addManyToEnv env vars vals
         EIf e1 e2 e3             -> case (eval env e1) of
              VBoolean True     -> eval env e2
@@ -75,6 +75,6 @@ evalAddition (VInt x) (VInt y) = VInt (x+y)
 -- finds pattern based on constructor ID
 findPattern :: [Pattern] -> ConstrID -> Pattern
 findPattern [] _                          = error "could not find pattern"
-findPattern (p@(cid, vs, expr):ps) cid'
+findPattern (p@(Constr cid vs expr):ps) cid'
                             | cid == cid' = p
                             | otherwise   = findPattern ps cid'
