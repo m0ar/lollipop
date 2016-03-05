@@ -21,9 +21,10 @@ data Exp = EApp Exp Exp
        | ELetIn Var Exp Exp  -- let var = exp in exp
        | EWhere Var Exp Exp
        | EGuard [(Exp, Exp)] Exp
+       | EPattern Vars [Pattern]
 
 data Pattern = Constr ConstrID [Var] Exp
-            | Simple (SimpleValue, Exp)
+            | Simple SimpleValue Exp
 
 type Var = String
 
@@ -37,6 +38,7 @@ data SimpleValue = SimpleInt Int
 data Value = VInt Int
         | VIO String
         | VString String
+        | VChar Char
         | VDouble Double
         | VBoolean Bool
         | VConstr ConstrID [Value] -- list of values to be used as parameters

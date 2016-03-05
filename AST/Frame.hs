@@ -34,9 +34,30 @@ makeBinding (DFunc name vs e) env = (name, eval env (addLams vs e))
         addLams (v:vs) e = ELam v (addLams vs e)
 
 
+assJuice :: Int -> String
+assJuice 3 = "hej" --   p1
+assJuice 4 = "hallo" -- p2
+
+-- EPattern ["x"] [p1, p2]
+
+
+equals :: Value -> Value -> Bool
+equals (VInt x) (VInt y) = x == y
+
+fromSimple :: SimpleValue -> Value
+fromSimple (SimpleInt x)  = VInt x
+fromSimple (SimpleChar x) = VChar x
+fromSimple (SimpleBool x) = VBoolean x
+
 -- evaluation of an expression in an environment
 eval :: Env -> Exp -> Value
 eval env expr = case expr of
+        EPattern vars (p:ps)     -> case p of
+            --Constr cid vars e -> eval env (ECase )
+            Simple sVal e     -> if (equals val (fromSimple sVal))
+                                    then (eval env e)
+                                    else (eval env (EPattern vars ps))
+                where val = lookupInEnv env (head vars)
         EGuard [] e              -> eval env e
         EGuard ((e1,e2):ts) e    -> case (eval env e1) of
             VBoolean True     -> eval env e2
@@ -48,7 +69,7 @@ eval env expr = case expr of
             where env' = addToEnv env var (eval env e1)
         EConstr cid                 -> lookupInEnv env cid
         ECase e ps               -> eval env' e'
-            where (VConstr cid vals)  = eval env e
+            where (VConstr cid vals)    = eval env e
                   (Constr cid' vars e') = findPattern ps cid
                   env'             = addManyToEnv env vars vals
         EIf e1 e2 e3             -> case (eval env e1) of
