@@ -47,17 +47,28 @@ eSeven  = ELit (ILit 7)
 eEight  = ELit (ILit 8)
 eNine   = ELit (ILit 9)
 
--- Cons 5 Nil
+-- Cons 5 Nil -> [5]
 list1 = (EApp (EApp (EConstr "Cons") (eFive)) (EConstr "Nil"))
--- Cons 5 (Cons 2 Nil)
+
+-- Cons 5 (Cons 2 Nil) -> [5,2]
 list2 = (EApp
             (EApp (EConstr "Cons") (eFive))
             (EApp (EApp (EConstr "Cons") (eTwo)) (EConstr "Nil"))
         )
 
+-- Cons 5 (Cons 2 (Cons 3 Nil)) -> [5,2,3]
 list3 = (EApp
             (EApp (EConstr "Cons") (eFive))
-            (EApp (EApp (EConstr "Cons") (eTwo)) (EApp (EApp (EConstr "Cons") (eThree)) (EConstr "Nil")))
+            (EApp (EApp (EConstr "Cons") (eTwo))
+            (EApp (EApp (EConstr "Cons") (eThree)) (EConstr "Nil")))
+        )
+
+-- Cons 5 (Cons 2 (Cons 3 (Cons 1))) -> [5,2,3,1]
+list4 = (EApp
+            (EApp (EConstr "Cons") (eFive))
+            (EApp (EApp (EConstr "Cons") (eTwo))
+            (EApp (EApp (EConstr "Cons") (eThree))
+            (EApp (EApp (EConstr "Cons") (eOne)) (EConstr "Nil"))))
         )
 
 {-
