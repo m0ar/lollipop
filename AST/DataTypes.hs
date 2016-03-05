@@ -3,45 +3,48 @@ module DataTypes where
 
 type Program = [Declaration]
 
--- type Declaration = (Var, Vars, [Definition])
 
--- data Definition = DFunc Vars Exp
-data Declaration = DFunc Var Vars Exp
+data Declaration =
+         DFunc Var Vars Exp
+       | DConstr ConstrID Value -- change Value to something else later
 
 data Exp = EApp Exp Exp
        | EVar Var
        | ELit Lit
-       -- | EList List
        | EAdd Exp Exp
        | EMult Exp Exp
        | EPrint Exp
        | ELam Var Exp
        | EIf Exp Exp Exp
-       | ECon ConID [Exp]
+       | EConstr ConstrID
        | ECase Exp [Pattern]
        | ELetIn Var Exp Exp  -- let var = exp in exp
        | EWhere Var Exp Exp
        | EGuard [(Exp, Exp)] Exp
+       | EPattern Vars [Pattern]
 
-type Pattern = (ConID, [Var], Exp)
+data Pattern = Constr ConstrID [Var] Exp
+            | Simple SimpleValue Exp
+
 type Var = String
 
 -- A list of variables to be used in function bodies
 type Vars = [Var]
 
--- A list of listerals
--- data List = Cons Lit List | Nil
---     deriving Show
+data SimpleValue = SimpleInt Int
+        | SimpleChar Char
+        | SimpleBool Bool
 
 data Value = VInt Int
         | VIO String
         | VString String
+        | VChar Char
         | VDouble Double
         | VBoolean Bool
-        | VCon ConID [Value] -- list of values to be used as parameters
+        | VConstr ConstrID [Value] -- list of values to be used as parameters
         | VFun (Value -> Value)
 
-type ConID = String
+type ConstrID = String
 
 data Lit = SLit String
         | ILit Int
@@ -55,7 +58,7 @@ instance Show Exp where
         EApp e1 e2         -> ""
         EVar s             -> s
         ELit l             -> show l
-        ECon cid es        -> " " ++ cid ++ " " ++ concat (Prelude.map show es)
+        EConstr cid        -> show cid
         EAdd e1 e2         -> show e1 ++ " + " ++ show e2
         EMult e1 e2        -> show e1 ++ " * " ++ show e2
 
@@ -65,4 +68,4 @@ instance Show Value where
         (VString s) -> s
         (VIO s)     -> s
         (VFun f)    -> "gotta function"
-        (VCon cid vs) -> cid ++ " " ++ concat (Prelude.map show vs)
+        (VConstr cid vs) -> cid ++ " " ++ concat (Prelude.map show vs)

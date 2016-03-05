@@ -27,35 +27,55 @@ addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
 
 -- Makes bindings from declarations to environment
 makeBinding :: Declaration -> Env -> (Var, Value)
+makeBinding (DConstr id val) env = (id, val)
 makeBinding (DFunc name vs e) env = (name, eval env (addLams vs e))
     where
         addLams [] e     = e
         addLams (v:vs) e = ELam v (addLams vs e)
 
 
+assJuice :: Int -> String
+assJuice 3 = "hej" --   p1
+assJuice 4 = "hallo" -- p2
+
+-- EPattern ["x"] [p1, p2]
+
+
+equals :: Value -> Value -> Bool
+equals (VInt x) (VInt y) = x == y
+
+fromSimple :: SimpleValue -> Value
+fromSimple (SimpleInt x)  = VInt x
+fromSimple (SimpleChar x) = VChar x
+fromSimple (SimpleBool x) = VBoolean x
+
 -- evaluation of an expression in an environment
 eval :: Env -> Exp -> Value
 eval env expr = case expr of
+        EPattern vars (p:ps)     -> case p of
+            --Constr cid vars e -> eval env (ECase )
+            Simple sVal e     -> if (equals val (fromSimple sVal))
+                                    then (eval env e)
+                                    else (eval env (EPattern vars ps))
+                where val = lookupInEnv env (head vars)
         EGuard [] e              -> eval env e
-        EGuard ((e1,e2):ts) e      -> case (eval env e1) of
+        EGuard ((e1,e2):ts) e    -> case (eval env e1) of
             VBoolean True     -> eval env e2
             VBoolean False    -> eval env (EGuard ts e)
             _                 -> error " not boolean statement"
         EWhere var e1 e2         -> eval env' e1
             where env' = addToEnv env var (eval env e2)
-        ELetIn var e1 e2           -> eval env' e2
+        ELetIn var e1 e2         -> eval env' e2
             where env' = addToEnv env var (eval env e1)
-        ECon cid []              -> VString cid
-        ECon cid (e:es)             -> eval env e
-        -- ECon cid es              -> VCon cid $ Prelude.map (\e -> eval env e) es
+        EConstr cid                 -> lookupInEnv env cid
         ECase e ps               -> eval env' e'
-            where (VCon cid vals)  = eval env e
-                  (cid', vars, e') = findPattern ps cid
+            where (VConstr cid vals)    = eval env e
+                  (Constr cid' vars e') = findPattern ps cid
                   env'             = addManyToEnv env vars vals
         EIf e1 e2 e3             -> case (eval env e1) of
              VBoolean True     -> eval env e2
              VBoolean False    -> eval env e3
-             _                 -> error " not boolean statement"
+             _                 -> error "not boolean statement"
         EPrint e                 -> VIO (show $ eval env e)
         EApp e1 e2               -> case (eval env e1) of
              VFun v1           -> v1 v2
@@ -74,8 +94,8 @@ evalAddition :: Value -> Value -> Value
 evalAddition (VInt x) (VInt y) = VInt (x+y)
 
 -- finds pattern based on constructor ID
-findPattern :: [Pattern] -> ConID -> Pattern
+findPattern :: [Pattern] -> ConstrID -> Pattern
 findPattern [] _                          = error "could not find pattern"
-findPattern (p@(cid, vs, expr):ps) cid'
+findPattern (p@(Constr cid vs expr):ps) cid'
                             | cid == cid' = p
                             | otherwise   = findPattern ps cid'
