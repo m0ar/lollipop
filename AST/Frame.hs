@@ -27,18 +27,15 @@ addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
 
 -- Makes bindings from declarations to environment
 makeBinding :: Declaration -> Env -> (Var, Value)
-makeBinding (DConstr id val) env = (id, val)
-makeBinding (DFunc name vs e) env = (name, eval env (addLams vs e))
-    where
-        addLams [] e     = e
-        addLams (v:vs) e = ELam v (addLams vs e)
+makeBinding (DConstr id val) env  = (id, val)
+makeBinding (DFunc name vs e) env = case e of
+    EPattern e' ps -> makeBinding (DFunc name vs ecase) env
+        where ecase = ECase e' ps
+    _           -> (name, eval env (addLams vs e))
+        where
+            addLams [] e     = e
+            addLams (v:vs) e = ELam v (addLams vs e)
 
-
-assJuice :: Int -> String
-assJuice 3 = "hej" --   p1
-assJuice 4 = "hallo" -- p2
-
--- EPattern ["x"] [p1, p2]
 
 
 equals :: Value -> Value -> Bool
@@ -52,12 +49,6 @@ fromSimple (SimpleBool x) = VBoolean x
 -- evaluation of an expression in an environment
 eval :: Env -> Exp -> Value
 eval env expr = case expr of
-        EPattern vars (p:ps)     -> case p of
-            --Constr cid vars e -> eval env (ECase )
-            Simple sVal e     -> if (equals val (fromSimple sVal))
-                                    then (eval env e)
-                                    else (eval env (EPattern vars ps))
-                where val = lookupInEnv env (head vars)
         EGuard [] e              -> eval env e
         EGuard ((e1,e2):ts) e    -> case (eval env e1) of
             VBoolean True     -> eval env e2
