@@ -50,6 +50,7 @@ data Lit = SLit String
         | ILit Int
         | DLit Double
         | BLit Bool
+        | CLit Char
     deriving Show
 
 -- Show functions --
