@@ -49,10 +49,10 @@ fromSimple (SimpleBool x) = VBoolean x
 -- evaluation of an expression in an environment
 eval :: Env -> Exp -> Value
 eval env expr = case expr of
-        EGuard [] e              -> eval env e
-        EGuard ((e1,e2):ts) e    -> case (eval env e1) of
+        EGuard ((_, e2):[])      -> eval env e2
+        EGuard ((e1,e2):ts)      -> case (eval env e1) of
             VBoolean True     -> eval env e2
-            VBoolean False    -> eval env (EGuard ts e)
+            VBoolean False    -> eval env $ EGuard ts
             _                 -> error " not boolean statement"
         EWhere var e1 e2         -> eval env' e1
             where env' = addToEnv env var (eval env e2)

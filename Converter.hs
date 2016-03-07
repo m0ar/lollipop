@@ -37,3 +37,9 @@ cExp (A.ELiteral lit)     = (D.ELit $ cLit lit)
 cExp (A.EApp e1 e2)       = (D.EApp (cExp e1) (cExp e2))
 cExp (A.EAdd e1 e2)       = (D.EAdd (cExp e1) (cExp e2))
 cExp (A.EAbs (Id name) e) = (D.ELam name (cExp e))
+
+cGuard :: A.Guards -> D.Exp
+cGuard (A.DGuards1 e1 e2 gs) = D.EGuard (getGuards gs)
+    where getGuards (A.DGuards1 e1' e2' gs') = (((cExp e1'), (cExp e2')):(getGuards gs'))
+          getGuards (A.DGuards2 e1' e2' gs') = (((cExp e1'), (cExp e2')):(getGuards gs'))
+          getGuards (A.DExpGuard e)          = (((D.EVar "True"),(cExp e)):[])
