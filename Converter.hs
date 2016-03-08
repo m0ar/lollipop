@@ -13,13 +13,22 @@ import qualified AbsGrammar as A
 main :: IO ()
 main = putStrLn "Velkommen til oversetteren fra BNFC AST til lollipop AST!"
 
+-- converts any declaration to a case
 cDeclaration :: A.Declaration -> D.Declaration
-cDeclaration (A.DFunc (A.Id name) _ defs) = (D.DFunc name vars expr)
-    where expr = convertDefs defs
-          vars = getArgs defs
+ccDeclaration (A.DFunc (A.Id name) ds defs) = (D.DFunc name vars eCase)
+    where eCase = (ECase _ vars)
+          vars = take (length ds)-1 vs -- create variables of the input parameters
 
-convertDefs :: [A.Def] -> D.Exp
-convertDefs = undefined
+vs = ["a","b","c","d","e","f","g"]
+
+defToPat :: A.Def -> D.Pattern
+defToPat DDef (Id cid) args e = (Constr cid vars (cExp e))
+defToPat DGuardsDef (Id cid) args guards = undefined
+    where vars args = map argToVar args
+
+argToVar :: A.Arg -> D.Var
+argToVar DArg2 (Id name) = name
+
 
 getArgs :: [A.Def] -> D.Vars
 getArgs = undefined
