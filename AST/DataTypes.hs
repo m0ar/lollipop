@@ -21,7 +21,6 @@ data Exp = EApp Exp Exp
        | ELetIn Var Exp Exp  -- let var = exp in exp
        | EWhere Var Exp Exp
        | EGuard [(Exp, Exp)] Exp
-       | EPattern Exp [Pattern]
 
 data Pattern = Constr ConstrID [Var] Exp
             | Simple SimpleValue Exp

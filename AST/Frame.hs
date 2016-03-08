@@ -28,10 +28,7 @@ addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
 -- Makes bindings from declarations to environment
 makeBinding :: Declaration -> Env -> (Var, Value)
 makeBinding (DConstr id val) env  = (id, val)
-makeBinding (DFunc name vs e) env = case e of
-    EPattern e' ps -> makeBinding (DFunc name vs ecase) env
-        where ecase = ECase e' ps
-    _           -> (name, eval env (addLams vs e))
+makeBinding (DFunc name vs e) env = (name, eval env (addLams vs e))
         where
             addLams [] e     = e
             addLams (v:vs) e = ELam v (addLams vs e)
