@@ -11,7 +11,7 @@ import AbsGrammar
 import qualified AbsGrammar as A
 
 main :: IO ()
-main = putStrLn "Velkommen til oversetteren fra BNFC AST til lollipop AST!"
+main = putStrLn "Vilkomen til oversetteren fra BNFC AST til lollipop AST!"
 
 -- converts any declaration to a case
 cDeclaration :: A.Declaration -> D.Declaration
@@ -48,7 +48,8 @@ cExp (A.EAdd e1 e2)       = (D.EAdd (cExp e1) (cExp e2))
 cExp (A.EAbs (Id name) e) = (D.ELam name (cExp e))
 
 cGuard :: A.Guards -> D.Exp
-cGuard (A.DGuards1 e1 e2 gs) = D.EGuard (getGuards gs)
-    where getGuards (A.DGuards1 e1' e2' gs') = (((cExp e1'), (cExp e2')):(getGuards gs'))
-          getGuards (A.DGuards2 e1' e2' gs') = (((cExp e1'), (cExp e2')):(getGuards gs'))
-          getGuards (A.DExpGuard e)          = (((D.EVar "True"),(cExp e)):[])
+cGuard (A.DGuards1 e1 e2 gs) = D.ECase (eExp e2) [(Constr "True" [] (cExp e1)),
+                                                  (Constr "False" [] (cGuard gs))]
+
+
+-- todo: Convert if-statement to case

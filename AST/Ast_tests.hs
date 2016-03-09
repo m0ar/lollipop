@@ -88,12 +88,12 @@ testLetIn = interpret letInMain
         letInMain = [DFunc "main" [] let']
 
 -- should return "second guard reached"
-testGuard = interpret guardMain
+{-- testGuard = interpret guardMain
     where ts = [((ELit (BLit False)), (EPrint (ELit (SLit "first case reached")))),
                 ((ELit (BLit True)), (EPrint (ELit (SLit "second case reached")))),
                 ((ELit (BLit False)), (EPrint (ELit (SLit "Otherwise case reached"))))]
           guard = EGuard ts
-          guardMain = [(DFunc "main" [] guard)]
+          guardMain = [(DFunc "main" [] guard)] --}
 
 
 -- test ECase
