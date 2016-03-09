@@ -13,6 +13,11 @@ import qualified AbsGrammar as A
 main :: IO ()
 main = putStrLn "Vilkomen til oversetteren fra BNFC AST til lollipop AST!"
 
+cProgram :: A.Program -> D.Program
+-- cProgram (PImports i p)
+cProgram (PFuncs d p)   = ((cDeclaration d):(cProgram p))
+cProgram (PLast d)      = ((cDeclaration d):[])
+
 -- converts any declaration to a case
 cDeclaration :: A.Declaration -> D.Declaration
 ccDeclaration (A.DFunc (A.Id name) ds defs) = (D.DFunc name vars eCase)
