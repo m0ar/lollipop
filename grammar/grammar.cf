@@ -127,6 +127,8 @@ coercions Exp 10 ;
 separator Exp "," ;
 
 PatCase.        Case           ::= Pat "->" Exp ;
+PatList.        Case           ::= ListPattern "->" Exp ;
+PatTuple.       Case           ::= Tuple "->" Exp ;
 separator Case ";" ;
 
 -- Structure of list comprehensions input set(s) and predicates.
