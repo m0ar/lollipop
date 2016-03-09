@@ -28,10 +28,7 @@ addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
 -- Makes bindings from declarations to environment
 makeBinding :: Declaration -> Env -> (Var, Value)
 makeBinding (DConstr id val) env  = (id, val)
-makeBinding (DFunc name vs e) env = case e of
-    EPattern e' ps -> makeBinding (DFunc name vs ecase) env
-        where ecase = ECase e' ps
-    _           -> (name, eval env (addLams vs e))
+makeBinding (DFunc name vs e) env = (name, eval env (addLams vs e))
         where
             addLams [] e     = e
             addLams (v:vs) e = ELam v (addLams vs e)
@@ -49,11 +46,6 @@ fromSimple (SimpleBool x) = VBoolean x
 -- evaluation of an expression in an environment
 eval :: Env -> Exp -> Value
 eval env expr = case expr of
-        EGuard ((_, e2):[])      -> eval env e2
-        EGuard ((e1,e2):ts)      -> case (eval env e1) of
-            VBoolean True     -> eval env e2
-            VBoolean False    -> eval env $ EGuard ts
-            _                 -> error " not boolean statement"
         EWhere var e1 e2         -> eval env' e1
             where env' = addToEnv env var (eval env e2)
         ELetIn var e1 e2         -> eval env' e2
