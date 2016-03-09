@@ -50,6 +50,9 @@ cExp (A.EAbs (Id name) e) = (D.ELam name (cExp e))
 cGuard :: A.Guards -> D.Exp
 cGuard (A.DGuards1 e1 e2 gs) = D.ECase (eExp e2) [(Constr "True" [] (cExp e1)),
                                                   (Constr "False" [] (cGuard gs))]
+cGuard (A.DGuards2 e1 e2 gs) = D.ECase (eExp e2) [(Constr "True" [] (cExp e1)),
+                                                  (Constr "False" [] (cGuard gs))]
+cGuard (A.DExpGuard e)       = (cExp e)
 
 
 -- todo: Convert if-statement to case
