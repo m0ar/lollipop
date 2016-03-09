@@ -22,7 +22,8 @@ data Exp = EApp Exp Exp
        | EWhere Var Exp Exp
 
 data Pattern = Constr ConstrID [Var] Exp
-            | Simple SimpleValue Exp
+            | Simple Lit Exp
+            | Wild Exp
             | Variable Vars
 
 type Var = String

@@ -58,10 +58,24 @@ cLit (A.LitString x)   = D.SLit x
 
 cExp :: A.Exp -> D.Exp
 cExp (A.EVar (A.Id name))   = (D.EVar name)
-cExp (A.ELiteral lit)     = (D.ELit $ cLit lit)
+cExp (A.ELiteral lit)       = (D.ELit $ cLit lit)
 -- cExp (A.ELet vID)       = (D.ELetIn )
-cExp (A.EApp e1 e2)       = (D.EApp (cExp e1) (cExp e2))
+cExp (A.EApp e1 e2)         = (D.EApp (cExp e1) (cExp e2))
 cExp (A.EAbs (A.Id name) e) = (D.ELam name (cExp e))
+cExp (A.ECase e cs)         = (D.ECase (cExp e) (cCase cs))
+cExp (EIf e1 e2 e3)         = (D.ECase (cExp e1) [(D.Constr "True" [] (cExp e2)),
+                                                  (D.Constr "False" [] (cExp e3))]) 
+
+cCase :: A.Cases -> [D.Pattern]
+cCase ECases3             = []
+cCase (ECases1 cArg e cs) = cCase (ECases2 cArg e cs)
+cCase (ECases2 cArg e cs) = case cArg of
+    (CCArg1 p)  -> case p of
+        A.Pwild       -> ((D.Wild (cExp e)):[])
+        (A.PLit lit)  -> ((D.Simple (cLit lit) (cExp e)):(cCase cs))
+    -- (CCArg2 lp) ->
+
+
 
 cGuard :: A.Guards -> D.Exp
 cGuard (A.DGuards1 e1 e2 gs) = D.ECase (cExp e2) [(D.Constr "True" [] (cExp e1)),
