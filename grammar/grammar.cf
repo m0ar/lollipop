@@ -100,6 +100,8 @@ token LiTypeId ('i' (upper (letter | digit | '_' | '\'')*)) ;  -- WHY NOT WORK!?
 EVar.			Exp10			::= Id ;
 EType.			Exp10			::= Type ;
 ELiteral.		Exp10			::= Literal ;
+ETrue.          Exp10           ::= "true" ;
+EFalse.         Exp10           ::= "false" ;
 ETuple.			Exp10			::= Tuple ;
 EListComp.		Exp10			::= "[" Exp "|" LCPatterns "]" ;
 EList.			Exp10			::= List ;
@@ -118,9 +120,14 @@ EEQ.			Exp4			::= Exp4 "==" Exp5 ;
 ENEQ.			Exp4			::= Exp4 "!=" Exp5 ;
 EAND.			Exp3			::= Exp3 "&&" Exp4 ;
 EOR.			Exp2			::= Exp2 "||" Exp3 ;
+ECase.          Exp1            ::= "case" Exp "of" [Case] ;
+EIf.            Exp1            ::= "if" Exp2 "then" Exp2 "else" Exp ;
 EAbs.			Exp1			::= "\\" Id "->" Exp ;
 coercions Exp 10 ;
 separator Exp "," ;
+
+PatCase.        Case           ::= Pat "->" Exp ;
+separator Case ";" ;
 
 -- Structure of list comprehensions input set(s) and predicates.
 -- The elements drawn from the input set are either bound 
@@ -141,7 +148,7 @@ ELetBinding2.	LetBinding1		::= Id ":=" Exp ;
 terminator nonempty LetBinding1 ";" ;
 
 -- Lists
-ListDef.		List			::= "[" [Exp] "]" ;
+ListDefn.		List			::= "[" [Exp] "]" ;
 
 -- Tuples
 TTuple.			Tuple		    ::= "(" [Exp] ")";
