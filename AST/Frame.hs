@@ -18,12 +18,16 @@ interpret ds =
 
 -- Adds declarations to the environment
 addDecsToEnv :: Env -> [Declaration] -> Env
-addDecsToEnv env []     = M.empty
+addDecsToEnv env []     = M.insert "print" (VFun (\(VString s) -> (VIO s))) M.empty
 addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
     where
         e' = addDecsToEnv env ds
 
 -- makeBinding is a helper function to addDecsToEnv
+
+testHello = interpret helloMain -- hello world
+    where
+        helloMain = [(DFunc "main" [] (EConstr "print"))]
 
 -- Makes bindings from declarations to environment
 makeBinding :: Declaration -> Env -> (Var, Value)
@@ -45,6 +49,8 @@ eval env expr = case expr of
             where env' = addToEnv env var (eval env e2)
         ELetIn var e1 e2         -> eval env' e2
             where env' = addToEnv env var (eval env e1)
+        EConstr "print"          -> f (VString "Hello")
+            where VFun f = lookupInEnv env "print"
         EConstr cid              -> lookupInEnv env cid
         ECase e ps               -> eval env' e'
             where (VConstr cid vals)    = eval env e
