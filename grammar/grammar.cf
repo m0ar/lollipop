@@ -8,8 +8,8 @@ coercions Program 1 ;
 -- A declaration of function definitions, imports or algebraic data types
 DImport.		Import 			::= "import" Id ;
 DFunc.			Declaration		::= "function" Id ":" TypeDecls ";" [Def] ;
-DData.			Declaration		::= "datatype" TypeId [Id] ":=" DataTypes Deriving ;
-DSyn.			Declaration		::= "type" TypeId [Id] ":=" TypeSyn Deriving ;
+DData.			Declaration		::= "datatype" TypeIdent [PolyTypeId] ":=" DataTypes Deriving ;
+DSyn.			Declaration		::= "type" TypeIdent [PolyTypeId] ":=" TypeSyn Deriving ;
 
 -- The structure of type declarations for functions.
 STypeDecl.		TypeDecls		::= TDParam ;
@@ -29,7 +29,7 @@ terminator nonempty Def ";" ;
 -- identifier, type (linear or non-linear), list pattern or a tuple
 DArg1.			Arg 			::= Literal ;
 DArg2.			Arg 			::= Id ;
-DArg3.			Arg 			::= TypeId ; -- Should be type constructors, right?
+DArg3.			Arg 			::= TypeIdent ; -- Should be type constructors, right?
 DArg4.			Arg 			::= ListPattern ;
 DArg5.			Arg 			::= TuplePattern ;
 separator Arg "" ;
@@ -53,8 +53,8 @@ DDTypes2.		DataTypes		::= DPatterns "|" DataTypes ;
 
 -- The structure of algebraic data types
 DDTypes3.       DPatterns       ::= TypeId DPatterns ;
-DDTypes4.       DPatterns       ::= TypeId Id [Id] DPatterns ;
-DDTypes5.       DPatterns       ::= "(" TypeId Id [Id] ")" DPatterns ;
+DDTypes4.       DPatterns       ::= TypeId PolyTypeId [PolyTypeId] DPatterns ;
+DDTypes5.       DPatterns       ::= "(" TypeId PolyTypeId [PolyTypeId] ")" DPatterns ;
 DDTypes6.       DPatterns       ::= ;
 
 
@@ -94,12 +94,16 @@ LitDouble.		Literal 		::= Double ;
 LitChar.		Literal 		::= Char ;
 LitString.		Literal 		::= String ;
 
--- Tailor-made token type for identifiers
-token Id (lower (letter | digit | '_' | '\'')*) ;
-separator Id "" ;
 
--- Tailor-made token types for type identifiers
-token TypeId (('i' | upper) (letter | digit | '_' | '\'')*) ;
+-- Tailor-made token type for type identifiers
+token TypeId upper (letter | digit | '_' | '\'')* ;
+token LiTypeId 'i' upper (letter | digit | '_' | '\'')* ;
+token PolyTypeId lower ;
+separator PolyTypeId "" ;
+
+-- Variable identifier token
+token Id lower (letter | digit | '_' | '\'')* ;
+separator Id "" ;
 
 -- Expression types
 EVar.			Exp10			::= Id ;
@@ -140,6 +144,7 @@ CCArg1.			CArg			::= Pat ;
 CCArg2.			CArg			::= ListPattern ;
 CCArg3.			CArg			::= Tuple ;
 
+
 -- Structure of list comprehensions input set(s) and predicates.
 -- The elements drawn from the input set are either bound 
 -- to an identifier or a wild-card.
@@ -159,10 +164,14 @@ ELetBinding2.	LetBinding1		::= Id ":=" Exp ;
 terminator nonempty LetBinding1 ";" ;
 
 -- Types, either regular or linear
-TTypeId.		Type		    ::= TypeId ;
+TTypeId.		Type		    ::= TypeIdent ;
 TList.          Type            ::= "[" [Type] "]" ;
 TTuple.         Type            ::= "(" [Type] ")" ;
 separator Type "," ;
+
+STypeIdent.     TypeIdent        ::= TypeId ;
+LiTypeIdent.    TypeIdent        ::= LiTypeId ;
+PolyTypeIdent.  TypeIdent        ::= PolyTypeId ;
 
 -- Haskell-style comments for now
 comment "--" ;
