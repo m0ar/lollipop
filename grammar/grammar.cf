@@ -126,26 +126,15 @@ EAbs.			Exp1			::= "\\" Id "->" Exp ;
 coercions Exp 10 ;
 separator Exp "," ;
 
+-- Structure for case expressions
 ECases1.		Cases			::= CArg "->" Exp ";" Cases1 ;
 ECases2.		Cases1			::= CArg "->" Exp ";" Cases1 ;
 ECases3.		Cases1			::= ;
 
+-- Arguments for the case expression
 CCArg1.			CArg			::= Pat ;
 CCArg2.			CArg			::= ListPattern ;
 CCArg3.			CArg			::= Tuple ;
-
---PatCase.        Case           ::= Pat "->" Exp ;
---PatList.        Case           ::= ListPattern "->" Exp ;
---PatTuple.       Case           ::= Tuple "->" Exp ;
---separator Case ";" ;
-
-
---DGuardsDef.		Def 			::= Id [Arg] Guards ;
--- Structure of guards in function definitions
---DGuards1.		Guards			::= ":=" Exp "when" Exp Guards1 ;
---DGuards2.		Guards1			::= ":=" Exp "when" Exp Guards1 ;
---DExpGuard.		Guards1			::= ":=" Exp ;
---DEmptyGuard.	Guards1			::= ;
 
 -- Structure of list comprehensions input set(s) and predicates.
 -- The elements drawn from the input set are either bound 
