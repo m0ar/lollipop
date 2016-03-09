@@ -11,15 +11,17 @@ data Declaration =
 data Exp = EApp Exp Exp
        | EVar Var
        | ELit Lit
-       | EAdd Exp Exp
+       | EBinOp Op Exp Exp
        | EMult Exp Exp
        | EPrint Exp
        | ELam Var Exp
-       | EIf Exp Exp Exp
        | EConstr ConstrID
        | ECase Exp [Pattern]
        | ELetIn Var Exp Exp  -- let var = exp in exp
        | EWhere Var Exp Exp
+
+data Op = Add | Sub | Mul | Div
+
 
 data Pattern = Constr ConstrID [Var] Exp
             | Simple Lit Exp
@@ -31,16 +33,11 @@ type Var = String
 -- A list of variables to be used in function bodies
 type Vars = [Var]
 
-data SimpleValue = SimpleInt Int
-        | SimpleChar Char
-        | SimpleBool Bool
-
 data Value = VInt Int
         | VIO String
         | VString String
         | VChar Char
         | VDouble Double
-        | VBoolean Bool
         | VConstr ConstrID [Value] -- list of values to be used as parameters
         | VFun (Value -> Value)
 
@@ -49,7 +46,6 @@ type ConstrID = String
 data Lit = SLit String
         | ILit Int
         | DLit Double
-        | BLit Bool
         | CLit Char
     deriving Show
 
@@ -60,8 +56,6 @@ instance Show Exp where
         EVar s             -> s
         ELit l             -> show l
         EConstr cid        -> show cid
-        EAdd e1 e2         -> show e1 ++ " + " ++ show e2
-        EMult e1 e2        -> show e1 ++ " * " ++ show e2
 
 instance Show Value where
     show v = case v of

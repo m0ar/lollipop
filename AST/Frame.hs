@@ -38,11 +38,6 @@ makeBinding (DFunc name vs e) env = (name, eval env (addLams vs e))
 equals :: Value -> Value -> Bool
 equals (VInt x) (VInt y) = x == y
 
-fromSimple :: SimpleValue -> Value
-fromSimple (SimpleInt x)  = VInt x
-fromSimple (SimpleChar x) = VChar x
-fromSimple (SimpleBool x) = VBoolean x
-
 -- evaluation of an expression in an environment
 eval :: Env -> Exp -> Value
 eval env expr = case expr of
@@ -50,31 +45,29 @@ eval env expr = case expr of
             where env' = addToEnv env var (eval env e2)
         ELetIn var e1 e2         -> eval env' e2
             where env' = addToEnv env var (eval env e1)
-        EConstr cid                 -> lookupInEnv env cid
+        EConstr cid              -> lookupInEnv env cid
         ECase e ps               -> eval env' e'
             where (VConstr cid vals)    = eval env e
                   (Constr cid' vars e') = findPattern ps cid
                   env'             = addManyToEnv env vars vals
-        EIf e1 e2 e3             -> case (eval env e1) of
-             VBoolean True     -> eval env e2
-             VBoolean False    -> eval env e3
-             _                 -> error "not boolean statement"
         EPrint e                 -> VIO (show $ eval env e)
         EApp e1 e2               -> case (eval env e1) of
-             VFun v1           -> v1 v2
+             VFun v1                -> v1 v2
                 where v2 = eval env e2
-             _                 -> error "NOT FUNCTION!!!!"
-        EAdd e1 e2               -> evalAddition (eval env e1) (eval env e2)
-        ELam var e               -> (VFun f)
+             _                      -> error "NOT FUNCTION!!!!"
+        ELam var e               -> VFun f
             where f v = eval (addToEnv env var v) e
         EVar var                 -> (lookupInEnv env var)
-        ELit (ILit i)            -> (VInt i)
-        ELit (SLit s)            -> (VString s)
-        ELit (BLit b)            -> (VBoolean b)
+        ELit (ILit i)            -> VInt i
+        ELit (SLit s)            -> VString s
+        EBinOp op e1 e2          -> case op of
+            Add                     -> (\(VInt x) (VInt y) -> (VInt (x+y)))
+                                            (eval env e1) (eval env e2)
+            Sub                     -> (\(VInt x) (VInt y) -> (VInt (x-y)))
+                                            (eval env e1) (eval env e2)
+            Mul                     -> (\(VInt x) (VInt y) -> (VInt (x*y)))
+                                            (eval env e1) (eval env e2)
 
--- concrete evaluation of an addition
-evalAddition :: Value -> Value -> Value
-evalAddition (VInt x) (VInt y) = VInt (x+y)
 
 -- finds pattern based on constructor ID
 findPattern :: [Pattern] -> ConstrID -> Pattern

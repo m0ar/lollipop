@@ -180,13 +180,6 @@ testHello = interpret helloMain -- hello world
         hello = EPrint (ELit (SLit "hi"))
         helloMain = [(DFunc "main" [] hello)]
 
--- noes
-testIf = interpret ifTestMain -- simple if-statement with printout
-    where
-        ifTest = EIf (ELit (BLit False))
-            ((EPrint (ELit (SLit "hi")))) ((EPrint (ELit (SLit "noes"))))
-        ifTestMain = [(DFunc "main" [] ifTest)]
-
 
 testECon2 = interpret [econMain,dcon,dnil]
     where
