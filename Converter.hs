@@ -66,8 +66,8 @@ cExp (A.ECase e cs)         = (D.ECase (cExp e) (map cCase cs))
 
 cCase :: A.Case -> D.Pattern
 cCase (A.PatCase p e) = case p of
-    --A.Pwild               ->
-    (A.PId (A.Id name ))  -> (D.Constr name [] (cExp e))
+    A.Pwild       -> (D.Wild (cExp e))
+    (A.PLit lit)  -> (D.Simple (cLit lit) (cExp e))
     --(A.PLit lit)          ->
 
 cGuard :: A.Guards -> D.Exp
