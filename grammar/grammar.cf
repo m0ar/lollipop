@@ -120,16 +120,32 @@ EEQ.			Exp4			::= Exp4 "==" Exp5 ;
 ENEQ.			Exp4			::= Exp4 "!=" Exp5 ;
 EAND.			Exp3			::= Exp3 "&&" Exp4 ;
 EOR.			Exp2			::= Exp2 "||" Exp3 ;
-ECase.          Exp1            ::= "case" Exp "of" [Case] ;
+ECase.          Exp1            ::= "case" Exp "of" Cases ;
 EIf.            Exp1            ::= "if" Exp2 "then" Exp2 "else" Exp ;
 EAbs.			Exp1			::= "\\" Id "->" Exp ;
 coercions Exp 10 ;
 separator Exp "," ;
 
-PatCase.        Case           ::= Pat "->" Exp ;
-PatList.        Case           ::= ListPattern "->" Exp ;
-PatTuple.       Case           ::= Tuple "->" Exp ;
-separator Case ";" ;
+ECases1.		Cases			::= CArg "->" Exp ";" Cases1 ;
+ECases2.		Cases1			::= CArg "->" Exp ";" Cases1 ;
+ECases3.		Cases1			::= ;
+
+CCArg1.			CArg			::= Pat ;
+CCArg2.			CArg			::= ListPattern ;
+CCArg3.			CArg			::= Tuple ;
+
+--PatCase.        Case           ::= Pat "->" Exp ;
+--PatList.        Case           ::= ListPattern "->" Exp ;
+--PatTuple.       Case           ::= Tuple "->" Exp ;
+--separator Case ";" ;
+
+
+--DGuardsDef.		Def 			::= Id [Arg] Guards ;
+-- Structure of guards in function definitions
+--DGuards1.		Guards			::= ":=" Exp "when" Exp Guards1 ;
+--DGuards2.		Guards1			::= ":=" Exp "when" Exp Guards1 ;
+--DExpGuard.		Guards1			::= ":=" Exp ;
+--DEmptyGuard.	Guards1			::= ;
 
 -- Structure of list comprehensions input set(s) and predicates.
 -- The elements drawn from the input set are either bound 
