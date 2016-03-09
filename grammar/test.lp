@@ -48,8 +48,11 @@ head []	   := error ;
 -- Test for guards
 function biggerThan : Int -> Int -> Bool ;
 biggerThan a b := True when a > b
-			   := False when a < b
-			   := False ;
+	       := False when a < b
+	       := False ;
+biggerThan a b := case a > b of 
+                    5  -> true ; 
+                    _ -> false ;; 
 
 -- Test for tuples with identifiers as arguments
 function swap : (a, b) -> (b, a) ;
