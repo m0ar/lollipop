@@ -75,11 +75,14 @@ list4 = (EApp
 eList1 = EConstr "Cons" [eTwo, EConstr "Cons" [eOne, EConstr "Cons" [eNine, (EConstr "Nil" [])]]]
 eList2 = EConstr "Cons" [eTwo, EConstr "Cons" [eThree, EConstr "Cons" [eNine, (EConstr "Nil" [])]]]
 -}
--- Test Where
-testWhere = interpret whereMain
+
+
+testHello = interpret helloMain -- hello world
     where
-        where' = EWhere "x" (EAdd (EVar "x") eThree) (EAdd eFive eNine)
-        whereMain = [DFunc "main" [] where']
+        helloMain = [(DFunc "main" [] (EApp
+                                        (EVar "print")
+                                        (ELit (SLit "HejsaN"))))]
+
 
 -- Test Let
 testLetIn = interpret letInMain

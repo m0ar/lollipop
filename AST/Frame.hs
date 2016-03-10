@@ -24,13 +24,6 @@ addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
         e' = addDecsToEnv env ds
 
 -- makeBinding is a helper function to addDecsToEnv
-
-testHello = interpret helloMain -- hello world
-    where
-        helloMain = [(DFunc "main" [] (EApp
-                                        (EVar "print")
-                                        (ELit (SLit "HejsaN"))))]
-
 -- Makes bindings from declarations to environment
 makeBinding :: Declaration -> Env -> (Var, Value)
 makeBinding (DConstr id val) env  = (id, val)
@@ -47,16 +40,13 @@ equals (VInt x) (VInt y) = x == y
 -- evaluation of an expression in an environment
 eval :: Env -> Exp -> Value
 eval env expr = case expr of
-        EWhere var e1 e2         -> eval env' e1
-            where env' = addToEnv env var (eval env e2)
         ELetIn var e1 e2         -> eval env' e2
-            where env' = addToEnv env var (eval env e1)
+            where env' = addToEnv env var (eval env' e1)
         EConstr cid              -> lookupInEnv env cid
         ECase e ps               -> eval env' e'
             where (VConstr cid vals)    = eval env e
                   (Constr cid' vars e') = findPattern ps cid
                   env'             = addManyToEnv env vars vals
-        EPrint e                 -> VIO (show $ eval env e)
         EApp e1 e2               -> case (eval env e1) of
              VFun v1                -> v1 v2
                 where v2 = eval env e2

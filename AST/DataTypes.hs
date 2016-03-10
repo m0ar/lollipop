@@ -12,13 +12,10 @@ data Exp = EApp Exp Exp
        | EVar Var
        | ELit Lit
        | EBinOp Op Exp Exp
-       | EMult Exp Exp
-       | EPrint Exp
        | ELam Var Exp
        | EConstr ConstrID
        | ECase Exp [Pattern]
        | ELetIn Var Exp Exp  -- let var = exp in exp
-       | EWhere Var Exp Exp
 
 data Op = Add | Sub | Mul | Div
 
