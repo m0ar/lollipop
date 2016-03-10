@@ -101,9 +101,9 @@ token Id lower (letter | digit | '_' | '\'')* ;
 separator Id "" ;
 
 -- Expression types
-ELiteral.       Exp11           ::= Literal ;
+ELiteral.       Exp10           ::= Literal ;
 EVar.			Exp10			::= Id ;
-ETuple.			Exp10			::= "(" [Exp] ")" ;
+ETuple.			Exp10			::= Tuple ;
 EListComp.		Exp10			::= "[" Exp "|" LCPatterns "]" ;
 EList.			Exp10			::= "[" [Exp] "]" ;
 ELet.			Exp10			::= LetBinding ;
@@ -124,7 +124,7 @@ EOR.			Exp2			::= Exp2 "||" Exp3 ;
 ECase.          Exp1            ::= "case" Exp "of" Cases ;
 EIf.            Exp1            ::= "if" Exp2 "then" Exp2 "else" Exp ;
 EAbs.			Exp1			::= "\\" Id "->" Exp ;
-coercions Exp 11 ;
+coercions Exp 10 ;
 separator Exp "," ;
 
 -- Structure for case expressions
@@ -136,6 +136,10 @@ ECases3.		Cases1			::= ;
 CCArg1.			CArg			::= Pat ;
 CCArg2.			CArg			::= ListPattern ;
 CCArg3.			CArg			::= Tuple ;
+
+--Fixed size tuples
+Tuple2.         Tuple           ::= "(" Exp "," Exp ")" ;
+Tuple3.         Tuple           ::= "(" Exp "," Exp "," Exp ")" ;
 
 
 -- Structure of list comprehensions input set(s) and predicates.

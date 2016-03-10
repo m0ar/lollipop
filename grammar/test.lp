@@ -2,7 +2,7 @@
 import sugar ;
 
 -- Test for algebraic datatypes
-datatype Special := False | True ;
+datatype Special := This | That ;
 datatype Either a b := Left a | Right b ;
 datatype Tree a := EmptyTree | Node a (Tree a) (Tree a) ;
 
@@ -23,7 +23,7 @@ zeroArguments := 6 ;
 -- Test for a function with one argument
 function oneArgument : Int -> Int ;
 oneArgument 3 := 9 ;
-oneArgument a := a + 3 ;
+oneArgument a := aa + 3 ;
 
 -- Test for undefined function
 function notYetDefined : Bool -> Int ;
@@ -59,8 +59,8 @@ function swap : (a, b) -> (b, a) ;
 swap (a, b) := (b, a) ;
 
 -- Test for nested tuples
-function nestedTuples : (a, (c,d)) -> (a, d) ;
-nestedTuples (a, (c,d)) := (a, d) ;
+-- function nestedTuples : (a, (c,d)) -> (a, d) ;
+-- nestedTuples (a, (c,d)) := (a, d) ;
 
 -- Test for tuples with datatypes as arguments
 function typesInTuples : (String, Bool) -> Bool ; 
