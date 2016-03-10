@@ -7,6 +7,8 @@ import DataTypes
 import Data.Map
 import qualified Data.Map as M
 
+-- call interpret med io
+
 interpret :: Program -> Value
 interpret ds = let e = addDecsToEnv e ds in
                 lookupInEnv e "main"
@@ -15,10 +17,15 @@ interpret ds = let e = addDecsToEnv e ds in
 
 -- Adds declarations to the environment
 addDecsToEnv :: Env -> [Declaration] -> Env
-addDecsToEnv env []     = M.insert "print" (VFun (\(VString s) -> (VIO s))) M.empty
+addDecsToEnv env []     = startEnv
 addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
     where
         e' = addDecsToEnv env ds
+
+startEnv :: Env
+startEnv = printF $ readLnF $ M.empty
+    where   printF  = M.insert "print" (VFun (\(VString s) -> (VIO (print s >> return (VString s)))))
+            readLnF = M.insert "readLine" (VIO (fmap VString readLn))
 
 -- makeBinding is a helper function to addDecsToEnv
 -- Makes bindings from declarations to environment
@@ -28,6 +35,13 @@ makeBinding (DFunc name vs e) env = (name, eval env (addLams vs e))
         where
             addLams [] e     = e
             addLams (v:vs) e = ELam v (addLams vs e)
+
+
+testHello = interpret helloMain -- hello world
+    where
+        helloMain = [(DFunc "main" [] (EApp
+                                        (EVar "print")
+                                        (ELit (SLit "HejsaN"))))]
 
 
 

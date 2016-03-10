@@ -31,7 +31,7 @@ type Var = String
 type Vars = [Var]
 
 data Value = VInt Int
-        | VIO String
+        | VIO (IO Value)
         | VString String
         | VChar Char
         | VDouble Double
@@ -53,11 +53,11 @@ instance Show Exp where
         EVar s             -> s
         ELit l             -> show l
         EConstr cid        -> show cid
-
+-- skriv särskild printer med io
 instance Show Value where
     show v = case v of
-        (VInt x)    -> show x
-        (VString s) -> s
-        (VIO s)     -> s
-        (VFun f)    -> "gotta function"
+        (VInt x)     -> show x
+        (VString s)  -> s
+        (VIO v)      -> "IO!!!!"
+        (VFun f)     -> "gotta function"
         (VConstr cid vs) -> cid ++ " " ++ concat (Prelude.map show vs)
