@@ -1,38 +1,38 @@
 -- A program is 0 or more imports followed by 
 -- zero or more function declarations
-PImports.		Program 		::= Import ";" Program ;
-PFuncs.			Program1		::= Declaration Program1 ;
-PLast.			Program1		::= Declaration ;
+PImports.       Program         ::= Import ";" Program ;
+PFuncs.         Program1        ::= Declaration Program1 ;
+PLast.          Program1        ::= Declaration ;
 coercions Program 1 ;
 
 -- A declaration of function definitions, imports or algebraic data types
-DImport.		Import 			::= "import" Id ;
-DFunc.			Declaration		::= "function" Id ":" TypeDecls ";" [Def] ;
-DData.			Declaration		::= "datatype" TypeIdent [Id] ":=" DataTypes Deriving ;
-DSyn.			Declaration		::= "type" TypeIdent [Id] ":=" TypeSyn Deriving ;
+DImport.        Import          ::= "import" Id ;
+DFunc.          Declaration     ::= "function" Id ":" TypeDecls ";" [Def] ;
+DData.          Declaration     ::= "datatype" TypeIdent [Id] ":=" DataTypes Deriving ;
+DSyn.           Declaration     ::= "type" TypeIdent [Id] ":=" TypeSyn Deriving ;
 
 -- The structure of type declarations for functions.
-STypeDecl.		TypeDecls		::= Type ;
-MTypeDecl.		TypeDecls		::= Type "->" TypeDecls ;
-MLiTypeDecl.	TypeDecls		::= LiTypeId "-o" TypeDecls ;
+STypeDecl.      TypeDecls       ::= Type ;
+MTypeDecl.      TypeDecls       ::= Type "->" TypeDecls ;
+MLiTypeDecl.    TypeDecls       ::= LiTypeId "-o" TypeDecls ;
 
 -- Function definition
-DDef.			Def 			::= Id [Arg] ":=" Exp ;
-DGuardsDef.		Def 			::= Id [Arg] Guards ;
+DDef.           Def             ::= Id [Arg] ":=" Exp ;
+DGuardsDef.     Def             ::= Id [Arg] Guards ;
 terminator nonempty Def ";" ;
 
 -- Arguments in function definitions can be either a literal,
 -- identifier, type (linear or non-linear), list pattern or a tuple
-DArg3.			Arg 			::= TypeIdent ; -- Should be type constructors, right?
-DArg4.			Arg 			::= Pattern ;
+DArg3.          Arg             ::= TypeIdent ; -- Should be type constructors, right?
+DArg4.          Arg             ::= Pattern ;
 separator Arg "" ;
 
 
 -- Structure of guards in function definitions
-DGuards1.		Guards			::= ":=" Exp "when" Exp Guards1 ;
-DGuards2.		Guards1			::= ":=" Exp "when" Exp Guards1 ;
-DExpGuard.		Guards1			::= ":=" Exp ;
-DEmptyGuard.	Guards1			::= ;
+DGuards1.       Guards          ::= ":=" Exp "when" Exp Guards1 ;
+DGuards2.       Guards1         ::= ":=" Exp "when" Exp Guards1 ;
+DExpGuard.      Guards1         ::= ":=" Exp ;
+DEmptyGuard.    Guards1         ::= ;
 
 --Type synonyms
 DTSyn1.         TypeSyn         ::= ;
@@ -40,8 +40,8 @@ DTSyn2.         TypeSyn         ::= Type TypeSyn ;
 DTSyn4.         TypeSyn         ::= "(" Type Id [Id] ")" TypeSyn ;
 
 -- The structure of algebraic data types
-DDTypes1.		DataTypes		::= DPatterns ;
-DDTypes2.		DataTypes		::= DPatterns "|" DataTypes ;
+DDTypes1.       DataTypes       ::= DPatterns ;
+DDTypes2.       DataTypes       ::= DPatterns "|" DataTypes ;
 
 -- The structure of algebraic data types
 DDTypes3.       DPatterns       ::= TypeIdent DPatterns ;
@@ -51,31 +51,31 @@ DDTypes6.       DPatterns       ::= ;
 
 
 -- Deriving structure
-DDeriving1.		Deriving		::= ";" ;
-DDeriving2.		Deriving		::= "deriving" "(" [DerArg] ")" ";" ;
+DDeriving1.     Deriving        ::= ";" ;
+DDeriving2.     Deriving        ::= "deriving" "(" [DerArg] ")" ";" ;
 separator nonempty DerArg "," ;
-DDerArg1.		DerArg			::= "Show" ;
-DDerArg2.		DerArg			::= "Read" ;
-DDerArg3.		DerArg			::= "Eq" ;
-DDerArg4.		DerArg			::= "Ord" ;
-DDerArg5.		DerArg			::= "Num" ;
-DDerArg6.		DerArg			::= "Integral" ;
-DDerArg7.		DerArg			::= "Floating" ;
-DDerArg8.		DerArg			::= "Enum" ;
-DDerArg9.		DerArg			::= "Bounded" ;
+DDerArg1.       DerArg          ::= "Show" ;
+DDerArg2.       DerArg          ::= "Read" ;
+DDerArg3.       DerArg          ::= "Eq" ;
+DDerArg4.       DerArg          ::= "Ord" ;
+DDerArg5.       DerArg          ::= "Num" ;
+DDerArg6.       DerArg          ::= "Integral" ;
+DDerArg7.       DerArg          ::= "Floating" ;
+DDerArg8.       DerArg          ::= "Enum" ;
+DDerArg9.       DerArg          ::= "Bounded" ;
 
 -- Pattern matching for lists in function definition arguments
-LPattern1.		ListPat      	::= "[]" ;
-LPattern2.		ListPat      	::= "(" Pat ":" LPattern ")" ;
-LPattern3.		LPattern 		::= "[]" ;
-LPattern4.		LPattern 		::= Pat ;
-LPattern5.		LPattern 		::= Pat ":" LPattern ;
+LPattern1.      ListPat         ::= "[]" ;
+LPattern2.      ListPat         ::= "(" Pat ":" LPattern ")" ;
+LPattern3.      LPattern        ::= "[]" ;
+LPattern4.      LPattern        ::= Pat ;
+LPattern5.      LPattern        ::= Pat ":" LPattern ;
 
 TPattern1.      TuplePat        ::= "(" [Pattern] ")" ;
 
 -- categroy for every case when an underscore or an identifier is accepted
-Pwild.			Pat				::= "_" ;
-PId.			Pat				::= Id ;
+Pwild.          Pat             ::= "_" ;
+PId.            Pat             ::= Id ;
 PLit.           Pat             ::= Literal ;
 
 P1.             Pattern         ::= ListPat ;
@@ -84,10 +84,10 @@ P3.             Pattern         ::= Pat ;
 separator Pattern "," ;
 
 -- A literal can be any predefined token type
-LitInt.			Literal  		::= Integer ;
-LitDouble.		Literal 		::= Double ;
-LitChar.		Literal 		::= Char ;
-LitString.		Literal 		::= String ;
+LitInt.         Literal         ::= Integer ;
+LitDouble.      Literal         ::= Double ;
+LitChar.        Literal         ::= Char ;
+LitString.      Literal         ::= String ;
 LitTrue.        Literal         ::= "True" ;
 LitFalse.       Literal         ::= "False" ;
 
@@ -101,37 +101,37 @@ token Id lower (letter | digit | '_' | '\'')* ;
 separator Id "" ;
 
 -- Expression types
-EEnclosed.		Exp11			::= "(" Exp ")" ;
-EVar.			Exp10			::= Id ;
-ETuple.			Exp10			::= Tuple ;
+EEnclosed.      Exp11           ::= "(" Exp ")" ;
+EVar.           Exp10           ::= Id ;
+ETuple.         Exp10           ::= Tuple ;
 ELiteral.       Exp10           ::= Literal ;
-EListComp.		Exp10			::= "[" Exp "|" LCPatterns "]" ;
-EList.			Exp10			::= "[" [Exp] "]" ;
-ELet.			Exp10			::= LetBinding ;
-EApp.			Exp9			::= Exp9 Exp10 ;
-EPow.			Exp8			::= Exp8 "^" Exp9 ;
-EMul.			Exp7			::= Exp7 "*" Exp8 ;
-EDiv. 			Exp7			::= Exp7 "/" Exp8 ;
-EAdd.			Exp6			::= Exp6 "+" Exp7 ;
-ESub.			Exp6			::= Exp6 "-" Exp7 ;
-ELt. 			Exp5			::= Exp5 "<" Exp6 ;
-EGt.			Exp5			::= Exp5 ">" Exp6 ;
-ELEQ.			Exp5			::= Exp5 "<=" Exp6 ;
-EGEQ.			Exp5			::= Exp5 ">=" Exp6 ;
-EEQ.			Exp4			::= Exp4 "==" Exp5 ;
-ENEQ.			Exp4			::= Exp4 "!=" Exp5 ;
-EAND.			Exp3			::= Exp3 "&&" Exp4 ;
-EOR.			Exp2			::= Exp2 "||" Exp3 ;
+EListComp.      Exp10           ::= "[" Exp "|" LCPatterns "]" ;
+EList.          Exp10           ::= "[" [Exp] "]" ;
+ELet.           Exp10           ::= LetBinding ;
+EApp.           Exp9            ::= Exp9 Exp10 ;
+EPow.           Exp8            ::= Exp8 "^" Exp9 ;
+EMul.           Exp7            ::= Exp7 "*" Exp8 ;
+EDiv.           Exp7            ::= Exp7 "/" Exp8 ;
+EAdd.           Exp6            ::= Exp6 "+" Exp7 ;
+ESub.           Exp6            ::= Exp6 "-" Exp7 ;
+ELt.            Exp5            ::= Exp5 "<" Exp6 ;
+EGt.            Exp5            ::= Exp5 ">" Exp6 ;
+ELEQ.           Exp5            ::= Exp5 "<=" Exp6 ;
+EGEQ.           Exp5            ::= Exp5 ">=" Exp6 ;
+EEQ.            Exp4            ::= Exp4 "==" Exp5 ;
+ENEQ.           Exp4            ::= Exp4 "!=" Exp5 ;
+EAND.           Exp3            ::= Exp3 "&&" Exp4 ;
+EOR.            Exp2            ::= Exp2 "||" Exp3 ;
 ECase.          Exp1            ::= "case" Exp "of" Cases ;
 EIf.            Exp1            ::= "if" Exp2 "then" Exp2 "else" Exp ;
-EAbs.			Exp1			::= "\\" Id "->" Exp ;
+EAbs.           Exp1            ::= "\\" Id "->" Exp ;
 coercions Exp 10 ;
 separator Exp "," ;
 
 -- Structure for case expressions
-ECases1.		Cases			::= Pattern "->" Exp ";" Cases1 ;
-ECases2.		Cases1			::= Pattern "->" Exp ";" Cases1 ;
-ECases3.		Cases1			::= ;
+ECases1.        Cases           ::= Pattern "->" Exp ";" Cases1 ;
+ECases2.        Cases1          ::= Pattern "->" Exp ";" Cases1 ;
+ECases3.        Cases1          ::= ;
 
 
 --Fixed size tuples
@@ -142,23 +142,23 @@ Tuple3.         Tuple           ::= "(" Exp "," Exp "," Exp ")" ;
 -- Structure of list comprehensions input set(s) and predicates.
 -- The elements drawn from the input set are either bound 
 -- to an identifier or a wild-card.
-ELCPatterns1.	LCPatterns		::= Pat "<-" Id ;
-ELCPatterns2.	LCPatterns		::= Pat "<-" Id "," LCPatterns ;
-ELCPatterns3.	LCPatterns		::= Pat "<-" Id "," Predicate ;
-ELCPatterns4.	LCPatterns		::= Pat "<-" "[" [Literal] "]" ;
-ELCPatterns5.	LCPatterns		::= Pat "<-" "[" [Literal] "]" "," LCPatterns ;
-ELCPatterns6.	LCPatterns		::= Pat "<-" "[" [Literal] "]" "," Predicate ;
+ELCPatterns1.   LCPatterns      ::= Pat "<-" Id ;
+ELCPatterns2.   LCPatterns      ::= Pat "<-" Id "," LCPatterns ;
+ELCPatterns3.   LCPatterns      ::= Pat "<-" Id "," Predicate ;
+ELCPatterns4.   LCPatterns      ::= Pat "<-" "[" [Literal] "]" ;
+ELCPatterns5.   LCPatterns      ::= Pat "<-" "[" [Literal] "]" "," LCPatterns ;
+ELCPatterns6.   LCPatterns      ::= Pat "<-" "[" [Literal] "]" "," Predicate ;
 separator nonempty Literal "," ;
-LCPredicate.	Predicate		::= Exp ;
-LCPredicates.	Predicate		::= Exp "," Predicate ;
+LCPredicate.    Predicate       ::= Exp ;
+LCPredicates.   Predicate       ::= Exp "," Predicate ;
 
 -- Let bindings, this is requires an additional ';' at the very end of the binding.
-ELetBinding1.	LetBinding		::= "let" [LetBinding1] "in" Exp ";" ;
-ELetBinding2.	LetBinding1		::= Id ":=" Exp ;
+ELetBinding1.   LetBinding      ::= "let" [LetBinding1] "in" Exp ";" ;
+ELetBinding2.   LetBinding1     ::= Id ":=" Exp ;
 terminator nonempty LetBinding1 ";" ;
 
 -- Types, either regular or linear
-TTypeId.		Type		    ::= TypeIdent ;
+TTypeId.        Type            ::= TypeIdent ;
 TPoly.          Type            ::= Id ;
 TList.          Type            ::= "[" [Type] "]" ;
 TTuple.         Type            ::= "(" [Type] ")" ;
