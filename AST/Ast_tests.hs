@@ -1,6 +1,6 @@
 module Ast_tests where
 
-import Frame
+import Interpreter
 import Environment
 import DataTypes
 import Test.QuickCheck
@@ -79,7 +79,7 @@ list4 = (EApp
 -- tests
 --------------------------------------------------------------------------------
 
--- main = print "HejsaN"        
+-- main = print "HejsaN"
 testHello = interpret helloMain -- hello world
     where
         helloMain = [(DFunc "main" [] (EApp
@@ -92,14 +92,14 @@ testLetIn = interpret letInMain
         let' = ELetIn "x" (EBinOp Add eFive eNine) (EBinOp Add (EVar "x") eThree)
         letInMain = [DFunc "main" [] let']
 
-        
+
 -- main = let x = x+1 in 5
 testLazyLetIn = interpret lazyLetInMain
     where
         let' = ELetIn "x" (EBinOp Add (EVar "x") eOne) eFive
         lazyLetInMain = [DFunc "main" [] let']
 
-        
+
 -- main = Cons 5 Nil
 testEConstr = interpret [econMain,dCon,dNil]
     where
@@ -122,7 +122,7 @@ sum xs = case xs of
     Cons x xs2  ->  x + sum xs2
     Nil         -> 0
 -}
-testSumList :: Exp -> IO Value
+testSumList :: Exp -> IO ()
 testSumList l = interpret [dMain, dSum, dCon, dNil]
     where dMain = DFunc "main" [] (EApp (EVar "sum") l)
           p1    = (Constr "Cons" ["x", "xs2"] (EBinOp Add (EVar "x")
@@ -153,8 +153,8 @@ testLam = interpret lamMain -- lambda-calculus addition with application
                     (EApp (ELam "x" (EBinOp Add (EVar "x")
                     (ELit (ILit 4)))) (ELit (ILit 6)))
           lamMain = [(DFunc "main" [] lam)]
-                     
-                     
+
+
 -- main = add 5 2
 -- add x y = x + y
 testFuncs = interpret funcMain
@@ -183,7 +183,7 @@ testLazyFuncs = interpret [funcMain, funcFirst, funcInfty] where
     funcMain = DFunc "main" [] (EApp (EApp (EVar "first") eFive) (EApp (EVar "infty") eZero))
     funcFirst = DFunc "first" ["x", "y"] (EVar "x")
     funcInfty = DFunc "infty" ["x"] (EBinOp Add eOne (EApp (EVar "infty") (EVar "x")))
-    
+
 {-
 test1 = interpret ds >>= putStrLn . take 1000 . show where
   ds   = [main]
