@@ -7,12 +7,9 @@ import DataTypes
 import Data.Map
 import qualified Data.Map as M
 
-interpret :: Program -> IO Value
-interpret ds =
-    do
-        let e = addDecsToEnv e ds
-        let value = eval e $ (\(DFunc v vs e) -> e)(head ds)
-        return value
+interpret :: Program -> Value
+interpret ds = let e = addDecsToEnv e ds in
+                lookupInEnv e "main"
 
 -- addDecsToEnv is a helper function to interpret
 
