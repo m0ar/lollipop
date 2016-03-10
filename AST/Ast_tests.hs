@@ -72,6 +72,8 @@ list4 = (EApp
         )
 
 
+
+-- main = print "HejsaN"        
 testHello = interpret helloMain -- hello world
     where
         helloMain = [(DFunc "main" [] (EApp
@@ -165,11 +167,6 @@ testLam = interpret lamMain -- lambda-calculus addition with application
                     (ELit (ILit 4)))) (ELit (ILit 6)))
           lamMain = [(DFunc "main" [] lam)]
 
--- hi
-testHello = interpret helloMain -- hello world
-    where
-        hello = EPrint (ELit (SLit "hi"))
-        helloMain = [(DFunc "main" [] hello)]
 
 
 testECon2 = interpret [econMain,dcon,dnil]
