@@ -4,35 +4,31 @@ import Frame
 import Environment
 import DataTypes
 import Test.QuickCheck
-{-
+
 main = do
-    a <- testIf
-    b <- testHello
-    c <- testLam
-    d <- testFuncs2
-    e <- testFuncs
-    f <- test2
-    g <- test1
-    h <- testSumList2
-    i <- testSumList
-    j <- testCase
-    k <- testCon
-    l <- testGuard
-    m <- testLetIn
-    return (a
-           ,b
-           ,c
-           ,d
-           ,e
-           ,f
-           ,g
-           ,h
-           ,i
-           ,j
-           ,k
-           ,l
-           ,m)
--}
+    t1 <- testHello
+    t2 <- testLetIn
+    t3 <- testLazyLetIn
+    t4 <- testEConstr
+    t5 <- testCase
+    t6 <- testSumList list4
+    t7 <- testSumList2
+    t8 <- testLam
+    t9 <- testFuncs
+    t10 <- testFuncs2
+
+    return (t1
+           ,t2
+           ,t3
+           ,t4
+           ,t5
+           ,t6
+           ,t7
+           ,t8
+           ,t9
+           ,t10
+            )
+
 
 --------------------------------------------------------------------------------
 -- things to use in tests
@@ -99,6 +95,12 @@ testLazyLetIn = interpret lazyLetInMain
         let' = ELetIn "x" (EBinOp Add (EVar "x") eOne) eFive
         lazyLetInMain = [DFunc "main" [] let']
 
+        
+-- main = Cons 5 Nil
+testEConstr = interpret [econMain,dCon,dNil]
+    where
+        econMain = DFunc "main" [] (EApp (EApp (EConstr "Cons") (eFive)) (EConstr "Nil"))
+
 
 -- main = case (Cons 2 Nil) of
 --      Cons x xs -> x + 0
@@ -139,6 +141,33 @@ testSumList2 = interpret [dMain, dSum, dCon, dNil]
                 p1 = (Constr "Nil" [] eZero)
                 p2 = (Constr "Cons" ["x", "xs'"] (EBinOp Add (EVar "x")
                      (EApp (EVar "sum") (EVar "xs'"))))
+
+
+-- main = (\x -> x + 4) ((\x -> x + 4) 6)   -- should return 14
+testLam = interpret lamMain -- lambda-calculus addition with application
+    where lam = EApp (ELam "x" (EBinOp Add (EVar "x") (ELit (ILit 4))))
+                    (EApp (ELam "x" (EBinOp Add (EVar "x")
+                    (ELit (ILit 4)))) (ELit (ILit 6)))
+          lamMain = [(DFunc "main" [] lam)]
+                     
+                     
+-- main = add 5 2
+-- add x y = x + y
+testFuncs = interpret funcMain
+    where funcMain = [
+                        (DFunc "main" [] (EApp (EApp (EVar "add")
+                        (ELit (ILit 5))) (ELit (ILit 2)))),
+                        (DFunc "add" ["x","y"] (EBinOp Add (EVar "x") (EVar "y")))
+                    ]
+
+-- main = add 3
+-- add x = x + 2
+testFuncs2 = interpret funcMain
+    where funcMain = [  (DFunc "main" [] (EApp (EVar "add") (ELit (ILit 3)))),
+                        (DFunc "add" ["x"] (EBinOp Add (EVar "x") (ELit (ILit 2))))
+                    ]
+
+
 {-
 test1 = interpret ds >>= putStrLn . take 1000 . show where
   ds   = [main]
@@ -161,34 +190,3 @@ test2 = interpret ds >>= putStrLn . take 1000 . show where
             ,("Nil",[],EConstr "Nil" [])
             ]
 -}
-
-
--- main = add 5 2
--- add x y = x + y
-testFuncs = interpret funcMain
-    where funcMain = [
-                        (DFunc "main" [] (EApp (EApp (EVar "add")
-                        (ELit (ILit 5))) (ELit (ILit 2)))),
-                        (DFunc "add" ["x","y"] (EBinOp Add (EVar "x") (EVar "y")))
-                    ]
-
--- main = add 3
--- add x = x + 2
-testFuncs2 = interpret funcMain
-    where funcMain = [  (DFunc "main" [] (EApp (EVar "add") (ELit (ILit 3)))),
-                        (DFunc "add" ["x"] (EBinOp Add (EVar "x") (ELit (ILit 2))))
-                    ]
-                    
--- main = (\x -> x + 4) ((\x -> x + 4) 6)   -- should return 14
-testLam = interpret lamMain -- lambda-calculus addition with application
-    where lam = EApp (ELam "x" (EBinOp Add (EVar "x") (ELit (ILit 4))))
-                    (EApp (ELam "x" (EBinOp Add (EVar "x")
-                    (ELit (ILit 4)))) (ELit (ILit 6)))
-          lamMain = [(DFunc "main" [] lam)]
-
-
--- main = Cons 5 Nil
-testECon2 = interpret [econMain,dCon,dNil]
-    where
-        econMain = DFunc "main" [] (EApp (EApp (EConstr "Cons") (eFive)) (EConstr "Nil"))
-
