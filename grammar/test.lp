@@ -59,8 +59,8 @@ function swap : (a, b) -> (b, a) ;
 swap (a, b) := (b, a) ;
 
 -- Test for nested tuples
--- function nestedTuples : (a, (c,d)) -> (a, d) ;
--- nestedTuples (a, (c,d)) := (a, d) ;
+function nestedTuples : (a, (c,d)) -> (a, d) ;
+nestedTuples (a, (c,d)) := (a, d) ;
 
 -- Test for tuples with datatypes as arguments
 function typesInTuples : (String, Bool) -> Bool ; 
