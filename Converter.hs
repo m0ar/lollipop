@@ -26,7 +26,8 @@ cDeclaration = undefined
     -- where eCase = (D.ECase (D.EVar "placeholder") (map defToPat defs))
           -- vars = take ((length ds)-1) vs -- create variables of the input parameters
 
-vs = ["a","b","c","d","e","f","g"]
+vs = ["a","b","c","d","e","f","g"] -- todo: rename "#x1" "#x2"
+                                    -- define inf list instead: map (("#x"++).show) [1..]
 
 defToPat :: A.Def -> D.Pattern
 defToPat (A.DDef (A.Id cid) args e) = (D.Constr cid (vars args) (cExp e))
@@ -64,7 +65,7 @@ cExp (A.EApp e1 e2)         = (D.EApp (cExp e1) (cExp e2))
 cExp (A.EAbs (A.Id name) e) = (D.ELam name (cExp e))
 cExp (A.ECase e cs)         = (D.ECase (cExp e) (cCase cs))
 cExp (EIf e1 e2 e3)         = (D.ECase (cExp e1) [(D.Constr "True" [] (cExp e2)),
-                                                  (D.Constr "False" [] (cExp e3))]) 
+                                                  (D.Constr "False" [] (cExp e3))])
 
 cCase :: A.Cases -> [D.Pattern]
 cCase ECases3             = []
