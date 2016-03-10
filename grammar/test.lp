@@ -3,6 +3,7 @@ import sugar ;
 
 -- Test for algebraic datatypes
 datatype Special := This | That ;
+datatype iSpecial := iThis | iThat ;
 datatype Either a b := Left a | Right b ;
 datatype Tree a := EmptyTree | Node a (Tree a) (Tree a) ;
 
@@ -33,6 +34,10 @@ notYetDefined b := undefined ;  -- this is a comment
 function diffTypes : String -> Char -> Double -> Bool -> Bool ;
 diffTypes "hello" 'h' 3.3 True := True && False ;
 
+-- Test function with linear types
+function linear : iString -> iString ;
+linear s := s ;
+
 -- Test for pattern matching of lists
 function listArgument : [Int] -> Int ;
 listArgument []       := 0 ;
@@ -59,8 +64,8 @@ function swap : (a, b) -> (b, a) ;
 swap (a, b) := (b, a) ;
 
 -- Test for nested tuples
--- function nestedTuples : (a, (c,d)) -> (a, d) ;
--- nestedTuples (a, (c,d)) := (a, d) ;
+function nestedTuples : (a, (c,d)) -> (a, d) ;
+nestedTuples (a, (c,d)) := (a, d) ;
 
 -- Test for tuples with datatypes as arguments
 function typesInTuples : (String, Bool) -> Bool ; 
