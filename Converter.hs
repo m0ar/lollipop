@@ -5,7 +5,7 @@
 
 module Converter where
 
-import Frame
+import Interpreter
 import qualified DataTypes as D
 import AbsGrammar
 import qualified AbsGrammar as A
