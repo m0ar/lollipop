@@ -88,6 +88,8 @@ LitInt.			Literal  		::= Integer ;
 LitDouble.		Literal 		::= Double ;
 LitChar.		Literal 		::= Char ;
 LitString.		Literal 		::= String ;
+LitTrue.        Literal         ::= "True" ;
+LitFalse.       Literal         ::= "False" ;
 
 
 -- Tailor-made token type for type identifiers
@@ -99,11 +101,9 @@ token Id lower (letter | digit | '_' | '\'')* ;
 separator Id "" ;
 
 -- Expression types
+ELiteral.       Exp11           ::= Literal ;
 EVar.			Exp10			::= Id ;
-ELiteral.		Exp10			::= Literal ;
-ETrue.          Exp10           ::= "true" ;
-EFalse.         Exp10           ::= "false" ;
-ETuple.			Exp10			::= Tuple ;
+ETuple.			Exp10			::= "(" [Exp] ")" ;
 EListComp.		Exp10			::= "[" Exp "|" LCPatterns "]" ;
 EList.			Exp10			::= "[" [Exp] "]" ;
 ELet.			Exp10			::= LetBinding ;
@@ -124,7 +124,7 @@ EOR.			Exp2			::= Exp2 "||" Exp3 ;
 ECase.          Exp1            ::= "case" Exp "of" Cases ;
 EIf.            Exp1            ::= "if" Exp2 "then" Exp2 "else" Exp ;
 EAbs.			Exp1			::= "\\" Id "->" Exp ;
-coercions Exp 10 ;
+coercions Exp 11 ;
 separator Exp "," ;
 
 -- Structure for case expressions
