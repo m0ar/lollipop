@@ -28,14 +28,17 @@ addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
         e' = addDecsToEnv env ds
 
 startEnv :: Env
-startEnv = printF $ readLnF $ addF $ subF $ mulF $ M.empty
+startEnv = printF $ readLnF $ addF $ subF $ mulF $ bind $ M.empty
     where   printF  = M.insert "print" (VFun (\(VString s) -> (VIO (print s >> return (VString s)))))
             readLnF = M.insert "readLine" (VIO (fmap VString readLn))
             addF    = M.insert "add" (VFun (\(VInt x) -> (VFun (\(VInt y) -> (VInt (x+y))))))
             subF    = M.insert "sub" (VFun (\(VInt x) -> (VFun (\(VInt y) -> (VInt (x-y))))))
             mulF    = M.insert "mul" (VFun (\(VInt x) -> (VFun (\(VInt y) -> (VInt (x*y))))))
-            
-            
+            bind    = M.insert "bind" (VFun (\(VIO a1) -> (VFun (\(VIO a2) -> (VIO (a1 >>= (\s -> (a2 s))))))))
+                                                                -- (readLn) >>= (\s -> (putStrLn s))
+
+
+
 -- makeBinding is a helper function to addDecsToEnv
 -- Makes bindings from declarations to environment
 makeBinding :: Declaration -> Env -> (Var, Value)
@@ -45,11 +48,7 @@ makeBinding (DFunc name vs e) env = (name, eval env (addLams vs e))
             addLams [] e     = e
             addLams (v:vs) e = ELam v (addLams vs e)
 
-testBinOps = interpret $ [DFunc "main" [] 
-    (EApp (EApp (EVar "add") (ELit (ILit 2)))
-          (EApp (EApp (EVar "mul") (ELit (ILit 3))) (ELit (ILit 4))))]
 
-          
 equals :: Value -> Value -> Bool
 equals (VInt x) (VInt y) = x == y
 
@@ -76,6 +75,10 @@ eval env expr = case expr of
             Add                     -> lookupInEnv env "addF"
             Sub                     -> lookupInEnv env "subF"
             Mul                     -> lookupInEnv env "mulF"
+        EBind op e1 e2           -> case op of
+            Bind                    -> lookupInEnv env "bind"
+
+
 
 
 -- finds pattern based on constructor ID

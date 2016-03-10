@@ -12,12 +12,13 @@ data Exp = EApp Exp Exp
        | EVar Var
        | ELit Lit
        | EBinOp Op Exp Exp
+       | EBind Op Exp Exp
        | ELam Var Exp
        | EConstr ConstrID
        | ECase Exp [Pattern]
        | ELetIn Var Exp Exp  -- let var = exp in exp
 
-data Op = Add | Sub | Mul | Div
+data Op = Add | Sub | Mul | Div | Bind
 
 
 data Pattern = Constr ConstrID [Var] Exp

@@ -110,6 +110,11 @@ testEConstr = interpret [econMain,dCon,dNil]
         econMain = DFunc "main" [] (EApp (EApp (EConstr "Cons") (eFive)) (EConstr "Nil"))
 
 
+testBind = interpret bind
+    where
+        bind = [(DFunc "main" [] bind')]
+        bind' = EApp (EApp (EVar "bind") (EVar "readLine")) (EVar "print")
+
 -- main = case (Cons 2 Nil) of
 --      Cons x xs -> x + 0
 --      Nil       -> 0
@@ -175,10 +180,9 @@ testFuncs2 = interpret funcMain
                         (DFunc "add" ["x"] (EBinOp Add (EVar "x") (ELit (ILit 2))))
                     ]
 
--- main = 2 * 3 - 4
-testBinOps = interpret [DFunc "main" [] binOpsMain]
-    where binOpsMain = EBinOp Sub (EBinOp Mul eTwo eThree) eFour
-
+testBinOps = interpret $ [DFunc "main" []
+    (EApp (EApp (EVar "add") (ELit (ILit 2)))
+          (EApp (EApp (EVar "mul") (ELit (ILit 3))) (ELit (ILit 4))))]
 
 -- main = first 5 (infty 0)
 -- first x y = x
