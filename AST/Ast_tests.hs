@@ -86,6 +86,10 @@ testHello = interpret helloMain -- hello world
                                         (EVar "print")
                                         (ELit (SLit "HejsaN"))))]
 
+testReadLine = interpret readLine
+    where
+        readLine = [(DFunc "main" [] (EVar "readLine"))]
+
 -- main = let x = 5 + 9 in x + 3
 testLetIn = interpret letInMain
     where
