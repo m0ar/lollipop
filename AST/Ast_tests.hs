@@ -88,6 +88,12 @@ testLetIn = interpret letInMain
         let' = ELetIn "x" (EBinOp Add eFive eNine) (EBinOp Add (EVar "x") eThree)
         letInMain = [DFunc "main" [] let']
 
+        
+-- main = let x = x+1 in 5
+testLazyLetIn = interpret lazyLetInMain
+    where
+        let' = ELetIn "x" (EBinOp Add (EVar "x") eOne) eFive
+        lazyLetInMain = [DFunc "main" [] let']
 
 -- test ECase
 -- main = case (Cons 2 Nil) of
