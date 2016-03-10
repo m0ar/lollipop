@@ -101,7 +101,7 @@ token Id lower (letter | digit | '_' | '\'')* ;
 separator Id "" ;
 
 -- Expression types
-
+EEnclosed.		Exp11			::= "(" Exp ")" ;
 EVar.			Exp10			::= Id ;
 ETuple.			Exp10			::= Tuple ;
 ELiteral.       Exp10           ::= Literal ;

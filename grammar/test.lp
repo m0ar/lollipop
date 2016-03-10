@@ -66,6 +66,7 @@ swap (a, b) := (b, a) ;
 -- Test for nested tuples
 function nestedTuples : (a, (c,d)) -> (a, d) ;
 nestedTuples (a, (c,d)) := (a, d) ;
+nestedTuples (c, (d,a)) := (d, (a,c)) ;
 
 -- Test for tuples with datatypes as arguments
 function typesInTuples : (String, Bool) -> Bool ; 
@@ -97,3 +98,7 @@ cylinder r h :=
 -- Test for linear types
 function oneArgument : iInt -> iInt ;
 oneArgument a := a + 3 ;
+
+-- Test for enclosed expressions
+function encl : Int ;
+encl := (3 + 6) ;
