@@ -16,6 +16,7 @@ main = do
     t8 <- testLam
     t9 <- testFuncs
     t10 <- testFuncs2
+    t11 <- testBinOps
 
     return (t1
            ,t2
@@ -27,6 +28,7 @@ main = do
            ,t8
            ,t9
            ,t10
+           ,t11
             )
 
 
@@ -167,6 +169,9 @@ testFuncs2 = interpret funcMain
                         (DFunc "add" ["x"] (EBinOp Add (EVar "x") (ELit (ILit 2))))
                     ]
 
+-- main = 2 * 3 - 4
+testBinOps = interpret [DFunc "main" [] binOpsMain]
+    where binOpsMain = EBinOp Sub (EBinOp Mul eTwo eThree) eFour
 
 {-
 test1 = interpret ds >>= putStrLn . take 1000 . show where
