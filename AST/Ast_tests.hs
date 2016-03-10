@@ -17,6 +17,7 @@ main = do
     t9 <- testFuncs
     t10 <- testFuncs2
     t11 <- testBinOps
+    t12 <- testLazyFuncs
 
     return (t1
            ,t2
@@ -29,6 +30,7 @@ main = do
            ,t9
            ,t10
            ,t11
+           ,t12
             )
 
 
@@ -173,6 +175,15 @@ testFuncs2 = interpret funcMain
 testBinOps = interpret [DFunc "main" [] binOpsMain]
     where binOpsMain = EBinOp Sub (EBinOp Mul eTwo eThree) eFour
 
+
+-- main = first 5 (infty 0)
+-- first x y = x
+-- infty x = 1 + infty x
+testLazyFuncs = interpret [funcMain, funcFirst, funcInfty] where
+    funcMain = DFunc "main" [] (EApp (EApp (EVar "first") eFive) (EApp (EVar "infty") eZero))
+    funcFirst = DFunc "first" ["x", "y"] (EVar "x")
+    funcInfty = DFunc "infty" ["x"] (EBinOp Add eOne (EApp (EVar "infty") (EVar "x")))
+    
 {-
 test1 = interpret ds >>= putStrLn . take 1000 . show where
   ds   = [main]
