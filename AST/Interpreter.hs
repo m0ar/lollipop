@@ -8,10 +8,15 @@ import Data.Map
 import qualified Data.Map as M
 
 -- call interpret med io
-
-interpret :: Program -> Value
-interpret ds = let e = addDecsToEnv e ds in
-                lookupInEnv e "main"
+interpret :: Program -> IO ()
+interpret ds = do
+            let v = interpret' ds
+            case v of
+                VIO v -> v >> return ()
+                v     -> (putStrLn $ show v) >> return ()
+    where
+        interpret' ds = let e = addDecsToEnv e ds in
+                        lookupInEnv e "main"
 
 -- addDecsToEnv is a helper function to interpret
 
@@ -35,14 +40,6 @@ makeBinding (DFunc name vs e) env = (name, eval env (addLams vs e))
         where
             addLams [] e     = e
             addLams (v:vs) e = ELam v (addLams vs e)
-
-
-testHello = interpret helloMain -- hello world
-    where
-        helloMain = [(DFunc "main" [] (EApp
-                                        (EVar "print")
-                                        (ELit (SLit "HejsaN"))))]
-
 
 
 equals :: Value -> Value -> Bool
