@@ -80,9 +80,10 @@ testHello = interpret helloMain -- hello world
 
 
 -- Test Let
+-- main = let x = 5 + 9 in x + 3
 testLetIn = interpret letInMain
     where
-        let' = ELetIn "x" (EAdd eFive eNine) (EAdd (EVar "x") eThree)
+        let' = ELetIn "x" (EBinOp Add eFive eNine) (EBinOp Add (EVar "x") eThree)
         letInMain = [DFunc "main" [] let']
 
 
@@ -93,7 +94,7 @@ testLetIn = interpret letInMain
 testCase = interpret caseMain
     where elist    = list1
           -- elist = EConstr "Nil" []
-          p1       = (Constr "Cons" ["x", "xs"] (EAdd (EVar "x") eZero))
+          p1       = (Constr "Cons" ["x", "xs"] (EBinOp Add (EVar "x") eZero))
           p2       = (Constr "Nil" [] eZero)
           ecase    = ECase elist [p1, p2]
           caseMain = [(DFunc "main" [] ecase), dCon, dNil]
@@ -106,7 +107,7 @@ sum xs = case xs of
 testSumList :: Exp -> IO Value
 testSumList l = interpret [dMain, dSum, dCon, dNil]
     where dMain = DFunc "main" [] (EApp (EVar "sum") l)
-          p1    = (Constr "Cons" ["x", "xs2"] (EAdd (EVar "x")
+          p1    = (Constr "Cons" ["x", "xs2"] (EBinOp Add (EVar "x")
                   (EApp (EVar "sum") (EVar "xs2"))))
           p2    = (Constr "Nil" [] eZero)
           ecase = ECase (EVar "xs") [p1, p2]
@@ -119,7 +120,7 @@ testSumList2 = interpret [dMain, dSum, dCon, dNil]
         dSum  = DFunc "sum" ["xs"] (ECase (EVar "xs") [p1, p2])
             where
                 p1 = (Constr "Nil" [] eZero)
-                p2 = (Constr "Cons" ["x", "xs'"] (EAdd (EVar "x")
+                p2 = (Constr "Cons" ["x", "xs'"] (EBinOp Add (EVar "x")
                      (EApp (EVar "sum") (EVar "xs'"))))
 {-
 test1 = interpret ds >>= putStrLn . take 1000 . show where
@@ -134,7 +135,7 @@ test2 = interpret ds >>= putStrLn . take 1000 . show where
         body = EApp (EVar "go") (ELit (ILit 1))
     go   = DFunc "go" ["x"] body where
         x    = EVar "x"
-        body = EConstr cons [x, EVar "go" `EApp` (x `EAdd` x)]
+        body = EConstr cons [x, EVar "go" `EApp` (x `EBinOp Add` x)]
     map  = DFunc "map" [f,"xs0"] body where
         (f,x,xs) = ("f","x","xs")
         body = ECase (EVar "xs0")
@@ -149,18 +150,18 @@ testFuncs = interpret funcMain
     where funcMain = [
                         (DFunc "main" [] (EApp (EApp (EVar "add")
                         (ELit (ILit 5))) (ELit (ILit 2)))),
-                        (DFunc "add" ["x","y"] (EAdd (EVar "x") (EVar "y")))
+                        (DFunc "add" ["x","y"] (EBinOp Add (EVar "x") (EVar "y")))
                     ]
 
 -- main-test functions
 testFuncs2 = interpret funcMain
     where funcMain = [  (DFunc "main" [] (EApp (EVar "add") (ELit (ILit 3)))),
-                        (DFunc "add" ["x"] (EAdd (EVar "x") (ELit (ILit 2))))
+                        (DFunc "add" ["x"] (EBinOp Add (EVar "x") (ELit (ILit 2))))
                     ]
 -- 14
 testLam = interpret lamMain -- lambda-calculus addition with application
-    where lam = EApp (ELam "x" (EAdd (EVar "x") (ELit (ILit 4))))
-                    (EApp (ELam "x" (EAdd (EVar "x")
+    where lam = EApp (ELam "x" (EBinOp Add (EVar "x") (ELit (ILit 4))))
+                    (EApp (ELam "x" (EBinOp Add (EVar "x")
                     (ELit (ILit 4)))) (ELit (ILit 6)))
           lamMain = [(DFunc "main" [] lam)]
 
