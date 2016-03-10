@@ -14,7 +14,7 @@ DSyn.			Declaration		::= "type" TypeIdent [Id] ":=" TypeSyn Deriving ;
 -- The structure of type declarations for functions.
 STypeDecl.		TypeDecls		::= Type ;
 MTypeDecl.		TypeDecls		::= Type "->" TypeDecls ;
-MLiTypeDecl.	TypeDecls		::= Type "-o" TypeDecls ;
+MLiTypeDecl.	TypeDecls		::= LiTypeId "-o" TypeDecls ;
 
 -- Function definition
 DDef.			Def 			::= Id [Arg] ":=" Exp ;

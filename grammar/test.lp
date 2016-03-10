@@ -3,6 +3,7 @@ import sugar ;
 
 -- Test for algebraic datatypes
 datatype Special := This | That ;
+datatype iSpecial := iThis | iThat ;
 datatype Either a b := Left a | Right b ;
 datatype Tree a := EmptyTree | Node a (Tree a) (Tree a) ;
 
@@ -32,6 +33,10 @@ notYetDefined b := undefined ;  -- this is a comment
 -- Test for different datatypes as arguments
 function diffTypes : String -> Char -> Double -> Bool -> Bool ;
 diffTypes "hello" 'h' 3.3 True := True && False ;
+
+-- Test function with linear types
+function linear : iString -> iString ;
+linear s := s ;
 
 -- Test for pattern matching of lists
 function listArgument : [Int] -> Int ;
