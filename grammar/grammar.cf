@@ -65,24 +65,23 @@ DDerArg8.		DerArg			::= "Enum" ;
 DDerArg9.		DerArg			::= "Bounded" ;
 
 -- Pattern matching for lists in function definition arguments
-LPattern1.		ListPattern 	::= "[]" ;
-LPattern2.		ListPattern 	::= "(" Pat ":" LPattern ")" ;
+LPattern1.		ListPat      	::= "[]" ;
+LPattern2.		ListPat      	::= "(" Pat ":" LPattern ")" ;
 LPattern3.		LPattern 		::= "[]" ;
 LPattern4.		LPattern 		::= Pat ;
 LPattern5.		LPattern 		::= Pat ":" LPattern ;
 
-TPattern1.      TuplePattern    ::= "()" ;
-TPattern2.      TuplePattern    ::= "(" [Pat] ")" ;
+TPattern1.      TuplePat        ::= "(" [Pattern] ")" ;
 
 -- categroy for every case when an underscore or an identifier is accepted
 Pwild.			Pat				::= "_" ;
 PId.			Pat				::= Id ;
 PLit.           Pat             ::= Literal ;
-separator Pat "," ;
 
-P1.             Pattern         ::= ListPattern ;
-P2.             Pattern         ::= TuplePattern ;
+P1.             Pattern         ::= ListPat ;
+P2.             Pattern         ::= TuplePat ;
 P3.             Pattern         ::= Pat ;
+separator Pattern "," ;
 
 -- A literal can be any predefined token type
 LitInt.			Literal  		::= Integer ;
