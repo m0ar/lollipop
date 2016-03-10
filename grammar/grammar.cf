@@ -23,11 +23,8 @@ terminator nonempty Def ";" ;
 
 -- Arguments in function definitions can be either a literal,
 -- identifier, type (linear or non-linear), list pattern or a tuple
-DArg1.			Arg 			::= Literal ;
-DArg2.			Arg 			::= Id ;
 DArg3.			Arg 			::= TypeIdent ; -- Should be type constructors, right?
-DArg4.			Arg 			::= ListPattern ;
-DArg5.			Arg 			::= TuplePattern ;
+DArg4.			Arg 			::= Pattern ;
 separator Arg "" ;
 
 
@@ -83,6 +80,10 @@ PId.			Pat				::= Id ;
 PLit.           Pat             ::= Literal ;
 separator Pat "," ;
 
+P1.             Pattern         ::= ListPattern ;
+P2.             Pattern         ::= TuplePattern ;
+P3.             Pattern         ::= Pat ;
+
 -- A literal can be any predefined token type
 LitInt.			Literal  		::= Integer ;
 LitDouble.		Literal 		::= Double ;
@@ -101,9 +102,10 @@ token Id lower (letter | digit | '_' | '\'')* ;
 separator Id "" ;
 
 -- Expression types
-ELiteral.       Exp10           ::= Literal ;
+
 EVar.			Exp10			::= Id ;
 ETuple.			Exp10			::= Tuple ;
+ELiteral.       Exp10           ::= Literal ;
 EListComp.		Exp10			::= "[" Exp "|" LCPatterns "]" ;
 EList.			Exp10			::= "[" [Exp] "]" ;
 ELet.			Exp10			::= LetBinding ;
@@ -128,14 +130,10 @@ coercions Exp 10 ;
 separator Exp "," ;
 
 -- Structure for case expressions
-ECases1.		Cases			::= CArg "->" Exp ";" Cases1 ;
-ECases2.		Cases1			::= CArg "->" Exp ";" Cases1 ;
+ECases1.		Cases			::= Pattern "->" Exp ";" Cases1 ;
+ECases2.		Cases1			::= Pattern "->" Exp ";" Cases1 ;
 ECases3.		Cases1			::= ;
 
--- Arguments for the case expression
-CCArg1.			CArg			::= Pat ;
-CCArg2.			CArg			::= ListPattern ;
-CCArg3.			CArg			::= Tuple ;
 
 --Fixed size tuples
 Tuple2.         Tuple           ::= "(" Exp "," Exp ")" ;
