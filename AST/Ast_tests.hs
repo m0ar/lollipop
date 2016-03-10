@@ -33,6 +33,10 @@ main = do
            ,l
            ,m)
 -}
+
+--------------------------------------------------------------------------------
+-- things to use in tests
+--------------------------------------------------------------------------------
 dCon = DConstr "Cons" (VFun (\v1 -> VFun (\v2 -> VConstr "Cons" [v1,v2])))
 dNil = DConstr "Nil" (VConstr "Nil" [])
 
@@ -71,7 +75,9 @@ list4 = (EApp
             (EApp (EApp (EConstr "Cons") (eOne)) (EConstr "Nil"))))
         )
 
-
+--------------------------------------------------------------------------------
+-- tests
+--------------------------------------------------------------------------------
 
 -- main = print "HejsaN"        
 testHello = interpret helloMain -- hello world
@@ -80,8 +86,6 @@ testHello = interpret helloMain -- hello world
                                         (EVar "print")
                                         (ELit (SLit "HejsaN"))))]
 
-
--- Test Let
 -- main = let x = 5 + 9 in x + 3
 testLetIn = interpret letInMain
     where
@@ -95,7 +99,7 @@ testLazyLetIn = interpret lazyLetInMain
         let' = ELetIn "x" (EBinOp Add (EVar "x") eOne) eFive
         lazyLetInMain = [DFunc "main" [] let']
 
--- test ECase
+
 -- main = case (Cons 2 Nil) of
 --      Cons x xs -> x + 0
 --      Nil       -> 0
@@ -121,7 +125,12 @@ testSumList l = interpret [dMain, dSum, dCon, dNil]
           ecase = ECase (EVar "xs") [p1, p2]
           dSum  = DFunc "sum" ["xs"] ecase
 
--- Another sumList test
+{-
+main = sum list1
+sum xs = case xs of
+    Nil        -> 0
+    Cons x xs' -> x + sum xs
+-}
 testSumList2 = interpret [dMain, dSum, dCon, dNil]
     where
         dMain = DFunc "main" [] (EApp (EVar "sum") list1)
@@ -153,7 +162,9 @@ test2 = interpret ds >>= putStrLn . take 1000 . show where
             ]
 -}
 
--- main-test functions
+
+-- main = add 5 2
+-- add x y = x + y
 testFuncs = interpret funcMain
     where funcMain = [
                         (DFunc "main" [] (EApp (EApp (EVar "add")
@@ -161,12 +172,14 @@ testFuncs = interpret funcMain
                         (DFunc "add" ["x","y"] (EBinOp Add (EVar "x") (EVar "y")))
                     ]
 
--- main-test functions
+-- main = add 3
+-- add x = x + 2
 testFuncs2 = interpret funcMain
     where funcMain = [  (DFunc "main" [] (EApp (EVar "add") (ELit (ILit 3)))),
                         (DFunc "add" ["x"] (EBinOp Add (EVar "x") (ELit (ILit 2))))
                     ]
--- 14
+                    
+-- main = (\x -> x + 4) ((\x -> x + 4) 6)   -- should return 14
 testLam = interpret lamMain -- lambda-calculus addition with application
     where lam = EApp (ELam "x" (EBinOp Add (EVar "x") (ELit (ILit 4))))
                     (EApp (ELam "x" (EBinOp Add (EVar "x")
@@ -174,9 +187,8 @@ testLam = interpret lamMain -- lambda-calculus addition with application
           lamMain = [(DFunc "main" [] lam)]
 
 
-
-testECon2 = interpret [econMain,dcon,dnil]
+-- main = Cons 5 Nil
+testECon2 = interpret [econMain,dCon,dNil]
     where
-        econMain = DFunc "main" [] (EApp (EApp (EConstr "cons") (eFive)) (EConstr "nil"))
-        dcon = DConstr "cons" (VFun (\v1 -> VFun (\v2 -> VConstr "cons" [v1,v2])))
-        dnil = DConstr "nil" (VConstr "nil" [])
+        econMain = DFunc "main" [] (EApp (EApp (EConstr "Cons") (eFive)) (EConstr "Nil"))
+
