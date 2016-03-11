@@ -71,9 +71,9 @@ eval env expr = case expr of
         ELit (ILit i)            -> VInt i
         ELit (SLit s)            -> VString s
         EBinOp op e1 e2          -> case op of
-            Add                     -> lookupInEnv env "addF"
-            Sub                     -> lookupInEnv env "subF"
-            Mul                     -> lookupInEnv env "mulF"
+            Add                     -> lookupInEnv env "add"
+            Sub                     -> lookupInEnv env "sub"
+            Mul                     -> lookupInEnv env "mul"
         EBind op e1 e2           -> case op of
             Bind                    -> lookupInEnv env "bind"
 

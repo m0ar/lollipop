@@ -78,46 +78,57 @@ list4 = (EApp
 --------------------------------------------------------------------------------
 -- tests
 --------------------------------------------------------------------------------
-
--- main = print "HejsaN"
+{-
+main = print "HejsaN"
+-}
 testHello = interpret helloMain -- hello world
     where
         helloMain = [(DFunc "main" [] (EApp
                                         (EVar "print")
                                         (ELit (SLit "HejsaN"))))]
-
+{-
+Testing of user input.
+-}
 testReadLine = interpret readLine
     where
         readLine = [(DFunc "main" [] (EVar "readLine"))]
 
+{-
+Testing of printing a user input. The input funcs result is passed to the print function.
+-}
 testBind = interpret bind
     where
         bind = [(DFunc "main" [] bind')]
         bind' = EApp (EApp (EVar "bind") (EVar "readLine")) (EVar "print")
 
--- main = let x = 5 + 9 in x + 3
+{-
+main = let x = 5 + 9 in x + 3
+-}
 testLetIn = interpret letInMain
     where
         let' = ELetIn "x" (EBinOp Add eFive eNine) (EBinOp Add (EVar "x") eThree)
         letInMain = [DFunc "main" [] let']
 
-
--- main = let x = x+1 in 5
+{-
+main = let x = x+1 in 5
+-}
 testLazyLetIn = interpret lazyLetInMain
     where
         let' = ELetIn "x" (EBinOp Add (EVar "x") eOne) eFive
         lazyLetInMain = [DFunc "main" [] let']
 
-
--- main = Cons 5 Nil
+{-
+main = Cons 5 Nil
+-}
 testEConstr = interpret [econMain,dCon,dNil]
     where
         econMain = DFunc "main" [] (EApp (EApp (EConstr "Cons") (eFive)) (EConstr "Nil"))
 
-
--- main = case (Cons 2 Nil) of
---      Cons x xs -> x + 0
---      Nil       -> 0
+{-
+main = case (Cons 2 Nil) of
+    Cons x xs -> x + 0
+    Nil       -> 0
+-}
 testCase = interpret caseMain
     where elist    = list1
           -- elist = EConstr "Nil" []
@@ -155,39 +166,47 @@ testSumList2 = interpret [dMain, dSum, dCon, dNil]
                 p2 = (Constr "Cons" ["x", "xs'"] (EBinOp Add (EVar "x")
                      (EApp (EVar "sum") (EVar "xs'"))))
 
-
--- main = (\x -> x + 4) ((\x -> x + 4) 6)   -- should return 14
+{-
+main = (\x -> x + 4) ((\x -> x + 4) 6)   -- should return 14
+-}
 testLam = interpret lamMain -- lambda-calculus addition with application
     where lam = EApp (ELam "x" (EBinOp Add (EVar "x") eFour))
                     (EApp (ELam "x" (EBinOp Add (EVar "x")
                     eFour)) eSix)
           lamMain = [(DFunc "main" [] lam)]
 
-
--- main = add 5 2
--- add x y = x + y
+{-
+main = add 5 2
+add x y = x + y
+-}
 testFuncs = interpret funcMain
     where funcMain = [
-                        (DFunc "main" [] (EApp (EApp (EVar "add")
+                        (DFunc "main" [] (EApp (EApp (EVar "adds")
                         eFive) eTwo)),
-                        (DFunc "add" ["x","y"] (EBinOp Add (EVar "x") (EVar "y")))
+                        (DFunc "adds" ["x","y"] (EBinOp Add (EVar "x") (EVar "y")))
                      ]
-
--- main = add 3
--- add x = x + 2
+{-
+main = add 3
+add x = x + 2
+-}
 testFuncs2 = interpret funcMain
     where funcMain = [
                         (DFunc "main" [] (EApp (EVar "add") eThree)),
                         (DFunc "add" ["x"] (EBinOp Add (EVar "x") eTwo))
                      ]
 
+{-
+main = 2+3*4
+-}
 testBinOps = interpret $ [DFunc "main" []
     (EApp (EApp (EVar "add") eTwo)
           (EApp (EApp (EVar "mul") eThree) eFour))]
 
--- main = first 5 (infty 0)
--- first x y = x
--- infty x = 1 + infty x
+{-
+main = first 5 (infty 0)
+first x y = x
+infty x = 1 + infty x
+-}
 testLazyFuncs = interpret [funcMain, funcFirst, funcInfty] where
     funcMain = DFunc "main" [] (EApp (EApp (EVar "first") eFive) (EApp (EVar "infty") eZero))
     funcFirst = DFunc "first" ["x", "y"] (EVar "x")
