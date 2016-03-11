@@ -32,7 +32,8 @@ type Var = String
 type Vars = [Var]
 
 data Value = VInt Int
-        | VIO (IO Value)
+        | VIO (IO Value) -- void IO
+        | FIO (Value -> IO Value) -- void IO
         | VString String
         | VChar Char
         | VDouble Double

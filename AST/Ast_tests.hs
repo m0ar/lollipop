@@ -90,6 +90,11 @@ testReadLine = interpret readLine
     where
         readLine = [(DFunc "main" [] (EVar "readLine"))]
 
+testBind = interpret bind
+    where
+        bind = [(DFunc "main" [] bind')]
+        bind' = EApp (EApp (EVar "bind") (EVar "readLine")) (EVar "print")
+
 -- main = let x = 5 + 9 in x + 3
 testLetIn = interpret letInMain
     where
@@ -109,11 +114,6 @@ testEConstr = interpret [econMain,dCon,dNil]
     where
         econMain = DFunc "main" [] (EApp (EApp (EConstr "Cons") (eFive)) (EConstr "Nil"))
 
-
-testBind = interpret bind
-    where
-        bind = [(DFunc "main" [] bind')]
-        bind' = EApp (EApp (EVar "bind") (EVar "readLine")) (EVar "print")
 
 -- main = case (Cons 2 Nil) of
 --      Cons x xs -> x + 0
