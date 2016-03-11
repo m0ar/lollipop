@@ -29,22 +29,12 @@ addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
 
 startEnv :: Env
 startEnv = printF $ readLnF $ addF $ subF $ mulF $ bind $ M.empty
-    where   printF  = M.insert "print" (FIO (\(VString s) -> (print s >> return (VString s))))
-            readLnF = M.insert "readLine" (VIO (fmap VString readLn))
-            addF    = M.insert "add" (VFun (\(VInt x) -> (VFun (\(VInt y) -> (VInt (x+y))))))
-            subF    = M.insert "sub" (VFun (\(VInt x) -> (VFun (\(VInt y) -> (VInt (x-y))))))
-            mulF    = M.insert "mul" (VFun (\(VInt x) -> (VFun (\(VInt y) -> (VInt (x*y))))))
-            bind    = M.insert "bind" (VFun (\(VIO a1) -> (VFun (\(FIO a2) -> (VIO (a1 >>= (\s -> (a2 s))))))))
-
---         readLn :: IO a  [IO Value]
---        (readLn) >>= (\(VString s) -> (putStrLn s))
--- >>= :: m a -> (a -> m b) -> m b
-
---
-                                                       -- (readLn) >>= (\s -> (putStrLn s))
---unpack :: IO a -> IO Value
-
-
+    where   printF  = M.insert "print" $ FIO $ \(VString s) -> print s >> return (VString s)
+            readLnF = M.insert "readLine" $ VIO $ fmap VString readLn
+            subF    = M.insert "sub" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x-y
+            addF    = M.insert "add" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x+y
+            mulF    = M.insert "mul" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x*y
+            bind    = M.insert "bind" $ VFun $ \(VIO a1) -> VFun $ \(FIO a2) -> VIO $ a1 >>= \s -> a2 s
 
 -- makeBinding is a helper function to addDecsToEnv
 -- Makes bindings from declarations to environment
