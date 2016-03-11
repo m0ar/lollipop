@@ -25,6 +25,11 @@ data Pattern = Constr ConstrID [Var] Exp
             | Simple Lit Exp
             | Wild Exp
             | Variable Var Exp
+            | List LPattern
+
+data LPattern = LP LEntry LPattern | Nil
+
+data LEntry = Var Var | Lit Lit | LWild | Empty
 
 type Var = String
 
