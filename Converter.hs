@@ -35,21 +35,45 @@ defToPat (A.DDef (A.Id cid) args e) = (D.Constr cid (vars args) (cExp e))
 defToPat (A.DGuardsDef (A.Id cid) args guards) = undefined
 
 argToVar :: A.Arg -> D.Var
-argToVar (A.DArg2 (A.Id name)) = name
+argToVar (A.DArg3 typeId) = case typeId of
+    (STypeIdent (TypeId name))    -> name
+    (LiTypeIdent (LiTypeId name)) -> name
+
 
 getArgs :: [A.Def] -> D.Vars
 getArgs = undefined
 
 cArg :: A.Arg -> D.Exp
-cArg (A.DArg1 lit) = case lit of
+-- cArg (A.DArg4 (A.P1 lp)) = TODO Implement list-patterns in AST
+-- cArg (A.DArg4 (A.P2 (A.TPattern1 ps))) = TODO Implement tuples-patterns in AST
+cArg (A.DArg4 (A.P3 (A.PLit lit))) = case lit of
     (A.LitInt x)    -> D.ELit (D.ILit (fromInteger x))
     (A.LitDouble x) -> D.ELit (D.DLit x)
     (A.LitChar x)   -> D.ELit (D.CLit x)
-cArg (A.DArg2 (A.Id name)) = D.EVar name
-cArg (A.DArg3 t) = case t of
-    (A.TTypeId (TypeId name))     -> D.EConstr name
-    (A.TLiTypeId (LiTypeId name)) -> D.EConstr name
-    -- (LitString x) ->
+cArg (A.DArg3 typeId) = case typeId of
+    (A.STypeIdent (TypeId name))    -> D.EVar name
+    (A.LiTypeIdent (LiTypeId name)) -> D.EVar name
+
+cPattern :: A.Pattern -> A.Exp -> D.Pattern
+-- cPattern (P1 lp) e = TODO Add suport for lists
+-- cPattern (P2 tp) e = TODO Add support for tuples
+cPattern (P3 p) e = (cPat p e)
+
+-- A pattern from bnfc has no expression bound to it
+-- this must be sent from the Def to create the AST pattern
+cPat :: A.Pat -> A.Exp -> D.Pattern
+cPat Pwild e           = D.Wild (cExp e)
+cPat (PId (Id name)) e = D.Variable name (cExp e)
+cPat (PLit l)        e = D.Simple (cLit l) (cExp e)
+
+cType :: A.Type -> D.Exp
+cType (TTypeId t) = case t of -- TODO check this part
+    (STypeIdent (TypeId name))    -> (D.EVar name)
+    (LiTypeIdent (LiTypeId name)) -> (D.EVar name)
+-- cType (TPoly ti)   = what is poly?
+cType (TList ts)  = cList ts
+    where cList []     = D.EConstr "Nil"
+          cList (t:ts) = D.EApp (D.EApp (D.EConstr "Cons") (cType t)) (cList ts)
 
 cLit :: A.Literal -> D.Lit
 cLit (A.LitInt x)      = D.ILit $ fromInteger x
@@ -68,13 +92,15 @@ cExp (EIf e1 e2 e3)         = (D.ECase (cExp e1) [(D.Constr "True" [] (cExp e2))
                                                   (D.Constr "False" [] (cExp e3))])
 
 cCase :: A.Cases -> [D.Pattern]
-cCase ECases3             = []
-cCase (ECases1 cArg e cs) = cCase (ECases2 cArg e cs)
-cCase (ECases2 cArg e cs) = case cArg of
-    (CCArg1 p)  -> case p of
+cCase A.ECases3             = []
+cCase (A.ECases1 p e cs) = cCase (A.ECases2 p e cs)
+cCase (A.ECases2 p e cs) = case p of
+    (A.P3 p)  -> case p of
         A.Pwild       -> ((D.Wild (cExp e)):[])
         (A.PLit lit)  -> ((D.Simple (cLit lit) (cExp e)):(cCase cs))
-    -- (CCArg2 lp) ->
+    -- (A.P1 lp) ->
+    -- (A.P2 tp) ->
+    -- TODO add support for tuples and lists in cases
 
 
 

@@ -24,7 +24,7 @@ data Op = Add | Sub | Mul | Div | Bind
 data Pattern = Constr ConstrID [Var] Exp
             | Simple Lit Exp
             | Wild Exp
-            | Variable Vars
+            | Variable Var Exp
 
 type Var = String
 
