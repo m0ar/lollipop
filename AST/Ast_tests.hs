@@ -158,9 +158,9 @@ testSumList2 = interpret [dMain, dSum, dCon, dNil]
 
 -- main = (\x -> x + 4) ((\x -> x + 4) 6)   -- should return 14
 testLam = interpret lamMain -- lambda-calculus addition with application
-    where lam = EApp (ELam "x" (EBinOp Add (EVar "x") (ELit (ILit 4))))
+    where lam = EApp (ELam "x" (EBinOp Add (EVar "x") eFour))
                     (EApp (ELam "x" (EBinOp Add (EVar "x")
-                    (ELit (ILit 4)))) (ELit (ILit 6)))
+                    eFour)) eSix)
           lamMain = [(DFunc "main" [] lam)]
 
 
@@ -169,20 +169,21 @@ testLam = interpret lamMain -- lambda-calculus addition with application
 testFuncs = interpret funcMain
     where funcMain = [
                         (DFunc "main" [] (EApp (EApp (EVar "add")
-                        (ELit (ILit 5))) (ELit (ILit 2)))),
+                        eFive) eTwo)),
                         (DFunc "add" ["x","y"] (EBinOp Add (EVar "x") (EVar "y")))
-                    ]
+                     ]
 
 -- main = add 3
 -- add x = x + 2
 testFuncs2 = interpret funcMain
-    where funcMain = [  (DFunc "main" [] (EApp (EVar "add") (ELit (ILit 3)))),
-                        (DFunc "add" ["x"] (EBinOp Add (EVar "x") (ELit (ILit 2))))
-                    ]
+    where funcMain = [
+                        (DFunc "main" [] (EApp (EVar "add") eThree)),
+                        (DFunc "add" ["x"] (EBinOp Add (EVar "x") eTwo))
+                     ]
 
 testBinOps = interpret $ [DFunc "main" []
-    (EApp (EApp (EVar "add") (ELit (ILit 2)))
-          (EApp (EApp (EVar "mul") (ELit (ILit 3))) (ELit (ILit 4))))]
+    (EApp (EApp (EVar "add") eTwo)
+          (EApp (EApp (EVar "mul") eThree) eFour))]
 
 -- main = first 5 (infty 0)
 -- first x y = x
@@ -193,16 +194,11 @@ testLazyFuncs = interpret [funcMain, funcFirst, funcInfty] where
     funcInfty = DFunc "infty" ["x"] (EBinOp Add eOne (EApp (EVar "infty") (EVar "x")))
 
 {-
-test1 = interpret ds >>= putStrLn . take 1000 . show where
-  ds   = [main]
-  main = DFunc "main" [] body
-  body = EConstr "Cons" [(ELit (ILit 1)), EVar "main"]
-
 test2 = interpret ds >>= putStrLn . take 1000 . show where
     cons = "Cons"
     ds   = [main,go,map]
     main = DFunc "main" [] body where
-        body = EApp (EVar "go") (ELit (ILit 1))
+        body = EApp (EVar "go") eOne
     go   = DFunc "go" ["x"] body where
         x    = EVar "x"
         body = EConstr cons [x, EVar "go" `EApp` (x `EBinOp Add` x)]
