@@ -29,12 +29,17 @@ addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
 
 startEnv :: Env
 startEnv = printF $ readLnF $ addF $ subF $ mulF $ bind $ M.empty
-    where   printF  = M.insert "print" $ FIO $ \(VString s) -> print s >> return (VString s)
+    where   printF  = M.insert "print" $ VFun $ \(VString s) -> VIO $ print s >> return (VConstr "()" [])
             readLnF = M.insert "readLine" $ VIO $ fmap VString readLn
             subF    = M.insert "sub" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x-y
             addF    = M.insert "add" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x+y
-            mulF    = M.insert "mul" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x*y
-            bind    = M.insert "bind" $ VFun $ \(VIO a1) -> VFun $ \(FIO a2) -> VIO $ a1 >>= \s -> a2 s
+            mulF    = M.insert "mul" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x*y -- a1 >>= \s -> a2 s
+            bind    = M.insert "bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> return (a2 s)
+
+bind' :: Value -> Value
+bind' act = case act of
+    VIO a -> VIO $ a >> return (VConstr "()" [])
+
 
 -- makeBinding is a helper function to addDecsToEnv
 -- Makes bindings from declarations to environment
@@ -62,8 +67,8 @@ eval env expr = case expr of
         EApp e1 e2               -> case (eval env e1) of
              VFun v1                -> v1 v2
                 where v2 = eval env e2
-             FIO f                -> VIO (f v2)
-                where v2 = eval env e2
+             --FIO f                -> VIO (f v2)
+            --    where v2 = eval env e2
              _                      -> error "NOT FUNCTION!!!!"
         ELam var e               -> VFun f
             where f v = eval (addToEnv env var v) e
