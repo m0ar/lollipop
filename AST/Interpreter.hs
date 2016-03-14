@@ -34,11 +34,12 @@ startEnv = printF $ readLnF $ addF $ subF $ mulF $ bind $ M.empty
             subF    = M.insert "sub" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x-y
             addF    = M.insert "add" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x+y
             mulF    = M.insert "mul" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x*y -- a1 >>= \s -> a2 s
-            bind    = M.insert "bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> return (a2 s)
+            bind    = M.insert "bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> run $ a2 s
 
-bind' :: Value -> Value
-bind' act = case act of
-    VIO a -> VIO $ a >> return (VConstr "()" [])
+run :: Value -> IO Value
+run act = case act of
+    VIO a -> a >> return (VConstr "()" [])
+    _     -> error "faulty type"
 
 
 -- makeBinding is a helper function to addDecsToEnv
