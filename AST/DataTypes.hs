@@ -28,15 +28,13 @@ data Pattern = Constr ConstrID [Var] Exp
             | Wild Exp
             | Variable Var Exp
             | List LPattern
-            | Tup2 TPattern TPattern Exp
-            | Tup3 TPattern TPattern TPattern Exp
+            | Tup2 Pattern Pattern Exp
+            | Tup3 Pattern Pattern Pattern Exp
             
 
 data LPattern = LP LEntry LPattern | Nil
 
 data LEntry = Var Var | Lit Lit | LWild | Empty
-
-data TPattern = TPVar Var | TPLit Lit | TPWild
 
 type Var = String
 
@@ -45,7 +43,7 @@ type Vars = [Var]
 
 data Value = VInt Int
         | VIO (IO Value) -- void IO
-        | FIO (Value -> IO Value) -- void IO
+        -- | FIO (Value -> IO Value) -- void IO
         | VString String
         | VChar Char
         | VDouble Double
