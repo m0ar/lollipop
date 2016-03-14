@@ -17,6 +17,8 @@ data Exp = EApp Exp Exp
        | EConstr ConstrID
        | ECase Exp [Pattern]
        | ELetIn Var Exp Exp  -- let var = exp in exp
+       | ETup2 Exp Exp
+       | ETup3 Exp Exp Exp
 
 data Op = Add | Sub | Mul | Div | Bind
 
@@ -26,10 +28,15 @@ data Pattern = Constr ConstrID [Var] Exp
             | Wild Exp
             | Variable Var Exp
             | List LPattern
+            | Tup2 TPattern TPattern Exp
+            | Tup3 TPattern TPattern TPattern Exp
+            
 
 data LPattern = LP LEntry LPattern | Nil
 
 data LEntry = Var Var | Lit Lit | LWild | Empty
+
+data TPattern = TPVar Var | TPLit Lit | TPWild
 
 type Var = String
 
