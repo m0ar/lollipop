@@ -10,29 +10,25 @@ import qualified DataTypes as D
 import AbsGrammar
 import qualified AbsGrammar as A
 
-main :: IO ()
-main = putStrLn ""
-
-convert :: A.Program -> IO ()
-convert ds = interpret $ cProgram ds
-
 cProgram :: A.Program -> D.Program
 -- cProgram (PImports i p)
 cProgram (A.PFuncs d p)   = ((cDeclaration d):(cProgram p))
 cProgram (A.PLast d)      = ((cDeclaration d):[])
 
+-- A.PLast (A.DFunc (A.Id "main") (A.STypeDecl (A.TTypeId (A.STypeIdent (A.TypeId "Int")))) [A.DDef (A.Id "main") [] (A.EAdd (A.ELiteral (A.LitInt 2)) (A.ELiteral (A.LitInt 5)))])
+
 -- converts any declaration to a case
 cDeclaration :: A.Declaration -> D.Declaration
-cDeclaration = undefined
---cDeclaration (A.DFunc (A.Id name) ds defs) = (D.DFunc name vars eCase)
-    -- where eCase = (D.ECase (D.EVar "placeholder") (map defToPat defs))
-          -- vars = take ((length ds)-1) vs -- create variables of the input parameters
+cDeclaration (A.DFunc (A.Id name) ds defs) = (D.DFunc name [] eCase)
+     where eCase = (D.ECase (D.EVar "x") (map defToPat defs))
+           --vars = take ((length ds)-1) vs -- create variables of the input parameters
 
 vs = ["a","b","c","d","e","f","g"] -- todo: rename "#x1" "#x2"
                                     -- define inf list instead: map (("#x"++).show) [1..]
 
 defToPat :: A.Def -> D.Pattern
-defToPat (A.DDef (A.Id cid) args e) = (D.Constr cid (vars args) (cExp e))
+--defToPat (A.DDef (A.Id cid) args e) = (D.Constr cid (vars args) (cExp e))
+defToPat (A.DDef (A.Id cid) args e) = (D.Constr cid [] (cExp e))
     where vars as = (map argToVar as)
 defToPat (A.DGuardsDef (A.Id cid) args guards) = undefined
 
@@ -85,7 +81,14 @@ cLit (A.LitDouble x)   = D.DLit x
 cLit (A.LitChar x)     = D.CLit x
 cLit (A.LitString x)   = D.SLit x
 
+-- (A.EAdd (A.ELiteral (A.LitInt 2)) (A.ELiteral (A.LitInt 5)))])
+-- -->
+-- EApp (ELam "x" (EBinOp Add (EVar "x") eFour))
+            --    (EApp (ELam "x" (EBinOp Add (EVar "x")
+            --    eFour)) eSix)
+
 cExp :: A.Exp -> D.Exp
+cExp (A.EAdd e1 e2)         = (D.EApp (D.ELam "x" (D.EBinOp D.Add (D.EVar "x") (cExp e1))) (cExp e2))
 cExp (A.EVar (A.Id name))   = (D.EVar name)
 cExp (A.ELiteral lit)       = (D.ELit $ cLit lit)
 -- cExp (A.ELet vID)       = (D.ELetIn )

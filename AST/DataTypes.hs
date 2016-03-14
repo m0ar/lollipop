@@ -8,6 +8,7 @@ data Declaration =
          DFunc Var Vars Exp
        | DConstr ConstrID Value -- change Value to something else later
 
+
 data Exp = EApp Exp Exp
        | EVar Var
        | ELit Lit
@@ -60,6 +61,9 @@ data Lit = SLit String
         | CLit Char
     deriving Show
 
+instance Show Declaration where
+    show (DFunc var vars e) = "function: " ++ var ++ "\n " ++ (show e)
+
 -- Show functions --
 instance Show Exp where
     show e = case e of
@@ -67,6 +71,11 @@ instance Show Exp where
         EVar s             -> s
         ELit l             -> show l
         EConstr cid        -> show cid
+        EBinOp op e1 e2    -> case op of
+            Add -> (show e1) ++ " + " ++ (show e2)
+        ELam v e           -> "(\'" ++ v ++ " -> " ++ (show e)
+        ECase e ps         -> "case " ++ (show e) ++ " .."
+
 -- skriv särskild printer med io
 instance Show Value where
     show v = case v of
