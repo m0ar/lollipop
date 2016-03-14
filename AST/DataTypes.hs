@@ -51,6 +51,8 @@ data Value = VInt Int
         | VDouble Double
         | VConstr ConstrID [Value] -- list of values to be used as parameters
         | VFun (Value -> Value)
+        | VTup2 Value Value
+        | VTup3 Value Value Value
 
 type ConstrID = String
 
@@ -75,3 +77,5 @@ instance Show Value where
         (VIO v)      -> "IO!!!!"
         (VFun f)     -> "gotta function"
         (VConstr cid vs) -> cid ++ " " ++ concat (Prelude.map show vs)
+        (VTup2 v1 v2)    -> "(" ++ show v1 ++ ", " ++ show v2 ++ ")"
+        (VTup3 v1 v2 v3) -> "(" ++ show v1 ++ ", " ++ show v2 ++ ", " ++ show v3 ++ ")"

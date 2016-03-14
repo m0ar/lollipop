@@ -212,6 +212,13 @@ testLazyFuncs = interpret [funcMain, funcFirst, funcInfty] where
     funcFirst = DFunc "first" ["x", "y"] (EVar "x")
     funcInfty = DFunc "infty" ["x"] (EBinOp Add eOne (EApp (EVar "infty") (EVar "x")))
 
+    
+{-
+main = (5, 7)
+-}
+testTuple = interpret [DFunc "main" [] tup] where
+    tup = ETup2 eFive eSeven 
+    
 {-
 test2 = interpret ds >>= putStrLn . take 1000 . show where
     cons = "Cons"

@@ -76,7 +76,8 @@ eval env expr = case expr of
             Mul                     -> lookupInEnv env "mul"
         EBind op e1 e2           -> case op of
             Bind                    -> lookupInEnv env "bind"
-
+        ETup2 e1 e2              -> VTup2 (eval env e1) (eval env e2)
+        ETup3 e1 e2 e3           -> VTup3 (eval env e1) (eval env e2) (eval env e3)
 
 
 
