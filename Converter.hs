@@ -95,6 +95,7 @@ cExp (A.ECase e cs)         = (D.ECase (cExp e) (cCase cs))
 cExp (EIf e1 e2 e3)         = (D.ECase (cExp e1) [(D.Constr "True" [] (cExp e2)),
                                                   (D.Constr "False" [] (cExp e3))])
 
+                                                  
 cCase :: A.Cases -> [D.Pattern]
 cCase A.ECases3             = []
 cCase (A.ECases1 p e cs) = cCase (A.ECases2 p e cs)
@@ -106,7 +107,9 @@ cCase (A.ECases2 p e cs) = case p of
     -- (A.P2 tp) ->
     -- TODO add support for tuples and lists in cases
 
-
+cTuple :: A.Tuple -> D.Exp
+cTuple (Tuple2 e1 e2)    = D.ETup2 (cExp e1) (cExp e2)
+cTuple (Tuple3 e1 e2 e3) = D.ETup3 (cExp e1) (cExp e2) (cExp e3)
 
 cGuard :: A.Guards -> D.Exp
 cGuard (A.DGuards1 e1 e2 gs) = D.ECase (cExp e2) [(D.Constr "True" [] (cExp e1)),
