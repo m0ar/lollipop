@@ -34,11 +34,23 @@ startEnv = printF $ readLnF $ addF $ subF $ mulF $ bind $ M.empty
             subF    = M.insert "sub" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x-y
             addF    = M.insert "add" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x+y
             mulF    = M.insert "mul" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x*y -- a1 >>= \s -> a2 s
-            bind    = M.insert "bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> return (a2 s)
+            bind    = M.insert "bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> run (a2 s)
 
-bind' :: Value -> Value
-bind' act = case act of
-    VIO a -> VIO $ a >> return (VConstr "()" [])
+run :: Value -> IO Value
+run act = case act of
+    VIO a -> a >> return (VConstr "()" [])
+    _     -> error "faulty value"
+
+
+{--
+(a2 s) is a Value. We know that if the program is type correct,
+it should be a VIO (since the "lolipop-type" of a2 must be
+(a -> IO b)) and all values of type IO x should be VIO. So what
+you need is a case on (a2 s) instead of just returning it.
+A helper function (runIO :: Value -> IO Value) could be used,
+that just extracts the IO action contained in a VIO (so: runIO (VIO m) = m)
+and gives an error for other types of values.
+--}
 
 
 -- makeBinding is a helper function to addDecsToEnv
