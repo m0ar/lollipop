@@ -106,8 +106,8 @@ cCase (A.ECases2 p e cs) = case p of
         A.Pwild       -> ((D.Wild (cExp e)):[])
         (A.PLit lit)  -> ((D.Simple (cLit lit) (cExp e)):(cCase cs))
     -- (A.P1 lp) ->
-    -- (A.P2 tp) ->
-    -- TODO add support for tuples and lists in cases
+    (A.P2 tp)         -> (cPattern (P2 tp) e):(cCase cs)
+    -- TODO add support for lists in cases
 
 cTuple :: A.Tuple -> D.Exp
 cTuple (Tuple2 e1 e2)    = D.ETup2 (cExp e1) (cExp e2)
