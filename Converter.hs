@@ -58,7 +58,9 @@ cArg (A.DArg3 typeId) = case typeId of
 
 cPattern :: A.Pattern -> A.Exp -> D.Pattern
 -- cPattern (P1 lp) e = TODO Add suport for lists
--- cPattern (P2 tp) e = TODO Add support for tuples
+cPattern (P2 (TPattern1 ps)) e = case length ps of
+    2   -> D.Tup2 (cPattern (ps !! 0) e) (cPattern (ps !! 1) e) (cExp e)
+    3   -> D.Tup3 (cPattern (ps !! 0) e) (cPattern (ps !! 1) e) (cPattern (ps !! 2) e) (cExp e)
 cPattern (P3 p) e = (cPat p e)
 
 -- A pattern from bnfc has no expression bound to it
