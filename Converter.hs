@@ -11,32 +11,57 @@ import AbsGrammar
 import qualified AbsGrammar as A
 
 cProgram :: A.Program -> D.Program
--- cProgram (PImports i p)
 cProgram (A.PFuncs d p)   = ((cDeclaration d):(cProgram p))
 cProgram (A.PLast d)      = ((cDeclaration d):[])
-
--- A.PLast (A.DFunc (A.Id "main") (A.STypeDecl (A.TTypeId (A.STypeIdent (A.TypeId "Int")))) [A.DDef (A.Id "main") [] (A.EAdd (A.ELiteral (A.LitInt 2)) (A.ELiteral (A.LitInt 5)))])
+-- cProgram (PImports i p)
 
 -- converts any declaration to a case
 cDeclaration :: A.Declaration -> D.Declaration
-cDeclaration (A.DFunc (A.Id name) ds defs) = (D.DFunc name [] eCase)
-     where eCase = (D.ECase (D.EVar "x") (map defToPat defs))
-           --vars = take ((length ds)-1) vs -- create variables of the input parameters
+cDeclaration (A.DFunc (A.Id name) td defs) = (D.DFunc name vars eCase)
+     where eCase = (D.ECase (D.EVar "x") (map (defToPat vars) defs))
+           vars = take ((countTd td)-1) variables -- create variables of the input parameters
 
-vs = ["a","b","c","d","e","f","g"] -- todo: rename "#x1" "#x2"
-                                    -- define inf list instead: map (("#x"++).show) [1..]
 
-defToPat :: A.Def -> D.Pattern
+-- list of generated variables to introduce in declaration
+variables :: [D.Var]
+variables = map (("#x"++).show) [1..]
+
+-- counts number of type declarations
+countTd :: A.TypeDecls -> Int
+countTd (A.STypeDecl _)      = 1
+countTd (A.MTypeDecl _ td)   = 1 + countTd td
+countTd (A.MLiTypeDecl _ td) = 1 + countTd td
+
+-- converts a definition to a pattern
+defToPat :: [D.Var] -> A.Def -> D.Pattern
+defToPat vs (A.DDef (A.Id cid) args e) = D.Mix (map argToPat args) (cExp e)
+-- defToPat vs (A.DGuardsDef (A.Id cid) args guards) = undefined
+-- defToPat vs (A.DDef (A.Id cid) args e) = (D.Constr cid [] (cExp e))
+    -- where vars as = (map argToVar as)
+
+-- ["x","y"] (sum 9 2 = e)
+
 --defToPat (A.DDef (A.Id cid) args e) = (D.Constr cid (vars args) (cExp e))
-defToPat (A.DDef (A.Id cid) args e) = (D.Constr cid [] (cExp e))
-    where vars as = (map argToVar as)
-defToPat (A.DGuardsDef (A.Id cid) args guards) = undefined
 
-argToVar :: A.Arg -> D.Var
+-- REPLACED BY PASSED
+{-- argToVar :: A.Arg -> D.Var
 argToVar (A.DArg3 typeId) = case typeId of
     (STypeIdent (TypeId name))    -> name
-    (LiTypeIdent (LiTypeId name)) -> name
+    (LiTypeIdent (LiTypeId name)) -> name --}
 
+-- converts args to pat in DataTypes.hs
+-- where Pat = PLit Lit | PWild | PVar Var
+argToPat :: A.Arg -> D.Pat
+argToPat (A.DArg3 tid) = case tid of
+    A.STypeIdent (A.TypeId name)    -> D.PVar name
+    A.LiTypeIdent (A.LiTypeId name) -> D.PVar name
+argToPat (A.DArg4 p)   = case p of
+    A.P3 pat -> case pat of
+        A.Pwild           -> D.PWild
+        (A.PId (Id name)) -> D.PVar name
+        (A.PLit lit)      -> D.PLit (cLit lit)
+    -- A.P1 lp TODO
+    -- A.P2 tp TODO
 
 getArgs :: [A.Def] -> D.Vars
 getArgs = undefined
@@ -100,7 +125,7 @@ cExp (EIf e1 e2 e3)         = (D.ECase (cExp e1) [(D.Constr "True" [] (cExp e2))
 cExp (ETuple t) = case t of
     (Tuple2 e1 e2)    -> D.ETup2 (cExp e1) (cExp e2)
     (Tuple3 e1 e2 e3) -> D.ETup3 (cExp e1) (cExp e2) (cExp e3)
-                                                  
+
 cCase :: A.Cases -> [D.Pattern]
 cCase A.ECases3             = []
 cCase (A.ECases1 p e cs) = cCase (A.ECases2 p e cs)

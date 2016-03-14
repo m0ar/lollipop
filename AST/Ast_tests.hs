@@ -137,6 +137,11 @@ testCase = interpret caseMain
           ecase    = ECase elist [p1, p2]
           caseMain = [(DFunc "main" [] ecase), dCon, dNil]
 
+testCase1 = interpret caseMain
+    where caseMain = [(DFunc "main" ["x"] ecase)]
+          ecase    = ECase (EVar "x") [p1]
+          p1       = Constr "main" [] (ELit (ILit 2))
+
 {-
 sum xs = case xs of
     Cons x xs2  ->  x + sum xs2
@@ -212,13 +217,13 @@ testLazyFuncs = interpret [funcMain, funcFirst, funcInfty] where
     funcFirst = DFunc "first" ["x", "y"] (EVar "x")
     funcInfty = DFunc "infty" ["x"] (EBinOp Add eOne (EApp (EVar "infty") (EVar "x")))
 
-    
+
 {-
 main = (5, 7)
 -}
 testTuple = interpret [DFunc "main" [] tup] where
-    tup = ETup2 eFive eSeven 
-    
+    tup = ETup2 eFive eSeven
+
 {-
 test2 = interpret ds >>= putStrLn . take 1000 . show where
     cons = "Cons"

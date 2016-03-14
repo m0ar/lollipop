@@ -28,10 +28,13 @@ data Pattern = Constr ConstrID [Var] Exp
             | Simple Lit Exp
             | Wild Exp
             | Variable Var Exp
+            | Mix [Pat] Exp -- A mix of pattern matchings
             | List LPattern
             | Tup2 Pattern Pattern Exp
             | Tup3 Pattern Pattern Pattern Exp
-            
+
+data Pat = PLit Lit | PWild | PVar Var
+    deriving Show
 
 data LPattern = LP LEntry LPattern | Nil
 
@@ -74,7 +77,15 @@ instance Show Exp where
         EBinOp op e1 e2    -> case op of
             Add -> (show e1) ++ " + " ++ (show e2)
         ELam v e           -> "(\'" ++ v ++ " -> " ++ (show e)
-        ECase e ps         -> "case " ++ (show e) ++ " .."
+        ECase e ps         -> "case " ++ (show e) ++ " of \n" ++ (concatMap show ps)
+
+instance Show Pattern where
+    show p = case p of
+        Constr cid vs e -> cid ++ " "  ++ (concatMap show vs) ++ " = " ++ (show e)
+        Simple lit e    -> (show lit) ++ " -> " ++ (show e)
+        Wild e          -> "_ -> " ++ (show e)
+        Variable v e    -> v ++ " -> " ++ (show e)
+        Mix ps e        -> (concatMap show ps) ++ " -> " ++ (show e)
 
 -- skriv särskild printer med io
 instance Show Value where

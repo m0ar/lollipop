@@ -61,7 +61,7 @@ eval env expr = case expr of
         ELetIn var e1 e2         -> eval env' e2
             where env' = addToEnv env var (eval env' e1)
         EConstr cid              -> lookupInEnv env cid
-        ECase e ps               -> eval env' e'
+        ECase e ps                -> eval env' e'
             where (VConstr cid vals)    = eval env e
                   (Constr cid' vars e') = findPattern ps cid
                   env'             = addManyToEnv env vars vals
@@ -90,6 +90,7 @@ eval env expr = case expr of
 -- finds pattern based on constructor ID
 findPattern :: [Pattern] -> ConstrID -> Pattern
 findPattern [] _                          = error "could not find pattern"
+findPattern (p:[]) _                      = p
 findPattern (p@(Constr cid vs expr):ps) cid'
                             | cid == cid' = p
                             | otherwise   = findPattern ps cid'

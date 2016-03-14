@@ -9,8 +9,9 @@ import AbsGrammar
 import qualified AbsGrammar as A
 
 main :: IO ()
-main = interpret $ cProgram p1
-    where p1 = A.PLast (A.DFunc (A.Id "main") (A.STypeDecl (A.TTypeId (A.STypeIdent (A.TypeId "Int")))) [A.DDef (A.Id "main") [] (A.EAdd (A.ELiteral (A.LitInt 2)) (A.ELiteral (A.LitInt 5)))])
+main = print $ cProgram p1  -- interpret $ cProgram p1
+    where p1 = A.PLast (A.DFunc (A.Id "main") (A.STypeDecl (A.TTypeId (A.STypeIdent (A.TypeId "Int")))) [A.DDef (A.Id "main") [] (A.ELiteral (A.LitInt 2))])
+          p2 = A.PLast (A.DFunc (A.Id "main") (A.STypeDecl (A.TTypeId (A.STypeIdent (A.TypeId "Int")))) [A.DDef (A.Id "main") [] (A.EAdd (A.ELiteral (A.LitInt 2)) (A.ELiteral (A.LitInt 5)))])
 
 {-- p1:
 function main : Int ;
