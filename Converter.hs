@@ -11,8 +11,10 @@ import AbsGrammar
 import qualified AbsGrammar as A
 
 main :: IO ()
+main = putStrLn ""
 
-main = putStrLn "Velkommen til oversetteren fra BNFC AST til lollipop AST!"
+convert :: A.Program -> IO ()
+convert ds = interpret $ cProgram ds
 
 cProgram :: A.Program -> D.Program
 -- cProgram (PImports i p)
