@@ -18,12 +18,13 @@ cProgram (A.PLast d)      = ((cDeclaration d):[])
 -- converts any declaration to a case
 cDeclaration :: A.Declaration -> D.Declaration
 cDeclaration (A.DFunc (A.Id name) td defs)
-                | (countTd td) <= 1 = (D.DFunc name [] (defToExp (head defs)))
+                | (countTd td) <= 1 && (length defs) /= 1 = error "multiple declarations of function"
+                | (countTd td) <= 1 = (D.DFunc name [] (defToExp (head defs))) -- pattern matching can't arrise
                 | otherwise = (D.DFunc name vars (D.ECase (D.EVar (head vars)) (map (defsToCase (tail vars)) defs)))
      where vars = take ((countTd td)-1) variables -- create variables of the input parameters
 
 defToExp :: A.Def -> D.Exp
-defToExp (DDef _ as e) = (cExp e)
+defToExp (DDef _ _ e) = (cExp e) -- gets the expression from a def
 
 -- converts a number of definitions to case-tree
 -- first matches the first argument to firt input variable then creates following
@@ -131,7 +132,8 @@ cLit (A.LitString x)   = D.SLit x
             --    eFour)) eSix)
 
 cExp :: A.Exp -> D.Exp
-cExp (A.EAdd e1 e2)         = (D.EApp (D.ELam "x" (D.EBinOp D.Add (D.EVar "x") (cExp e1))) (cExp e2))
+--cExp (A.EAdd e1 e2)         = (D.EApp (D.ELam "x" (D.EBinOp D.Add (D.EVar "x") (cExp e1))) (cExp e2))
+cExp (A.EAdd e1 e2)         = (D.EBinOp D.Add (cExp e1) (cExp e2))
 cExp (A.EVar (A.Id name))   = (D.EVar name)
 cExp (A.ELiteral lit)       = (D.ELit $ cLit lit)
 -- cExp (A.ELet vID)       = (D.ELetIn )
