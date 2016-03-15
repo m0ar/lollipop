@@ -13,7 +13,6 @@ data Exp = EApp Exp Exp
        | EVar Var
        | ELit Lit
        | EBinOp Op Exp Exp
-       | EBind Op Exp Exp
        | ELam Var Exp
        | EConstr ConstrID
        | ECase Exp [Pattern]
@@ -85,7 +84,6 @@ instance Show Pattern where
         Wild e          -> "_ -> " ++ (show e)
         Variable v e    -> v ++ " -> " ++ (show e)
 
--- skriv särskild printer med io
 instance Show Value where
     show v = case v of
         (VInt x)     -> show x
