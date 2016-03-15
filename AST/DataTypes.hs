@@ -21,6 +21,7 @@ data Exp = EApp Exp Exp
        | ETup3 Exp Exp Exp
 
 data Op = Add | Sub | Mul | Div | Bind
+    deriving Show
 
 
 data Pattern = Constr ConstrID [Var] Exp

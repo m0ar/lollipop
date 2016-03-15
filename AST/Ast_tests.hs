@@ -84,22 +84,22 @@ main = print "HejsaN"
 testHello = interpret helloMain -- hello world
     where
         helloMain = [(DFunc "main" [] (EApp
-                                        (EVar "print")
+                                        (EVar "Print")
                                         (ELit (SLit "HejsaN"))))]
 {-
 Testing of user input.
 -}
 testReadLine = interpret readLine
     where
-        readLine = [(DFunc "main" [] (EVar "readLine"))]
+        readLine = [(DFunc "main" [] (EVar "ReadLine"))]
 
 {-
-Testing of printing a user input. The input funcs result is passed to the print function.
+Testing of cLiting a user input. The input funcs result is passed to the print function.
 -}
 testBind = interpret bind
     where
         bind = [(DFunc "main" [] bind')]
-        bind' = EApp (EApp (EVar "bind") (EVar "readLine")) (EVar "print")
+        bind' = EApp (EApp (EVar "Bind") (EVar "ReadLine")) (EVar "Print")
 
 {-
 main = let x = 5 + 9 in x + 3
@@ -200,12 +200,18 @@ testFuncs2 = interpret funcMain
                         (DFunc "add" ["x"] (EBinOp Add (EVar "x") eTwo))
                      ]
 
+ {-
+ main = 2 + 3
+ -}
+testAdd = interpret addMain
+    where addMain = [(DFunc "main" [] (EBinOp Add (ELit (ILit 2)) (ELit (ILit 3))))]
+
 {-
 main = 2+3*4
 -}
 testBinOps = interpret $ [DFunc "main" []
-    (EApp (EApp (EVar "add") eTwo)
-          (EApp (EApp (EVar "mul") eThree) eFour))]
+    (EApp (EApp (EVar "Add") eTwo)
+          (EApp (EApp (EVar "Mul") eThree) eFour))]
 
 {-
 main = first 5 (infty 0)

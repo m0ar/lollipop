@@ -29,12 +29,12 @@ addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
 
 startEnv :: Env
 startEnv = printF $ readLnF $ addF $ subF $ mulF $ bind $ M.empty
-    where   printF  = M.insert "print" $ VFun $ \(VString s) -> VIO $ print s >> return (VConstr "()" [])
-            readLnF = M.insert "readLine" $ VIO $ fmap VString readLn
-            subF    = M.insert "sub" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x-y
-            addF    = M.insert "add" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x+y
-            mulF    = M.insert "mul" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x*y -- a1 >>= \s -> a2 s
-            bind    = M.insert "bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> run $ a2 s
+    where   printF  = M.insert "Print" $ VFun $ \(VString s) -> VIO $ print s >> return (VConstr "()" [])
+            readLnF = M.insert "ReadLine" $ VIO $ fmap VString readLn
+            subF    = M.insert "Sub" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x-y
+            addF    = M.insert "Add" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x+y
+            mulF    = M.insert "Mul" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x*y -- a1 >>= \s -> a2 s
+            bind    = M.insert "Bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> run $ a2 s
 
 run :: Value -> IO Value
 run act = case act of
@@ -74,11 +74,9 @@ eval env expr = case expr of
         EVar var                 -> (lookupInEnv env var)
         ELit (ILit i)            -> VInt i
         ELit (SLit s)            -> VString s
-        EBinOp op e1 e2          -> case op of
-            Add                     -> lookupInEnv env "add"
-            Sub                     -> lookupInEnv env "sub"
-            Mul                     -> lookupInEnv env "mul"
-            Bind                    -> lookupInEnv env "bind"
+        EBinOp op e1 e2          -> f $ eval env e2
+                where (VFun f') = lookupInEnv env (show op)
+                      (VFun f) = f' $ eval env e1
         ETup2 e1 e2              -> VTup2 (eval env e1) (eval env e2)
         ETup3 e1 e2 e3           -> VTup3 (eval env e1) (eval env e2) (eval env e3)
 
