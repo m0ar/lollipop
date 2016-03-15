@@ -20,7 +20,8 @@ cDeclaration :: A.Declaration -> D.Declaration
 cDeclaration (A.DFunc (A.Id name) td defs)
                 | (countTd td) <= 1 && (length defs) /= 1 = error "multiple declarations of function"
                 | (countTd td) <= 1 = (D.DFunc name [] (defToExp (head defs))) -- pattern matching can't arrise
-                | otherwise = (D.DFunc name vars (D.ECase (D.EVar (head vars)) (map (defsToCase (tail vars)) defs)))
+                | otherwise = (D.DFunc name vars (D.ECase (D.EVar (head vars))
+                                                          (map (defsToCase (tail vars)) defs)))
      where vars = take ((countTd td)-1) variables -- create variables of the input parameters
 
 defToExp :: A.Def -> D.Exp
@@ -30,7 +31,7 @@ defToExp (DDef _ _ e) = (cExp e) -- gets the expression from a def
 -- first matches the first argument to firt input variable then creates following
 -- case-trees
 defsToCase :: [D.Var] -> A.Def -> D.Pattern
-defsToCase vs (A.DDef id (a:as) e) = (D.Sim (argToPat a) (eCase vs as e))
+defsToCase vs (A.DDef _ (a:as) e) = (D.Sim (argToPat a) (eCase vs as e))
 
 
 -- creates cases of pattern matching
@@ -51,8 +52,8 @@ countTd (A.MTypeDecl _ td)   = 1 + countTd td
 countTd (A.MLiTypeDecl _ td) = 1 + countTd td
 
 -- converts a definition to a pattern
-defToPat :: [D.Var] -> A.Def -> D.Pattern
-defToPat vs (A.DDef (A.Id cid) args e) = D.Mix (map argToPat args) (cExp e)
+-- defToPat :: [D.Var] -> A.Def -> D.Pattern
+-- defToPat vs (A.DDef (A.Id cid) args e) = D.Mix (map argToPat args) (cExp e)
 -- defToPat vs (A.DGuardsDef (A.Id cid) args guards) = undefined
 -- defToPat vs (A.DDef (A.Id cid) args e) = (D.Constr cid [] (cExp e))
     -- where vars as = (map argToVar as)
@@ -81,9 +82,6 @@ argToPat (A.DArg4 p)   = case p of
 
     -- A.P1 lp TODO
     -- A.P2 tp TODO
-
-getArgs :: [A.Def] -> D.Vars
-getArgs = undefined
 
 cArg :: A.Arg -> D.Exp
 -- cArg (A.DArg4 (A.P1 lp)) = TODO Implement list-patterns in AST

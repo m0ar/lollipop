@@ -28,7 +28,7 @@ data Pattern = Constr ConstrID [Var] Exp
             | Simple Lit Exp
             | Wild Exp
             | Variable Var Exp
-            | Mix [Pat] Exp -- A mix of pattern matchings
+            -- | Mix [Pat] Exp -- A mix of pattern matchings
             | Sim Pat Exp -- A better version of Simple
             | List LPattern
             | Tup2 Pattern Pattern Exp
@@ -86,7 +86,7 @@ instance Show Pattern where
         Simple lit e    -> (show lit) ++ " -> " ++ (show e)
         Wild e          -> "_ -> " ++ (show e)
         Variable v e    -> v ++ " -> " ++ (show e)
-        Mix ps e        -> (concatMap show ps) ++ " -> " ++ (show e)
+        -- Mix ps e        -> (concatMap show ps) ++ " -> " ++ (show e)
 
 -- skriv särskild printer med io
 instance Show Value where
