@@ -18,20 +18,20 @@ cProgram (A.PLast d)      = ((cDeclaration d):[])
 -- converts any declaration to a case
 cDeclaration :: A.Declaration -> D.Declaration
 cDeclaration (A.DFunc (A.Id name) td defs)
-                | (countTd td) <= 1 && (length defs) /= 1 = error "multiple declarations of function"
-                | (countTd td) <= 1 = (D.DFunc name [] (defToExp (head defs))) -- pattern matching can't arrise
-                | otherwise = (D.DFunc name vars (D.ECase (D.EVar (head vars))
-                                                          (map (defsToCase (tail vars)) defs)))
+                | countTd td > 1 = D.DFunc name vars (D.ECase (D.EVar (head vars)) -- pattern matching can arrise
+                                                          (map (defsToCase (tail vars)) defs))
+                | countTd td <= 1 && length defs /= 1 = error "multiple declarations of function"
+                | otherwise = D.DFunc name [] (defToExp $ head defs) -- pattern matching can't arrise
      where vars = take ((countTd td)-1) variables -- create variables of the input parameters
 
 defToExp :: A.Def -> D.Exp
-defToExp (DDef _ _ e) = (cExp e) -- gets the expression from a def
+defToExp (DDef _ _ e) = cExp e -- gets the expression from a def
 
 -- converts a number of definitions to case-tree
 -- first matches the first argument to firt input variable then creates following
 -- case-trees
 defsToCase :: [D.Var] -> A.Def -> D.Pattern
-defsToCase vs (A.DDef _ (a:as) e) = (D.Sim (argToPat a) (eCase vs as e))
+defsToCase vs (A.DDef _ (a:as) e) = D.Sim (argToPat a) (eCase vs as e)
 
 
 -- creates cases of pattern matching
