@@ -29,6 +29,7 @@ data Pattern = Constr ConstrID [Var] Exp
             | Wild Exp
             | Variable Var Exp
             | Mix [Pat] Exp -- A mix of pattern matchings
+            | Sim Pat Exp -- A better version of Simple
             | List LPattern
             | Tup2 Pattern Pattern Exp
             | Tup3 Pattern Pattern Pattern Exp

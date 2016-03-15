@@ -17,10 +17,27 @@ cProgram (A.PLast d)      = ((cDeclaration d):[])
 
 -- converts any declaration to a case
 cDeclaration :: A.Declaration -> D.Declaration
-cDeclaration (A.DFunc (A.Id name) td defs) = (D.DFunc name vars eCase)
-     where eCase = (D.ECase (D.EVar "x") (map (defToPat vars) defs))
-           vars = take ((countTd td)-1) variables -- create variables of the input parameters
+cDeclaration (A.DFunc (A.Id name) td defs)
+                | (countTd td) <= 1 = (D.DFunc name [] (defToExp (head defs)))
+                | otherwise = (D.DFunc name vars (D.ECase (D.EVar (head vars)) (map (defsToCase (tail vars)) defs)))
+     where vars = take ((countTd td)-1) variables -- create variables of the input parameters
 
+defToExp :: A.Def -> D.Exp
+defToExp (DDef _ as e) = (cExp e)
+
+-- converts a number of definitions to case-tree
+-- first matches the first argument to firt input variable then creates following
+-- case-trees
+defsToCase :: [D.Var] -> A.Def -> D.Pattern
+defsToCase vs (A.DDef id (a:as) e) = (D.Sim (argToPat a) (eCase vs as e))
+
+
+-- creates cases of pattern matching
+eCase :: [D.Var] -> [A.Arg] -> A.Exp -> D.Exp
+eCase [] _ e  = (cExp e)
+eCase _ [] e  = (cExp e)
+eCase (v:vs) (a:as) e = D.ECase (D.EVar v) [(D.Sim (argToPat a) (eCase vs as e)),
+                                            (D.Constr "False" [] (D.EVar "fail"))]
 
 -- list of generated variables to introduce in declaration
 variables :: [D.Var]
@@ -60,6 +77,7 @@ argToPat (A.DArg4 p)   = case p of
         A.Pwild           -> D.PWild
         (A.PId (Id name)) -> D.PVar name
         (A.PLit lit)      -> D.PLit (cLit lit)
+
     -- A.P1 lp TODO
     -- A.P2 tp TODO
 
