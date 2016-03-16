@@ -10,7 +10,7 @@ main = do
     t2 <- testLetIn
     t3 <- testLazyLetIn
     t4 <- testEConstr
-    --t5 <- testCase
+    t5 <- testCase
     t6 <- testSumList list4
     t7 <- testSumList2
     t8 <- testLam
@@ -23,7 +23,7 @@ main = do
            ,t2
            ,t3
            ,t4
-           --,t5
+           ,t5
            ,t6
            ,t7
            ,t8
@@ -50,6 +50,9 @@ eSix    = ELit (ILit 6)
 eSeven  = ELit (ILit 7)
 eEight  = ELit (ILit 8)
 eNine   = ELit (ILit 9)
+x       = EVar "x"
+y       = EVar "x"
+z       = EVar "x"
 
 -- Cons 5 Nil -> [5]
 list1 = (EApp (EApp (EConstr "Cons") (eFive)) (EConstr "Nil"))
@@ -158,6 +161,13 @@ testSumList l = interpret [dMain, dSum, dCon, dNil]
           p2    = Constr "Nil" []
           ecase = ECase (EVar "xs") [(p1, e1), (p2, eZero)]
           dSum  = DFunc "sum" ["xs"] ecase
+
+testPattern1 = interpret [(DFunc "main" [] lam)]
+    where p1    = Literal (ILit 5)
+          e1    = EApp (EVar "Print") (ELit (SLit "First case"))
+          p2    = Wild
+          e2    = EApp (EVar "Print") (ELit (SLit "Second case"))
+          lam   = EApp (ELam "x" (ECase x [(p1,e1),(p2,e2)])) eZero
 
 {-
 main = sum list1

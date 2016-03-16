@@ -29,11 +29,11 @@ addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
 
 startEnv :: Env
 startEnv = printF $ readLnF $ addF $ subF $ mulF $ bind $ M.empty
-    where   printF  = M.insert "Print" $ VFun $ \(VString s) -> VIO $ print s >> return (VConstr "()" [])
+    where   printF  = M.insert "Print" $ VFun $ \(VString s) -> VIO $ print s >> return (VConstr "()" []) -- TODO remove VString
             readLnF = M.insert "ReadLine" $ VIO $ fmap VString readLn
-            subF    = M.insert "Sub" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x-y
-            addF    = M.insert "Add" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x+y
-            mulF    = M.insert "Mul" $ VFun $ \(VInt x) -> VFun $ \(VInt y) -> VInt $ x*y -- a1 >>= \s -> a2 s
+            subF    = M.insert "Sub" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x-y
+            addF    = M.insert "Add" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x+y
+            mulF    = M.insert "Mul" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x*y -- a1 >>= \s -> a2 s
             bind    = M.insert "Bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> run $ a2 s
 
 run :: Value -> IO Value
@@ -53,7 +53,11 @@ makeBinding (DFunc name vs e) env = (name, eval env (addLams vs e))
 
 
 equals :: Value -> Value -> Bool
-equals (VInt x) (VInt y) = x == y
+equals (VLit (ILit x)) (VLit (ILit y)) = x == y
+equals (VLit (DLit x)) (VLit (DLit y)) = x == y
+equals (VLit (SLit x)) (VLit (SLit y)) = x == y
+equals (VLit (CLit x)) (VLit (CLit y)) = x == y
+equals _                _              = False
 
 -- evaluation of an expression in an environment
 eval :: Env -> Exp -> Value
@@ -72,8 +76,8 @@ eval env expr = case expr of
         ELam var e               -> VFun f
             where f v = eval (addToEnv env var v) e
         EVar var                 -> (lookupInEnv env var)
-        ELit (ILit i)            -> VInt i
-        ELit (SLit s)            -> VString s
+        ELit (SLit s)            -> VString s -- TODO remove
+        ELit lit                 -> VLit lit
         EBinOp op e1 e2          -> f $ eval env e2
                 where (VFun f') = lookupInEnv env (show op)
                       (VFun f) = f' $ eval env e1
@@ -84,25 +88,29 @@ eval env expr = case expr of
 evalCase :: Exp -> Env -> [(Pattern, Exp)] -> Maybe Value
 evalCase _ _ []            = Nothing
 evalCase expr' e ((p, expr):pes) = case p of
-    Literal lit      -> if equalsLitVal lit (lookupInEnv e cid)
+    --Literal lit      -> if equalsLitVal lit (lookupInEnv e cid)
+    Literal lit      -> if lit == lit'
                         then Just $ eval e expr
                         else evalCase expr' e pes
+        where (VLit lit') = eval e expr'
     Constr cid' vars -> if cid' == cid
                         then Just $ eval e' expr
                         else evalCase expr' e pes
         where e' = addManyToEnv e vars vals
+              (VConstr cid vals) = eval e expr'
     Variable var     -> Just $ eval e expr
     Wild             -> Just $ eval e expr
-  where (VConstr cid vals) = eval e expr'
+  where v = eval e expr'
+        --(VConstr cid vals) = eval e expr'
 
 -- checks if the value of a lit is the same as the value of the Value
-equalsLitVal :: Lit -> Value -> Bool
+{-- equalsLitVal :: Lit -> Value -> Bool
 equalsLitVal (SLit x) (VString x') = x == x'
 equalsLitVal (ILit x) (VInt x')    = x == x'
 equalsLitVal (DLit x) (VDouble x') = x == x'
 equalsLitVal (CLit x) (VChar x')   = x == x'
 equalsLitVal _ _                   = error "incompatible types"
-
+--}
 -- finds pattern based on constructor ID
 {-- findPattern :: [Pattern] -> ConstrID -> Pattern
 findPattern [] _                          = error "could not find pattern"

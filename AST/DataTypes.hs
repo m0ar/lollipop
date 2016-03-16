@@ -35,7 +35,6 @@ data Pattern = Constr ConstrID [Var]
             -- | Tup3 Pattern Pattern Pattern
 
 data Pat = PLit Lit | PWild | PVar Var
-    deriving Show
 
 data LPattern = LP LEntry LPattern | Nil
 
@@ -46,11 +45,12 @@ type Var = String
 -- A list of variables to be used in function bodies
 type Vars = [Var]
 
-data Value = VInt Int
-        | VIO (IO Value) -- void IO
-        | VString String
-        | VChar Char
-        | VDouble Double
+data Value = VIO (IO Value) -- void IO
+        | VString String -- TODO Remove
+        -- | VChar Char
+        -- | VDouble Double
+        -- | VInt Int
+        | VLit Lit
         | VConstr ConstrID [Value] -- list of values to be used as parameters
         | VFun (Value -> Value)
         | VTup2 Value Value
@@ -62,7 +62,14 @@ data Lit = SLit String
         | ILit Int
         | DLit Double
         | CLit Char
-    deriving Show
+    deriving Eq
+
+instance Show Lit where
+    show lit = case lit of
+        SLit s -> s
+        ILit i -> show i
+        DLit d -> show d
+        CLit c -> [c]
 
 instance Show Declaration where
     show (DFunc var vars e) = "function: " ++ var ++ "\n " ++ (show e)
@@ -79,6 +86,12 @@ instance Show Exp where
         ELam v e           -> "(\'" ++ v ++ " -> " ++ (show e)
         ECase e ps         -> "case " ++ (show e) ++ " of \n" ++ (concatMap show ps)
 
+instance Show Pat where
+    show p = case p of
+        PLit lit -> show lit
+        PWild    -> "_"
+        PVar v   -> v
+
 instance Show Pattern where
     show p = case p of
         Constr cid vs -> cid ++ " "  ++ (concatMap show vs) ++ " = "
@@ -88,8 +101,9 @@ instance Show Pattern where
 
 instance Show Value where
     show v = case v of
-        (VInt x)     -> show x
-        (VString s)  -> s
+        -- (VInt x)     -> show x
+        -- (VString s)  -> s
+        (VLit lit)   -> show lit
         (VIO v)      -> "IO!!!!"
         (VFun f)     -> "gotta function"
         (VConstr cid vs) -> cid ++ " " ++ concat (Prelude.map show vs)
