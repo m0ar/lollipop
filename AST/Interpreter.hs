@@ -38,7 +38,7 @@ startEnv = printF $ readLnF $ addF $ subF $ mulF $ bind $ M.empty
 
 run :: Value -> IO Value
 run act = case act of
-    VIO a -> a >> return (VConstr "()" [])
+    VIO a -> a
     _     -> error "faulty type"
 
 
