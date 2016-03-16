@@ -79,10 +79,15 @@ eval env expr = case expr of
                       (VFun f) = f' $ eval env e1
         ETup2 e1 e2              -> VTup2 (eval env e1) (eval env e2)
         ETup3 e1 e2 e3           -> VTup3 (eval env e1) (eval env e2) (eval env e3)
+        ECase expr' pEs          -> fromJust $ findCase expr' env pEs
 
--- if the value matches the pattern it returns
--- the evaluation of the expression
--- evalCase (PConstr ida vars,e) (VConstr idb vals) env
+findCase :: Exp -> Env -> [(Pattern, Exp)] -> Maybe Value
+findCase _ _ []                       = Nothing
+findCase expr@(EConstr cid) e (pe:ps) = case (evalCase pe val e) of
+    Just v  -> Just v
+    Nothing -> findCase expr e ps
+  where val = lookupInEnv e cid
+
 evalCase :: (Pattern, Exp) -> Value -> Env -> Maybe Value
 evalCase (p, expr) val e = case p of
     Literal lit   -> if equalsLitVal lit val

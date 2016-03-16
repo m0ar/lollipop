@@ -15,7 +15,7 @@ data Exp = EApp Exp Exp
        | EBinOp Op Exp Exp
        | ELam Var Exp
        | EConstr ConstrID
-       | ECase Exp [Pattern]
+       | ECase Exp [(Pattern, Exp)]
        | ELetIn Var Exp Exp  -- let var = exp in exp
        | ETup2 Exp Exp
        | ETup3 Exp Exp Exp
