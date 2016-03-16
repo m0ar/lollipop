@@ -10,7 +10,7 @@ main = do
     t2 <- testLetIn
     t3 <- testLazyLetIn
     t4 <- testEConstr
-    t5 <- testCase
+    --t5 <- testCase
     t6 <- testSumList list4
     t7 <- testSumList2
     t8 <- testLam
@@ -23,7 +23,7 @@ main = do
            ,t2
            ,t3
            ,t4
-           ,t5
+           --,t5
            ,t6
            ,t7
            ,t8
@@ -125,22 +125,24 @@ testEConstr = interpret [econMain,dCon,dNil]
         econMain = DFunc "main" [] (EApp (EApp (EConstr "Cons") (eFive)) (EConstr "Nil"))
 
 {-
-main = case (Cons 2 Nil) of
+main = case (Cons 5 Nil) of
     Cons x xs -> x + 0
     Nil       -> 0
 -}
 testCase = interpret caseMain
     where elist    = list1
           -- elist = EConstr "Nil" []
-          p1       = (Constr "Cons" ["x", "xs"] (EBinOp Add (EVar "x") eZero))
-          p2       = (Constr "Nil" [] eZero)
-          ecase    = ECase elist [p1, p2]
+          p1       = Constr "Cons" ["x", "xs"]
+          e1       = EBinOp Add (EVar "x") eZero
+          p2       = Constr "Nil" []
+          ecase    = ECase elist [(p1,e1), (p2,eZero)]
           caseMain = [(DFunc "main" [] ecase), dCon, dNil]
 
 testCase1 = interpret caseMain
     where caseMain = [(DFunc "main" ["x"] ecase)]
-          ecase    = ECase (EVar "x") [p1]
-          p1       = Constr "main" [] (ELit (ILit 2))
+          ecase    = ECase (EVar "x") [(p,e)]
+          p        = Constr "main" []
+          e        = ELit (ILit 2)
 
 {-
 sum xs = case xs of
@@ -150,10 +152,11 @@ sum xs = case xs of
 testSumList :: Exp -> IO ()
 testSumList l = interpret [dMain, dSum, dCon, dNil]
     where dMain = DFunc "main" [] (EApp (EVar "sum") l)
-          p1    = (Constr "Cons" ["x", "xs2"] (EBinOp Add (EVar "x")
-                  (EApp (EVar "sum") (EVar "xs2"))))
-          p2    = (Constr "Nil" [] eZero)
-          ecase = ECase (EVar "xs") [p1, p2]
+          p1    = Constr "Cons" ["x", "xs2"]
+          e1    = EBinOp Add (EVar "x")
+                  (EApp (EVar "sum") (EVar "xs2"))
+          p2    = Constr "Nil" []
+          ecase = ECase (EVar "xs") [(p1, e1), (p2, eZero)]
           dSum  = DFunc "sum" ["xs"] ecase
 
 {-
@@ -165,11 +168,11 @@ sum xs = case xs of
 testSumList2 = interpret [dMain, dSum, dCon, dNil]
     where
         dMain = DFunc "main" [] (EApp (EVar "sum") list1)
-        dSum  = DFunc "sum" ["xs"] (ECase (EVar "xs") [p1, p2])
+        dSum  = DFunc "sum" ["xs"] (ECase (EVar "xs") [(p1, eZero), (p2, e2)])
             where
-                p1 = (Constr "Nil" [] eZero)
-                p2 = (Constr "Cons" ["x", "xs'"] (EBinOp Add (EVar "x")
-                     (EApp (EVar "sum") (EVar "xs'"))))
+                p1 = Constr "Nil" []
+                p2 = Constr "Cons" ["x", "xs'"]
+                e2 = EBinOp Add (EVar "x") (EApp (EVar "sum") (EVar "xs'"))
 
 {-
 main = (\x -> x + 4) ((\x -> x + 4) 6)   -- should return 14

@@ -82,24 +82,24 @@ eval env expr = case expr of
         ECase expr' pEs          -> fromJust $ findCase expr' env pEs
 
 findCase :: Exp -> Env -> [(Pattern, Exp)] -> Maybe Value
-findCase _ _ []                       = Nothing
-findCase expr@(EConstr cid) e (pe:ps) = case (evalCase pe val e) of
+findCase _ _ []         = Nothing
+findCase expr e (pe:pes) = case evalCase pe cid e vals of
     Just v  -> Just v
-    Nothing -> findCase expr e ps
-  where val = lookupInEnv e cid
+    Nothing -> findCase expr e pes
+  where (VConstr cid vals) = eval e expr
 
-evalCase :: (Pattern, Exp) -> Value -> Env -> Maybe Value
-evalCase (p, expr) val e = case p of
-    Literal lit   -> if equalsLitVal lit val
+
+evalCase :: (Pattern, Exp) -> ConstrID -> Env -> [Value] -> Maybe Value
+evalCase (p, expr) cid e vals = case p of
+    Literal lit   -> if equalsLitVal lit (lookupInEnv e cid)
                      then Just $ eval e expr
                      else Nothing
     Variable var  -> Just $ eval e expr
     Wild          -> Just $ eval e expr
-    Constr cid vars -> case val of
-            VConstr vid vals -> if cid == vid
-                                then Just $ eval e' expr
-                                else Nothing
-                            where e' = addManyToEnv e vars vals
+    Constr cid' vars -> if cid' == cid
+                        then Just $ eval e' expr
+                        else Nothing
+        where e' = addManyToEnv e vars vals
 
 -- checks if the value of a lit is the same as the value of the Value
 equalsLitVal :: Lit -> Value -> Bool
@@ -113,6 +113,6 @@ equalsLitVal _ _                   = error "incompatible types"
 findPattern :: [Pattern] -> ConstrID -> Pattern
 findPattern [] _                          = error "could not find pattern"
 findPattern (p:[]) _                      = p
-{-- findPattern (p@(Constr cid vs expr):ps) cid'
+findPattern (p@(Constr cid vs):ps) cid'
                             | cid == cid' = p
-                            | otherwise   = findPattern ps cid' --}
+                            | otherwise   = findPattern ps cid'
