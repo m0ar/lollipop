@@ -1,5 +1,3 @@
-# lollipop
-
 ![lollipop logo](http://malmqvist.it/lollipop3.png)
 
 lollipop is a general purpose, functional programming language with support for linear types. This is a bachelor thesis project at Chalmers University of Technology, Gothenburg. 
