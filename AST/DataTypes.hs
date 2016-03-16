@@ -24,14 +24,15 @@ data Op = Add | Sub | Mul | Div | Bind
     deriving Show
 
 
-data Pattern = Constr ConstrID [Var] Exp
-            | Simple Lit Exp
-            | Wild Exp
-            | Variable Var Exp
-            | Sim Pat Exp -- A better version of Simple
-            | List LPattern
-            | Tup2 Pattern Pattern Exp
-            | Tup3 Pattern Pattern Pattern Exp
+data Pattern = Constr ConstrID [Var]
+            | Literal Lit
+            -- | Simple Lit
+            | Wild
+            | Variable Var
+            -- | Sim Pat -- A better version of Simple
+            -- | List LPattern
+            -- | Tup2 Pattern Pattern
+            -- | Tup3 Pattern Pattern Pattern
 
 data Pat = PLit Lit | PWild | PVar Var
     deriving Show
@@ -80,10 +81,10 @@ instance Show Exp where
 
 instance Show Pattern where
     show p = case p of
-        Constr cid vs e -> cid ++ " "  ++ (concatMap show vs) ++ " = " ++ (show e)
-        Simple lit e    -> (show lit) ++ " -> " ++ (show e)
-        Wild e          -> "_ -> " ++ (show e)
-        Variable v e    -> v ++ " -> " ++ (show e)
+        Constr cid vs -> cid ++ " "  ++ (concatMap show vs) ++ " = "
+        -- Simple lit    -> (show lit) ++ " -> "
+        Wild          -> "_ -> "
+        Variable v    -> v ++ " -> "
 
 instance Show Value where
     show v = case v of

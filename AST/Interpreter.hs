@@ -61,10 +61,10 @@ eval env expr = case expr of
         ELetIn var e1 e2         -> eval env' e2
             where env' = addToEnv env var (eval env' e1)
         EConstr cid              -> lookupInEnv env cid
-        ECase e ps                -> eval env' e'
+        {-- ECase e ps                -> eval env' e'
             where (VConstr cid vals)    = eval env e
                   (Constr cid' vars e') = findPattern ps cid
-                  env'             = addManyToEnv env vars vals
+                  env'             = addManyToEnv env vars vals --}
         EApp e1 e2               -> case (eval env e1) of
              VFun v1                -> v1 v2
                 where v2 = eval env e2
@@ -80,12 +80,34 @@ eval env expr = case expr of
         ETup2 e1 e2              -> VTup2 (eval env e1) (eval env e2)
         ETup3 e1 e2 e3           -> VTup3 (eval env e1) (eval env e2) (eval env e3)
 
+-- if the value matches the pattern it returns
+-- the evaluation of the expression
+-- evalCase (PConstr ida vars,e) (VConstr idb vals) env
+evalCase :: (Pattern, Exp) -> Value -> Env -> Maybe Value
+evalCase (p, expr) val e = case p of
+    Literal lit   -> if equalsLitVal lit val
+                     then Just $ eval e expr
+                     else Nothing
+    Variable var  -> Just $ eval e expr
+    Wild          -> Just $ eval e expr
+    Constr cid vars -> case val of
+            VConstr vid vals -> if cid == vid
+                                then Just $ eval e' expr
+                                else Nothing
+                            where e' = addManyToEnv e vars vals
 
+-- checks if the value of a lit is the same as the value of the Value
+equalsLitVal :: Lit -> Value -> Bool
+equalsLitVal (SLit x) (VString x') = x == x'
+equalsLitVal (ILit x) (VInt x')    = x == x'
+equalsLitVal (DLit x) (VDouble x') = x == x'
+equalsLitVal (CLit x) (VChar x')   = x == x'
+equalsLitVal _ _                   = error "incompatible types"
 
 -- finds pattern based on constructor ID
 findPattern :: [Pattern] -> ConstrID -> Pattern
 findPattern [] _                          = error "could not find pattern"
 findPattern (p:[]) _                      = p
-findPattern (p@(Constr cid vs expr):ps) cid'
+{-- findPattern (p@(Constr cid vs expr):ps) cid'
                             | cid == cid' = p
-                            | otherwise   = findPattern ps cid'
+                            | otherwise   = findPattern ps cid' --}
