@@ -30,16 +30,16 @@ defToExp (DDef _ _ e) = cExp e -- gets the expression from a def
 -- converts a number of definitions to case-tree
 -- first matches the first argument to firt input variable then creates following
 -- case-trees
-defsToCase :: [D.Var] -> A.Def -> D.Pattern
-defsToCase vs (A.DDef _ (a:as) e) = D.Sim (argToPat a) (eCase vs as e)
+defsToCase :: [D.Var] -> A.Def -> (D.Pattern, D.Exp)
+defsToCase vs (A.DDef _ (a:as) e) = ((argToPat a), (eCase vs as e))
 
 
 -- creates cases of pattern matching
 eCase :: [D.Var] -> [A.Arg] -> A.Exp -> D.Exp
 eCase [] _ e  = (cExp e)
 eCase _ [] e  = (cExp e)
-eCase (v:vs) (a:as) e = D.ECase (D.EVar v) [(D.Sim (argToPat a) (eCase vs as e)),
-                                            (D.Constr "False" [] (D.EVar "fail"))]
+eCase (v:vs) (a:as) e = D.ECase (D.EVar v) [((argToPat a), (eCase vs as e)),
+                                            ((D.Constr "False" []), (D.EVar "fail"))]
 
 -- list of generated variables to introduce in declaration
 variables :: [D.Var]
@@ -70,15 +70,15 @@ argToVar (A.DArg3 typeId) = case typeId of
 
 -- converts args to pat in DataTypes.hs
 -- where Pat = PLit Lit | PWild | PVar Var
-argToPat :: A.Arg -> D.Pat
+argToPat :: A.Arg -> D.Pattern
 argToPat (A.DArg3 tid) = case tid of
-    A.STypeIdent (A.TypeId name)    -> D.PVar name
-    A.LiTypeIdent (A.LiTypeId name) -> D.PVar name
+    A.STypeIdent (A.TypeId name)    -> D.Variable name
+    A.LiTypeIdent (A.LiTypeId name) -> D.Variable name
 argToPat (A.DArg4 p)   = case p of
     A.P3 pat -> case pat of
-        A.Pwild           -> D.PWild
-        (A.PId (Id name)) -> D.PVar name
-        (A.PLit lit)      -> D.PLit (cLit lit)
+        A.Pwild           -> D.Wild
+        (A.PId (Id name)) -> D.Variable name
+        (A.PLit lit)      -> D.Literal (cLit lit)
 
     -- A.P1 lp TODO
     -- A.P2 tp TODO
@@ -94,19 +94,19 @@ cArg (A.DArg3 typeId) = case typeId of
     (A.STypeIdent (TypeId name))    -> D.EVar name
     (A.LiTypeIdent (LiTypeId name)) -> D.EVar name
 
-cPattern :: A.Pattern -> A.Exp -> D.Pattern
+cPattern :: A.Pattern -> A.Exp -> (D.Pattern, D.Exp)
 -- cPattern (P1 lp) e = TODO Add suport for lists
-cPattern (P2 (TPattern1 ps)) e = case length ps of
-    2   -> D.Tup2 (cPattern (ps !! 0) e) (cPattern (ps !! 1) e) (cExp e)
-    3   -> D.Tup3 (cPattern (ps !! 0) e) (cPattern (ps !! 1) e) (cPattern (ps !! 2) e) (cExp e)
-cPattern (P3 p) e = (cPat p e)
+-- cPattern (P2 (TPattern1 ps)) e = case length ps of
+--     2   -> D.Tup2 (cPattern (ps !! 0) e) (cPattern (ps !! 1) e) (cExp e)
+--     3   -> D.Tup3 (cPattern (ps !! 0) e) (cPattern (ps !! 1) e) (cPattern (ps !! 2) e) (cExp e)
+cPattern (P3 p) e = cPat p e
 
 -- A pattern from bnfc has no expression bound to it
 -- this must be sent from the Def to create the AST pattern
-cPat :: A.Pat -> A.Exp -> D.Pattern
-cPat Pwild e           = D.Wild (cExp e)
-cPat (PId (Id name)) e = D.Variable name (cExp e)
-cPat (PLit l)        e = D.Simple (cLit l) (cExp e)
+cPat :: A.Pat -> A.Exp -> (D.Pattern, D.Exp)
+cPat Pwild e           = (D.Wild, (cExp e))
+cPat (PId (Id name)) e = ((D.Variable name), (cExp e))
+cPat (PLit l)        e = ((D.Literal (cLit l)), (cExp e))
 
 cType :: A.Type -> D.Exp
 cType (TTypeId t) = case t of -- TODO check this part
@@ -138,19 +138,19 @@ cExp (A.ELiteral lit)       = (D.ELit $ cLit lit)
 cExp (A.EApp e1 e2)         = (D.EApp (cExp e1) (cExp e2))
 cExp (A.EAbs (A.Id name) e) = (D.ELam name (cExp e))
 cExp (A.ECase e cs)         = (D.ECase (cExp e) (cCase cs))
-cExp (EIf e1 e2 e3)         = (D.ECase (cExp e1) [(D.Constr "True" [] (cExp e2)),
-                                                  (D.Constr "False" [] (cExp e3))])
+cExp (EIf e1 e2 e3)         = (D.ECase (cExp e1) [((D.Constr "True" []), (cExp e2)),
+                                                  ((D.Constr "False" []), (cExp e3))])
 cExp (ETuple t) = case t of
     (Tuple2 e1 e2)    -> D.ETup2 (cExp e1) (cExp e2)
     (Tuple3 e1 e2 e3) -> D.ETup3 (cExp e1) (cExp e2) (cExp e3)
 
-cCase :: A.Cases -> [D.Pattern]
-cCase A.ECases3             = []
+cCase :: A.Cases -> [(D.Pattern, D.Exp)]
+cCase A.ECases3          = []
 cCase (A.ECases1 p e cs) = cCase (A.ECases2 p e cs)
 cCase (A.ECases2 p e cs) = case p of
     (A.P3 p)  -> case p of
-        A.Pwild       -> ((D.Wild (cExp e)):[])
-        (A.PLit lit)  -> ((D.Simple (cLit lit) (cExp e)):(cCase cs))
+        A.Pwild       -> ((D.Wild, (cExp e)):[])
+        (A.PLit lit)  -> (((D.Literal (cLit lit)), (cExp e)):(cCase cs))
     -- (A.P1 lp) ->
     (A.P2 tp)         -> (cPattern (P2 tp) e):(cCase cs)
     -- TODO add support for lists in cases
@@ -160,10 +160,10 @@ cTuple (Tuple2 e1 e2)    = D.ETup2 (cExp e1) (cExp e2)
 cTuple (Tuple3 e1 e2 e3) = D.ETup3 (cExp e1) (cExp e2) (cExp e3)
 
 cGuard :: A.Guards -> D.Exp
-cGuard (A.DGuards1 e1 e2 gs) = D.ECase (cExp e2) [(D.Constr "True" [] (cExp e1)),
-                                                  (D.Constr "False" [] (cGuard gs))]
-cGuard (A.DGuards2 e1 e2 gs) = D.ECase (cExp e2) [(D.Constr "True" [] (cExp e1)),
-                                                  (D.Constr "False" [] (cGuard gs))]
+cGuard (A.DGuards1 e1 e2 gs) = D.ECase (cExp e2) [((D.Constr "True" []), (cExp e1)),
+                                                  ((D.Constr "False" []), (cGuard gs))]
+cGuard (A.DGuards2 e1 e2 gs) = D.ECase (cExp e2) [((D.Constr "True" []), (cExp e1)),
+                                                  ((D.Constr "False" []), (cGuard gs))]
 cGuard (A.DExpGuard e)       = (cExp e)
 
 

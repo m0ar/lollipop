@@ -26,15 +26,11 @@ data Op = Add | Sub | Mul | Div | Bind
 
 data Pattern = Constr ConstrID [Var]
             | Literal Lit
-            -- | Simple Lit
             | Wild
             | Variable Var
-            -- | Sim Pat -- A better version of Simple
             -- | List LPattern
             -- | Tup2 Pattern Pattern
             -- | Tup3 Pattern Pattern Pattern
-
-data Pat = PLit Lit | PWild | PVar Var
 
 data LPattern = LP LEntry LPattern | Nil
 
@@ -47,9 +43,6 @@ type Vars = [Var]
 
 data Value = VIO (IO Value) -- void IO
         | VString String -- TODO Remove
-        -- | VChar Char
-        -- | VDouble Double
-        -- | VInt Int
         | VLit Lit
         | VConstr ConstrID [Value] -- list of values to be used as parameters
         | VFun (Value -> Value)
@@ -86,23 +79,14 @@ instance Show Exp where
         ELam v e           -> "(\'" ++ v ++ " -> " ++ (show e)
         ECase e ps         -> "case " ++ (show e) ++ " of \n" ++ (concatMap show ps)
 
-instance Show Pat where
-    show p = case p of
-        PLit lit -> show lit
-        PWild    -> "_"
-        PVar v   -> v
-
 instance Show Pattern where
     show p = case p of
         Constr cid vs -> cid ++ " "  ++ (concatMap show vs) ++ " = "
-        -- Simple lit    -> (show lit) ++ " -> "
         Wild          -> "_ -> "
         Variable v    -> v ++ " -> "
 
 instance Show Value where
     show v = case v of
-        -- (VInt x)     -> show x
-        -- (VString s)  -> s
         (VLit lit)   -> show lit
         (VIO v)      -> "IO!!!!"
         (VFun f)     -> "gotta function"
