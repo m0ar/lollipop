@@ -102,3 +102,7 @@ oneArgument a := a + 3 ;
 -- Test for enclosed expressions
 function encl : Int ;
 encl := (3 + 6) ;
+
+-- test empty expression
+function testEmpExp : [a] ;
+testEmpExp := [] ;
