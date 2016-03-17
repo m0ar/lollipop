@@ -107,6 +107,7 @@ ETuple.         Exp10           ::= Tuple ;
 ELiteral.       Exp10           ::= Literal ;
 EListComp.      Exp10           ::= "[" Exp "|" LCPatterns "]" ;
 EList.          Exp10           ::= "[" [Exp] "]" ;
+EEmptyList.     Exp10           ::= "[]" ;
 ELet.           Exp10           ::= LetBinding ;
 EApp.           Exp9            ::= Exp9 Exp10 ;
 EPow.           Exp8            ::= Exp8 "^" Exp9 ;
