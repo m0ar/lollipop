@@ -83,25 +83,24 @@ eval env expr = case expr of
                       (VFun f) = f' $ eval env e1
         ETup2 e1 e2              -> VTup2 (eval env e1) (eval env e2)
         ETup3 e1 e2 e3           -> VTup3 (eval env e1) (eval env e2) (eval env e3)
-        ECase expr' pEs          -> fromJust $ evalCase expr' env pEs
+        ECase expr' pEs          -> fromJust $ evalCase v env pEs
+                where v = eval env expr'
 
-evalCase :: Exp -> Env -> [(Pattern, Exp)] -> Maybe Value
-evalCase _ _ []            = Nothing
-evalCase expr' e ((p, expr):pes) = case p of
-    --PLit lit      -> if equalsLitVal lit (lookupInEnv e cid)
+evalCase :: Value -> Env -> [(Pattern, Exp)] -> Maybe Value
+evalCase _ _ []              = Nothing
+evalCase v e ((p, expr):pes) = case p of
     PLit lit      -> if lit == lit'
                         then Just $ eval e expr
-                        else evalCase expr' e pes
-        where (VLit lit') = eval e expr'
+                        else evalCase v e pes
+        where (VLit lit') = v
     PConstr cid' vars -> if cid' == cid
                         then Just $ eval e' expr
-                        else evalCase expr' e pes
+                        else evalCase v e pes
         where e' = addManyToEnv e vars vals
-              (VConstr cid vals) = eval e expr'
-    PVar var     -> Just $ eval e' expr
+              (VConstr cid vals) = v
+    PVar var          -> Just $ eval e' expr
         where e' = addToEnv e var v
     PWild             -> Just $ eval e expr
-  where v = eval e expr'
         --(VConstr cid vals) = eval e expr'
 
 -- checks if the value of a lit is the same as the value of the Value
