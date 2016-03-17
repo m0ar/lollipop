@@ -21,7 +21,6 @@ data Exp = EApp Exp Exp
        | ETup3 Exp Exp Exp
 
 data Op = Add | Sub | Mul | Div | Bind
-    deriving Show
 
 
 data Pattern = PConstr ConstrID [Var]
@@ -56,6 +55,14 @@ data Lit = ILit Int
         | CLit Char
         | SLit [Char]
     deriving Eq
+
+instance Show Op where
+    show op = case op of
+        Add  -> "#add"
+        Sub  -> "#sub"
+        Mul  -> "#mul"
+        Div  -> "#div"
+        Bind -> "#bind"
 
 instance Show Lit where
     show lit = case lit of

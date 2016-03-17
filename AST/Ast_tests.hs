@@ -87,14 +87,14 @@ main = print "HejsaN"
 testHello = interpret helloMain -- hello world
     where
         helloMain = [(DFunc "main" [] (EApp
-                                        (EVar "Print")
+                                        (EVar "print")
                                         (ELit (SLit "HejsaN"))))]
 {-
 Testing of user input.
 -}
 testReadLine = interpret readLine
     where
-        readLine = [(DFunc "main" [] (EVar "ReadLine"))]
+        readLine = [(DFunc "main" [] (EVar "readLine"))]
 
 {-
 Testing of cLiting a user input. The input funcs result is passed to the print function.
@@ -102,7 +102,7 @@ Testing of cLiting a user input. The input funcs result is passed to the print f
 testBind = interpret bind
     where
         bind = [(DFunc "main" [] bind')]
-        bind' = EApp (EApp (EVar "Bind") (EVar "ReadLine")) (EVar "Print")
+        bind' = EApp (EApp (EVar "#bind") (EVar "readLine")) (EVar "print")
 
 {-
 main = let x = 5 + 9 in x + 3
@@ -164,9 +164,9 @@ testSumList l = interpret [dMain, dSum, dCon, dNil]
 
 testPattern1 = interpret [(DFunc "main" [] lam)]
     where p1    = PLit (ILit 5)
-          e1    = EApp (EVar "Print") (ELit (SLit "First case"))
+          e1    = EApp (EVar "print") (ELit (SLit "First case"))
           p2    = PWild
-          e2    = EApp (EVar "Print") (ELit (SLit "Second case"))
+          e2    = EApp (EVar "print") (ELit (SLit "Second case"))
           lam   = EApp (ELam "x" (ECase x [(p1,e1),(p2,e2)])) eZero
 
 {-
@@ -223,8 +223,8 @@ testAdd = interpret addMain
 main = 2+3*4
 -}
 testBinOps = interpret $ [DFunc "main" []
-    (EApp (EApp (EVar "Add") eTwo)
-          (EApp (EApp (EVar "Mul") eThree) eFour))]
+    (EApp (EApp (EVar "#add") eTwo)
+          (EApp (EApp (EVar "#mul") eThree) eFour))]
 
 {-
 main = first 5 (infty 0)
