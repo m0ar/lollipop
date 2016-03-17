@@ -24,10 +24,10 @@ data Op = Add | Sub | Mul | Div | Bind
     deriving Show
 
 
-data Pattern = Constr ConstrID [Var]
-            | Literal Lit
-            | Wild
-            | Variable Var
+data Pattern = PConstr ConstrID [Var]
+            | PLit Lit
+            | PWild
+            | PVar Var
             -- | List LPattern
             -- | Tup2 Pattern Pattern
             -- | Tup3 Pattern Pattern Pattern
@@ -51,10 +51,10 @@ data Value = VIO (IO Value) -- void IO
 
 type ConstrID = String
 
-data Lit = SLit String
-        | ILit Int
+data Lit = ILit Int
         | DLit Double
         | CLit Char
+        | SLit [Char]
     deriving Eq
 
 instance Show Lit where
@@ -81,9 +81,9 @@ instance Show Exp where
 
 instance Show Pattern where
     show p = case p of
-        Constr cid vs -> cid ++ " "  ++ (concatMap show vs) ++ " = "
-        Wild          -> "_ -> "
-        Variable v    -> v ++ " -> "
+        PConstr cid vs -> cid ++ " "  ++ (concatMap show vs) ++ " = "
+        PWild          -> "_ -> "
+        PVar v    -> v ++ " -> "
 
 instance Show Value where
     show v = case v of

@@ -135,16 +135,16 @@ main = case (Cons 5 Nil) of
 testCase = interpret caseMain
     where elist    = list1
           -- elist = EConstr "Nil" []
-          p1       = Constr "Cons" ["x", "xs"]
+          p1       = PConstr "Cons" ["x", "xs"]
           e1       = EBinOp Add (EVar "x") eZero
-          p2       = Constr "Nil" []
+          p2       = PConstr "Nil" []
           ecase    = ECase elist [(p1,e1), (p2,eZero)]
           caseMain = [(DFunc "main" [] ecase), dCon, dNil]
 
 testCase1 = interpret caseMain
     where caseMain = [(DFunc "main" ["x"] ecase)]
           ecase    = ECase (EVar "x") [(p,e)]
-          p        = Constr "main" []
+          p        = PConstr "main" []
           e        = ELit (ILit 2)
 
 {-
@@ -155,17 +155,17 @@ sum xs = case xs of
 testSumList :: Exp -> IO ()
 testSumList l = interpret [dMain, dSum, dCon, dNil]
     where dMain = DFunc "main" [] (EApp (EVar "sum") l)
-          p1    = Constr "Cons" ["x", "xs2"]
+          p1    = PConstr "Cons" ["x", "xs2"]
           e1    = EBinOp Add (EVar "x")
                   (EApp (EVar "sum") (EVar "xs2"))
-          p2    = Constr "Nil" []
+          p2    = PConstr "Nil" []
           ecase = ECase (EVar "xs") [(p1, e1), (p2, eZero)]
           dSum  = DFunc "sum" ["xs"] ecase
 
 testPattern1 = interpret [(DFunc "main" [] lam)]
-    where p1    = Literal (ILit 5)
+    where p1    = PLit (ILit 5)
           e1    = EApp (EVar "Print") (ELit (SLit "First case"))
-          p2    = Wild
+          p2    = PWild
           e2    = EApp (EVar "Print") (ELit (SLit "Second case"))
           lam   = EApp (ELam "x" (ECase x [(p1,e1),(p2,e2)])) eZero
 
@@ -180,8 +180,8 @@ testSumList2 = interpret [dMain, dSum, dCon, dNil]
         dMain = DFunc "main" [] (EApp (EVar "sum") list1)
         dSum  = DFunc "sum" ["xs"] (ECase (EVar "xs") [(p1, eZero), (p2, e2)])
             where
-                p1 = Constr "Nil" []
-                p2 = Constr "Cons" ["x", "xs'"]
+                p1 = PConstr "Nil" []
+                p2 = PConstr "Cons" ["x", "xs'"]
                 e2 = EBinOp Add (EVar "x") (EApp (EVar "sum") (EVar "xs'"))
 
 {-

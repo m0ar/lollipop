@@ -88,18 +88,19 @@ eval env expr = case expr of
 evalCase :: Exp -> Env -> [(Pattern, Exp)] -> Maybe Value
 evalCase _ _ []            = Nothing
 evalCase expr' e ((p, expr):pes) = case p of
-    --Literal lit      -> if equalsLitVal lit (lookupInEnv e cid)
-    Literal lit      -> if lit == lit'
+    --PLit lit      -> if equalsLitVal lit (lookupInEnv e cid)
+    PLit lit      -> if lit == lit'
                         then Just $ eval e expr
                         else evalCase expr' e pes
         where (VLit lit') = eval e expr'
-    Constr cid' vars -> if cid' == cid
+    PConstr cid' vars -> if cid' == cid
                         then Just $ eval e' expr
                         else evalCase expr' e pes
         where e' = addManyToEnv e vars vals
               (VConstr cid vals) = eval e expr'
-    Variable var     -> Just $ eval e expr
-    Wild             -> Just $ eval e expr
+    PVar var     -> Just $ eval e' expr
+        where e' = addToEnv e var v
+    PWild             -> Just $ eval e expr
   where v = eval e expr'
         --(VConstr cid vals) = eval e expr'
 
