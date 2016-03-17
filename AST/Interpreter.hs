@@ -65,10 +65,6 @@ eval env expr = case expr of
         ELetIn var e1 e2         -> eval env' e2
             where env' = addToEnv env var (eval env' e1)
         EConstr cid              -> lookupInEnv env cid
-        {-- ECase e ps                -> eval env' e'
-            where (VConstr cid vals)    = eval env e
-                  (Constr cid' vars e') = findPattern ps cid
-                  env'             = addManyToEnv env vars vals --}
         EApp e1 e2               -> case (eval env e1) of
              VFun v1                -> v1 v2
                 where v2 = eval env e2
@@ -101,7 +97,6 @@ evalCase v e ((p, expr):pes) = case p of
     PVar var          -> Just $ eval e' expr
         where e' = addToEnv e var v
     PWild             -> Just $ eval e expr
-        --(VConstr cid vals) = eval e expr'
 
 -- checks if the value of a lit is the same as the value of the Value
 {-- equalsLitVal :: Lit -> Value -> Bool
