@@ -50,19 +50,10 @@ DDTypes5.       DPatterns       ::= "(" TypeIdent Id [Id] ")" DPatterns ;
 DDTypes6.       DPatterns       ::= ;
 
 
--- Deriving structure
+-- Deriving structure, DerArg can be any TypeClass,
+-- predefined or custom-made
 DDeriving1.     Deriving        ::= ";" ;
-DDeriving2.     Deriving        ::= "deriving" "(" [DerArg] ")" ";" ;
-separator nonempty DerArg "," ;
-DDerArg1.       DerArg          ::= "Show" ;
-DDerArg2.       DerArg          ::= "Read" ;
-DDerArg3.       DerArg          ::= "Eq" ;
-DDerArg4.       DerArg          ::= "Ord" ;
-DDerArg5.       DerArg          ::= "Num" ;
-DDerArg6.       DerArg          ::= "Integral" ;
-DDerArg7.       DerArg          ::= "Floating" ;
-DDerArg8.       DerArg          ::= "Enum" ;
-DDerArg9.       DerArg          ::= "Bounded" ;
+DDeriving2.     Deriving        ::= "deriving" "(" [TypeId] ")" ";" ;
 
 -- Pattern matching for lists in function definition arguments
 LPattern1.      ListPat         ::= "[]" ;
@@ -94,6 +85,7 @@ LitFalse.       Literal         ::= "False" ;
 
 -- Tailor-made token type for type identifiers
 token TypeId upper (letter | digit | '_' | '\'')* ;
+separator nonempty TypeId "," ;
 token LiTypeId 'i' upper (letter | digit | '_' | '\'')* ;
 
 -- Variable identifier token
