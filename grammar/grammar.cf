@@ -93,7 +93,7 @@ EEnclosed.      Exp11           ::= "(" Exp ")" ;
 EVar.           Exp10           ::= Id ;
 ETuple.         Exp10           ::= Tuple ;
 ELiteral.       Exp10           ::= Literal ;
-ECons.          Exp10           ::= Cons ;
+EConst.         Exp10           ::= Cons ;
 EListComp.      Exp10           ::= "[" Exp "|" LCPatterns "]" ;
 EList.          Exp10           ::= "[" [Exp] "]" ;
 EEmptyList.     Exp10           ::= "[]" ;
@@ -151,6 +151,9 @@ terminator nonempty LetBinding1 ";" ;
 TTypeId.        Type            ::= TypeIdent ;
 TList.          Type            ::= "[" [Type] "]" ;
 TTuple.         Type            ::= "(" [Type] ")" ;
+TFun.           Type            ::= "(" Type "->" Type ")";
+TLFun.          Type            ::= "(" Type "-o" Type ")" ;
+
 separator Type "," ;
 
 STypeIdent.     TypeIdent        ::= TypeId ;
