@@ -10,6 +10,9 @@ import qualified DataTypes as D
 import AbsGrammar
 import qualified AbsGrammar as A
 
+main :: IO ()
+main = putStrLn "welcome to the converter"
+
 cProgram :: A.Program -> D.Program
 cProgram (A.PFuncs d p)   = ((cDeclaration d):(cProgram p))
 cProgram (A.PLast d)      = ((cDeclaration d):[])
@@ -75,19 +78,19 @@ argToVar (A.DArg3 typeId) = case typeId of
 -- converts args to pat in DataTypes.hs
 -- where Pat = PLit Lit | PWild | PVar Var
 argToPat :: A.Arg -> D.Pattern
-argToPat (A.DArg3 tid) = case tid of
-    A.STypeIdent (A.TypeId name)    -> D.PVar name
-    A.LiTypeIdent (A.LiTypeId name) -> D.PVar name
-argToPat (A.DArg4 p)   = case p of
-    A.P3 pat -> case pat of
+argToPat (A.DArg p) = case p of
+    -- A.PTuplePat tp -> -- TODO
+    -- A.PListPat tp  -> -- TODO
+    A.PPat pat     -> case pat of
         A.Pwild           -> D.PWild
         (A.PId (Id name)) -> D.PVar name
         (A.PLit lit)      -> D.PLit (cLit lit)
+        --(A.PConst (DConst (TypeId tid) ids)) -> -- TODO
 
     -- A.P1 lp TODO
     -- A.P2 tp TODO
 
-cArg :: A.Arg -> D.Exp
+{-- cArg :: A.Arg -> D.Exp
 -- cArg (A.DArg4 (A.P1 lp)) = TODO Implement list-patterns in AST
 -- cArg (A.DArg4 (A.P2 (A.TPattern1 ps))) = TODO Implement tuples-patterns in AST
 cArg (A.DArg4 (A.P3 (A.PLit lit))) = case lit of
@@ -96,28 +99,29 @@ cArg (A.DArg4 (A.P3 (A.PLit lit))) = case lit of
     (A.LitChar x)   -> D.ELit (D.CLit x)
 cArg (A.DArg3 typeId) = case typeId of
     (A.STypeIdent (TypeId name))    -> D.EVar name
-    (A.LiTypeIdent (LiTypeId name)) -> D.EVar name
+    (A.LiTypeIdent (LiTypeId name)) -> D.EVar name --}
 
 cPattern :: A.Pattern -> A.Exp -> (D.Pattern, D.Exp)
--- cPattern (P1 lp) e = TODO Add suport for lists
--- cPattern (P2 (TPattern1 ps)) e = case length ps of
+-- cPattern (PListPat lp) e = TODO Add suport for lists
+-- cPattern (PTuplePat (TPattern1 ps)) e = case length ps of
 --     2   -> D.Tup2 (cPattern (ps !! 0) e) (cPattern (ps !! 1) e) (cExp e)
 --     3   -> D.Tup3 (cPattern (ps !! 0) e) (cPattern (ps !! 1) e) (cPattern (ps !! 2) e) (cExp e)
-cPattern (P3 p) e = cPat p e
+cPattern (PPat p) e = cPat p e
 
 -- A pattern from bnfc has no expression bound to it
 -- this must be sent from the Def to create the AST pattern
 cPat :: A.Pat -> A.Exp -> (D.Pattern, D.Exp)
-cPat Pwild e           = (D.PWild, (cExp e))
+cPat Pwild           e = (D.PWild, (cExp e))
 cPat (PId (Id name)) e = ((D.PVar name), (cExp e))
 cPat (PLit l)        e = ((D.PLit (cLit l)), (cExp e))
+--cPat (PConst c)      e = -- TODO
 
 cType :: A.Type -> D.Exp
-cType (TTypeId t) = case t of -- TODO check this part
-    (STypeIdent (TypeId name))    -> (D.EVar name)
-    (LiTypeIdent (LiTypeId name)) -> (D.EVar name)
+cType (A.TTypeId t) = case t of -- TODO check this part
+    (A.STypeIdent (A.TypeId name)) -> (D.EVar name)
+    (A.LiTypeIdent (A.Id name))    -> (D.EVar name)
 -- cType (TPoly ti)   = what is poly?
-cType (TList ts)  = cList ts
+cType (A.TList ts)  = cList ts
     where cList []     = D.EConstr "Nil"
           cList (t:ts) = D.EApp (D.EApp (D.EConstr "Cons") (cType t)) (cList ts)
 
@@ -152,11 +156,13 @@ cCase :: A.Cases -> [(D.Pattern, D.Exp)]
 cCase A.ECases3          = []
 cCase (A.ECases1 p e cs) = cCase (A.ECases2 p e cs)
 cCase (A.ECases2 p e cs) = case p of
-    (A.P3 p)  -> case p of
-        A.Pwild       -> ((D.PWild, (cExp e)):[])
+    (A.PPat p)  -> case p of
+        A.Pwild       -> ((D.PWild, (cExp e)):[]) -- we don't add the rest of cs
+                                                  -- since it does not matter if
+                                                  -- wildcard is found
         (A.PLit lit)  -> (((D.PLit (cLit lit)), (cExp e)):(cCase cs))
-    -- (A.P1 lp) ->
-    (A.P2 tp)         -> (cPattern (P2 tp) e):(cCase cs)
+    -- (A.PListPat lp) ->
+    -- (A.PTuplePat tp)         -> (cPattern (P2 tp) e):(cCase cs)
     -- TODO add support for lists in cases
 
 cTuple :: A.Tuple -> D.Exp

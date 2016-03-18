@@ -6,6 +6,11 @@ pat 0 9 2 := 10 ;
 pat 0 1 _ := 12 ;
 pat _ _ _ := 14 ;
 
+function ca : a -> Int ;
+ca x := case x of
+    9 -> 11 ;
+    _ -> 0 ;;
+
 function onePat : Int -> Int ;
 pat 2 := 11 ;
 pat _ := 0 ;
