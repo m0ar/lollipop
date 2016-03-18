@@ -30,7 +30,7 @@ defToExp (DDef _ _ e) = cExp e -- gets the expression from a def
 -- first matches the first argument to firt input variable then creates following
 -- case-trees
 defsToCase :: [D.Var] -> [D.Var] -> [A.Def] -> D.Exp
-defsToCase vsOrg (v:[]) ((A.DDef _ (a:[]) e):[])  = D.ECase (D.EVar v) [((argToPat a), (cExp e))]
+defsToCase _     (v:[]) ((A.DDef _ (a:[]) e):[])  = D.ECase (D.EVar v) [((argToPat a), (cExp e))]
 defsToCase vsOrg (v:[]) ((A.DDef _ (a:[]) e):ds)  = D.ECase (D.EVar v)
                                                     [((argToPat a), (cExp e)),
                                                     (D.PWild, (defsToCase vsOrg vsOrg ds))]

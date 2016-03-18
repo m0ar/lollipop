@@ -1,10 +1,14 @@
 function one : Int ;
 one := 1 ;
 
-function pat : Int -> Int -> Int -> Int;
+function pat : Int -> Int -> Int -> Int ;
 pat 0 9 2 := 10 ;
-pat 0 1 2 := 12 ;
+pat 0 1 _ := 12 ;
 pat _ _ _ := 14 ;
+
+function onePat : Int -> Int ;
+pat 2 := 11 ;
+pat _ := 0 ;
 
 function take : Int -> [a] -> [a] ;
 take n (x:xs) := case n of 0 -> cons x (take (n-1) xs) ;
