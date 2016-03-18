@@ -155,12 +155,7 @@ cExp (ETuple t) = case t of
 cCase :: A.Cases -> [(D.Pattern, D.Exp)]
 cCase A.ECases3          = []
 cCase (A.ECases1 p e cs) = cCase (A.ECases2 p e cs)
-cCase (A.ECases2 p e cs) = case p of
-    (A.PPat p)  -> case p of
-        A.Pwild       -> ((D.PWild, (cExp e)):[]) -- we don't add the rest of cs
-                                                  -- since it does not matter if
-                                                  -- wildcard is found
-        (A.PLit lit)  -> (((D.PLit (cLit lit)), (cExp e)):(cCase cs))
+cCase (A.ECases2 p e cs) = (cPattern p e):(cCase cs)
     -- (A.PListPat lp) ->
     -- (A.PTuplePat tp)         -> (cPattern (P2 tp) e):(cCase cs)
     -- TODO add support for lists in cases
