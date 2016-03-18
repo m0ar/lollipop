@@ -3,7 +3,7 @@ one := 1 ;
 
 function pat : Int -> Int -> Int -> Int;
 pat 0 9 2 := 10 ;
-pat _ 1 2 := 12 ;
+pat 0 1 2 := 12 ;
 pat _ _ _ := 14 ;
 
 function take : Int -> [a] -> [a] ;

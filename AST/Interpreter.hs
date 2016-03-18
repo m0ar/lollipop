@@ -79,19 +79,20 @@ eval env expr = case expr of
                       (VFun f) = f' $ eval env e1
         ETup2 e1 e2              -> VTup2 (eval env e1) (eval env e2)
         ETup3 e1 e2 e3           -> VTup3 (eval env e1) (eval env e2) (eval env e3)
+        ECase expr' []           -> VLit (ILit 0)
         ECase expr' pEs          -> fromJust $ evalCase v env pEs
-                where v = eval env expr'
+            where v = eval env expr'
 
 evalCase :: Value -> Env -> [(Pattern, Exp)] -> Maybe Value
 evalCase _ _ []              = Nothing
 evalCase v e ((p, expr):pes) = case p of
-    PLit lit      -> if lit == lit'
-                        then Just $ eval e expr
-                        else evalCase v e pes
+    PLit lit          -> if lit == lit'
+                         then Just $ eval e expr
+                         else evalCase v e pes
         where (VLit lit') = v
     PConstr cid' vars -> if cid' == cid
-                        then Just $ eval e' expr
-                        else evalCase v e pes
+                         then Just $ eval e' expr
+                         else evalCase v e pes
         where e' = addManyToEnv e vars vals
               (VConstr cid vals) = v
     PVar var          -> Just $ eval e' expr

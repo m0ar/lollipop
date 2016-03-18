@@ -18,8 +18,7 @@ cProgram (A.PLast d)      = ((cDeclaration d):[])
 -- converts any declaration to a case
 cDeclaration :: A.Declaration -> D.Declaration
 cDeclaration (A.DFunc (A.Id name) td defs)
-                | countTd td > 1 = D.DFunc name vars (D.ECase (D.EVar (head vars)) -- pattern matching can arrise
-                                                          (map (defsToCase (tail vars)) defs))
+                | countTd td > 1 = D.DFunc name vars (defsToCase vars vars defs)
                 | countTd td <= 1 && length defs /= 1 = error "multiple declarations of function"
                 | otherwise = D.DFunc name [] (defToExp $ head defs) -- pattern matching can't arrise
      where vars = take ((countTd td)-1) variables -- create variables of the input parameters
@@ -30,16 +29,14 @@ defToExp (DDef _ _ e) = cExp e -- gets the expression from a def
 -- converts a number of definitions to case-tree
 -- first matches the first argument to firt input variable then creates following
 -- case-trees
-defsToCase :: [D.Var] -> A.Def -> (D.Pattern, D.Exp)
-defsToCase vs (A.DDef _ (a:as) e) = ((argToPat a), (eCase vs as e))
-
-
--- creates cases of pattern matching
-eCase :: [D.Var] -> [A.Arg] -> A.Exp -> D.Exp
-eCase [] _ e  = (cExp e)
-eCase _ [] e  = (cExp e)
-eCase (v:vs) (a:as) e = D.ECase (D.EVar v) [((argToPat a), (eCase vs as e)),
-                                            ((D.PConstr "False" []), (D.EVar "fail"))]
+defsToCase :: [D.Var] -> [D.Var] -> [A.Def] -> D.Exp
+defsToCase vsOrg (v:[]) ((A.DDef _ (a:[]) e):[])  = D.ECase (D.EVar v) [((argToPat a), (cExp e))]
+defsToCase vsOrg (v:[]) ((A.DDef _ (a:[]) e):ds)  = D.ECase (D.EVar v)
+                                                    [((argToPat a), (cExp e)),
+                                                    (D.PWild, (defsToCase vsOrg vsOrg ds))]
+defsToCase vsOrg (v:vs) ((A.DDef did (a:as) e):ds)  = D.ECase (D.EVar v)
+                                                    [((argToPat a), (defsToCase vsOrg vs ((A.DDef did as e):ds))),
+                                                     (D.PWild, (defsToCase vsOrg vsOrg ds))]
 
 -- list of generated variables to introduce in declaration
 variables :: [D.Var]
