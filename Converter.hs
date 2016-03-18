@@ -17,14 +17,21 @@ cProgram (A.PLast d)      = ((cDeclaration d):[])
 
 -- converts any declaration to a case
 cDeclaration :: A.Declaration -> D.Declaration
-cDeclaration (A.DFunc (A.Id name) td defs)
-                | countTd td > 1 = D.DFunc name vars (defsToCase vars vars defs)
-                | countTd td <= 1 && length defs /= 1 = error "multiple declarations of function"
+cDeclaration (A.DFunc (A.Id name) _ defs)
+                | not sameNbrAs -- definitons has different number of arguments
+                    = error $ "Defintions for function " ++ name ++ " have different number of arguments"
+                | nbrAs == 0 && length defs > 1 -- if there is no input arguments, but several defs
+                    = error $ "Conflicting definitions for function " ++ name
+                | nbrAs > 1 -- pattern matching can arrise
+                    = D.DFunc name vars (defsToCase vars vars defs)
                 | otherwise = D.DFunc name [] (defToExp $ head defs) -- pattern matching can't arrise
-     where vars = take ((countTd td)-1) variables -- create variables of the input parameters
+     where vars = take (countAs $ head defs) variables -- reserves variables for the input arguments
+           nbrAs = countAs (head defs) -- an arbitrary definitions number of arguments
+           countAs (A.DDef _ as _) = length as -- counts number of arguments of a definition
+           sameNbrAs = all (== nbrAs) (map countAs defs) -- all defs should have same number of arguments
 
 defToExp :: A.Def -> D.Exp
-defToExp (DDef _ _ e) = cExp e -- gets the expression from a def
+defToExp (A.DDef _ _ e) = cExp e -- gets the expression from a def
 
 -- converts a number of definitions to case-tree
 -- first matches the first argument to firt input variable then creates following
