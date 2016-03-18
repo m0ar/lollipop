@@ -14,7 +14,7 @@ DSyn.           Declaration     ::= "type" TypeIdent [Id] ":=" TypeSyn Deriving 
 -- The structure of type declarations for functions.
 STypeDecl.      TypeDecls       ::= Type ;
 MTypeDecl.      TypeDecls       ::= Type "->" TypeDecls ;
-MLiTypeDecl.    TypeDecls       ::= LiTypeId "-o" TypeDecls ;
+MLiTypeDecl.    TypeDecls       ::= Type "-o" TypeDecls ;
 
 -- Function definition
 DDef.           Def             ::= Id [Arg] ":=" Exp ;
@@ -23,8 +23,8 @@ terminator nonempty Def ";" ;
 
 -- Arguments in function definitions can be either a literal,
 -- identifier, type (linear or non-linear), list pattern or a tuple
-DArg3.          Arg             ::= TypeIdent ; -- Should be type constructors, right?
-DArg4.          Arg             ::= Pattern ;
+DArg1.          Arg             ::= TypeId ; -- Should be type constructors, right?
+DArg2.          Arg             ::= Pattern ;
 separator Arg "" ;
 
 
@@ -45,7 +45,6 @@ DDTypes2.       DataTypes       ::= DPatterns "|" DataTypes ;
 
 -- The structure of algebraic data types
 DDTypes3.       DPatterns       ::= TypeIdent DPatterns ;
-DDTypes4.       DPatterns       ::= TypeIdent Id [Id] DPatterns ;
 DDTypes5.       DPatterns       ::= "(" TypeIdent Id [Id] ")" DPatterns ;
 DDTypes6.       DPatterns       ::= ;
 
@@ -62,16 +61,16 @@ LPattern3.      LPattern        ::= "[]" ;
 LPattern4.      LPattern        ::= Pat ;
 LPattern5.      LPattern        ::= Pat ":" LPattern ;
 
-TPattern1.      TuplePat        ::= "(" [Pattern] ")" ;
+TPattern.       TuplePat        ::= "(" [Pattern] ")" ;
 
 -- categroy for every case when an underscore or an identifier is accepted
 Pwild.          Pat             ::= "_" ;
 PId.            Pat             ::= Id ;
 PLit.           Pat             ::= Literal ;
 
-P1.             Pattern         ::= ListPat ;
-P2.             Pattern         ::= TuplePat ;
-P3.             Pattern         ::= Pat ;
+PListPat.       Pattern         ::= ListPat ;
+PTuplePat.      Pattern         ::= TuplePat ;
+PPat.           Pattern         ::= Pat ;
 separator Pattern "," ;
 
 -- A literal can be any predefined token type
@@ -86,7 +85,6 @@ LitFalse.       Literal         ::= "False" ;
 -- Tailor-made token type for type identifiers
 token TypeId upper (letter | digit | '_' | '\'')* ;
 separator nonempty TypeId "," ;
-token LiTypeId 'i' upper (letter | digit | '_' | '\'')* ;
 
 -- Variable identifier token
 token Id lower (letter | digit | '_' | '\'')* ;
@@ -152,13 +150,12 @@ terminator nonempty LetBinding1 ";" ;
 
 -- Types, either regular or linear
 TTypeId.        Type            ::= TypeIdent ;
-TPoly.          Type            ::= Id ;
 TList.          Type            ::= "[" [Type] "]" ;
 TTuple.         Type            ::= "(" [Type] ")" ;
 separator Type "," ;
 
 STypeIdent.     TypeIdent        ::= TypeId ;
-LiTypeIdent.    TypeIdent        ::= LiTypeId ;
+LiTypeIdent.    TypeIdent        ::= Id ;
 
 -- Haskell-style comments for now
 comment "--" ;
