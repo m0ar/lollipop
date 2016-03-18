@@ -25,7 +25,7 @@ cDeclaration (A.DFunc (A.Id name) _ defs)
                     = error $ "Defintions for function " ++ name ++ " have different number of arguments"
                 | nbrAs == 0 && length defs > 1 -- if there is no input arguments, but several defs
                     = error $ "Conflicting definitions for function " ++ name
-                | nbrAs > 1 -- pattern matching can arrise
+                | nbrAs >= 1 -- pattern matching can arrise
                     = D.DFunc name vars (defsToCase vars vars defs)
                 | otherwise = D.DFunc name [] (defToExp $ head defs) -- pattern matching can't arrise
      where vars = take (countAs $ head defs) variables -- reserves variables for the input arguments

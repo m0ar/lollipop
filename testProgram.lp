@@ -11,11 +11,11 @@ patR 0 := 10 ;
 patR 1 := 12 ;
 patR _ := 14 ;
 
-function ca : Int -> Int -> Int ;
-ca 3 _ := case 2 of
+function ca : Int -> Int ;
+ca 3 := case 2 of
     2 -> 11 ;
     _ -> 10 ;;
-ca _ 3 := 0 ;
+ca _  := 0 ;
 
 function onePat : Int -> Int ;
 pat 2 := 11 ;
