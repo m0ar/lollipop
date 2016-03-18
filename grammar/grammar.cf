@@ -21,11 +21,10 @@ DDef.           Def             ::= Id [Arg] ":=" Exp ;
 DGuardsDef.     Def             ::= Id [Arg] Guards ;
 terminator nonempty Def ";" ;
 
--- Arguments in function definitions can be either a literal,
--- identifier, type (linear or non-linear), list pattern or a tuple
-DArg1.          Arg             ::= TypeId ; -- Should be type constructors, right?
-DArg2.          Arg             ::= Pattern ;
+DArg.           Arg             ::= Pattern ;
 separator Arg "" ;
+
+DConst.         Cons            ::= TypeId [Id] ;
 
 
 -- Structure of guards in function definitions
@@ -66,6 +65,7 @@ TPattern.       TuplePat        ::= "(" [Pattern] ")" ;
 -- categroy for every case when an underscore or an identifier is accepted
 Pwild.          Pat             ::= "_" ;
 PId.            Pat             ::= Id ;
+PConst.         Pat             ::= Cons ;
 PLit.           Pat             ::= Literal ;
 
 PListPat.       Pattern         ::= ListPat ;
@@ -78,8 +78,6 @@ LitInt.         Literal         ::= Integer ;
 LitDouble.      Literal         ::= Double ;
 LitChar.        Literal         ::= Char ;
 LitString.      Literal         ::= String ;
-LitTrue.        Literal         ::= "True" ;
-LitFalse.       Literal         ::= "False" ;
 
 
 -- Tailor-made token type for type identifiers
@@ -95,6 +93,7 @@ EEnclosed.      Exp11           ::= "(" Exp ")" ;
 EVar.           Exp10           ::= Id ;
 ETuple.         Exp10           ::= Tuple ;
 ELiteral.       Exp10           ::= Literal ;
+ECons.          Exp10           ::= Cons ;
 EListComp.      Exp10           ::= "[" Exp "|" LCPatterns "]" ;
 EList.          Exp10           ::= "[" [Exp] "]" ;
 EEmptyList.     Exp10           ::= "[]" ;
