@@ -24,7 +24,8 @@ terminator nonempty Def ";" ;
 DArg.           Arg             ::= Pattern ;
 separator Arg "" ;
 
-DConst.         Cons            ::= TypeId [Id] ;
+DConst.         Cons            ::= "(" TypeId Id [Id] ")" ;
+DConst1.        Cons            ::= TypeId ;
 
 
 -- Structure of guards in function definitions
