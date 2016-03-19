@@ -17,6 +17,9 @@ import ErrM
 
 import System.Environment as E
 
+import Data.Map
+import qualified Data.Map as M
+
 main = do
   E.getArgs >>= \s -> case s of
     [file] -> buildEnv file >>= repl file
@@ -38,7 +41,7 @@ repl file env = do
            Bad s    -> do putStrLn "Syntax error:"
                           putStrLn s
                           loop
-           Ok e -> case eval env (cExp e) of -- TODO: type check input
+           Ok e -> case eval env (cExp e M.empty) of -- TODO: type check input
                VIO io -> putStrLn "running" >> io >> loop
                VFun _ -> putStrLn "function" >> loop
                v      -> print v >> loop
