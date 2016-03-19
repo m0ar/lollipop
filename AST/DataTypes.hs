@@ -31,9 +31,9 @@ data Pattern = PConstr ConstrID [Var]
             -- | Tup2 Pattern Pattern
             -- | Tup3 Pattern Pattern Pattern
 
-data LPattern = LP LEntry LPattern | Nil
+-- data LPattern = LP LEntry LPattern | Nil
 
-data LEntry = Var Var | Lit Lit | LWild | Empty
+-- data LEntry = Var Var | Lit Lit | LWild | Empty
 
 type Var = String
 

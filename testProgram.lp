@@ -7,15 +7,14 @@ pat 0 1 _ := 12 ;
 pat _ _ _ := 14 ;
 
 function patR : Int -> Int ;
-patR 2 := 10 ;
-patR 1 := 12 ;
-patR x := x + 14 ;
+patR x 2 5 := x + 1;
+patR y 2 2 := y ;
 
 function ca : Int -> Int ;
-ca 3 := case 2 of
-    2 -> 11 ;
+ca 3 x 2 := case x of
+    2 -> 2 + x ;
     _ -> 10 ;;
-ca _  := 0 ;
+ca _ 0 0 := 0 ;
 
 function onePat : Int -> Int ;
 pat 2 := 11 ;

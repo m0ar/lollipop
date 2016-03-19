@@ -29,7 +29,7 @@ cDeclaration (A.DFunc (A.Id name) _ defs)
                     = D.DFunc name vars (defsToCase vars vars defs)
                 | otherwise = D.DFunc name [] (defToExp $ head defs) -- pattern matching can't arrise
      where vars = take (countAs $ head defs) variables -- reserves variables for the input arguments
-           nbrAs = countAs (head defs) -- an arbitrary definitions number of arguments
+           nbrAs = countAs $ head defs -- an arbitrary definitions number of arguments
            countAs (A.DDef _ as _) = length as -- counts number of arguments of a definition
            sameNbrAs = all (== nbrAs) (map countAs defs) -- all defs should have same number of arguments
 
@@ -51,12 +51,6 @@ defsToCase vsOrg (v:vs) ((A.DDef did (a:as) e):ds)  = D.ECase (D.EVar v)
 -- list of generated variables to introduce in declaration
 variables :: [D.Var]
 variables = map (("#x"++).show) [1..]
-
--- counts number of type declarations
-countTd :: A.TypeDecls -> Int
-countTd (A.STypeDecl _)      = 1
-countTd (A.MTypeDecl _ td)   = 1 + countTd td
-countTd (A.MLiTypeDecl _ td) = 1 + countTd td
 
 -- converts a definition to a pattern
 -- defToPat :: [D.Var] -> A.Def -> D.Pattern
@@ -83,10 +77,10 @@ argToPat (A.DArg p) = case p of
     -- A.PListPat tp  -> -- TODO
     A.PPat pat     -> case pat of
         A.Pwild           -> D.PWild
-        --(A.PId (Id name)) -> D.PVar name
-        (A.PId _)         -> D.PWild
+        (A.PId (Id name)) -> D.PVar name
         (A.PLit lit)      -> D.PLit (cLit lit)
-        --(A.PConst (DConst (TypeId tid) ids)) -> -- TODO
+        (A.PConst (DConst (TypeId name) _ _)) -> D.PVar name
+        (A.PConst (DConst1 (TypeId name)))    -> D.PVar name
 
     -- A.P1 lp TODO
     -- A.P2 tp TODO
