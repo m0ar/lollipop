@@ -31,6 +31,7 @@ cDeclaration (A.DFunc (A.Id name) _ defs)
      where vars = take (countAs $ head defs) variables -- reserves variables for the input arguments
            nbrAs = countAs $ head defs -- an arbitrary definitions number of arguments
            countAs (A.DDef _ as _) = length as -- counts number of arguments of a definition
+           countAs (A.DGuardsDef _ as _) = length as -- counts number of arguments of a definition
            sameNbrAs = all (== nbrAs) (map countAs defs) -- all defs should have same number of arguments
 
 defToExp :: A.Def -> D.Exp
