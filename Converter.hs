@@ -83,7 +83,8 @@ argToPat (A.DArg p) = case p of
     -- A.PListPat tp  -> -- TODO
     A.PPat pat     -> case pat of
         A.Pwild           -> D.PWild
-        (A.PId (Id name)) -> D.PVar name
+        --(A.PId (Id name)) -> D.PVar name
+        (A.PId _)         -> D.PWild
         (A.PLit lit)      -> D.PLit (cLit lit)
         --(A.PConst (DConst (TypeId tid) ids)) -> -- TODO
 

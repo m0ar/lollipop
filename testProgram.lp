@@ -7,9 +7,9 @@ pat 0 1 _ := 12 ;
 pat _ _ _ := 14 ;
 
 function patR : Int -> Int ;
-patR 0 := 10 ;
+patR 2 := 10 ;
 patR 1 := 12 ;
-patR _ := 14 ;
+patR x := x + 14 ;
 
 function ca : Int -> Int ;
 ca 3 := case 2 of
