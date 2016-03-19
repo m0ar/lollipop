@@ -7,8 +7,18 @@ pat 0 1 _ := 12 ;
 pat _ _ _ := 14 ;
 
 function patR : Int -> Int ;
-patR x 2 5 := x + 1;
+patR x 2 5 := x + 1 ;
 patR y 2 2 := y ;
+
+function useDbl : Int -> Int ;
+useDbl x := dbl x ;
+
+function dbl : Int -> Int ;
+dbl x := case x of
+    2 -> 4 ;
+    4 -> 8 ;
+    8 -> 16 ;
+    _ -> 0 ;;
 
 function ca : Int -> Int ;
 ca 3 x 2 := case x of
