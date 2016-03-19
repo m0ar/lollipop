@@ -9,13 +9,6 @@ import Interpreter
 import qualified DataTypes as D
 import AbsGrammar
 import qualified AbsGrammar as A
-import Data.Map
-import qualified Data.Map as M
-import Data.Maybe
-
--- VarEnv maps user definied variables to internal (#x1, #x2, ...)
-type VarEnv = Map D.Var D.Var
-
 
 main :: IO ()
 main = putStrLn "welcome to the converter"
@@ -33,56 +26,31 @@ cDeclaration (A.DFunc (A.Id name) _ defs)
                 | nbrAs == 0 && length defs > 1 -- if there is no input arguments, but several defs
                     = error $ "Conflicting definitions for function " ++ name
                 | nbrAs >= 1 -- pattern matching can arrise
-                    = D.DFunc name vars (defsToCase vars vars (asOrg defs) defs)
+                    = D.DFunc name vars (defsToCase vars vars defs)
                 | otherwise = D.DFunc name [] (defToExp $ head defs) -- pattern matching can't arrise
      where vars = take (countAs $ head defs) variables -- reserves variables for the input arguments
            nbrAs = countAs $ head defs -- an arbitrary definitions number of arguments
            countAs (A.DDef _ as _) = length as -- counts number of arguments of a definition
-           sameNbrAs = all (== nbrAs) (Prelude.map countAs defs) -- all defs should have same number of arguments
-           asOrg ds = (\(A.DDef _ as _) -> as) $ head ds
+           sameNbrAs = all (== nbrAs) (map countAs defs) -- all defs should have same number of arguments
 
 defToExp :: A.Def -> D.Exp
-defToExp (A.DDef _ _ e) = cExp e M.empty -- gets the expression from a def
+defToExp (A.DDef _ _ e) = cExp e -- gets the expression from a def
 
 -- converts a number of definitions to case-tree
 -- first matches the first argument to firt input variable then creates following
 -- case-trees
-defsToCase :: [D.Var] -> [D.Var] -> [A.Arg] -> [A.Def] -> D.Exp
-defsToCase vsOrg (v:[]) asOrg ((A.DDef _ (a:[]) e):[])  = D.ECase (D.EVar v) [((argToPat a), (cExp e ve))]
-    where ve = addManyToVarEnv M.empty (Prelude.map asToVar asOrg) vsOrg
-defsToCase vsOrg (v:[]) asOrg ((A.DDef _ (a:[]) e):ds)  = D.ECase (D.EVar v)
-                                                    [((argToPat a), (cExp e ve)),
-                                                    (D.PWild, (defsToCase vsOrg vsOrg asOrg' ds))]
-    where ve = addManyToVarEnv M.empty (Prelude.map asToVar asOrg) vsOrg
-          asOrg' = (\(A.DDef _ as _) -> as) $ head ds
-defsToCase vsOrg (v:vs) asOrg ((A.DDef did (a:as) e):ds)  = D.ECase (D.EVar v)
-                                                    [((argToPat a), (defsToCase vsOrg vs asOrg ((A.DDef did as e):ds))),
-                                                     (D.PWild, (defsToCase vsOrg vsOrg asOrg ds))]
-
-
-asToVar (A.DArg p) = case p of
-    A.PPat pat -> case pat of
-        (A.PId (Id name)) -> name
-        _                 -> "##"    -- not a user defined variable
-
- -- Adds many variable, value mappings to environment.
--- Used in case and pattern matching
-addManyToVarEnv :: VarEnv -> [D.Var] -> [D.Var] -> VarEnv
-addManyToVarEnv env   []        []      = env
-addManyToVarEnv env   []        _       = error "variables not same length"
-addManyToVarEnv env   _        []       = error "variables not same length"
-addManyToVarEnv env (v:vs) (v':vs') = addManyToVarEnv (addToVarEnv env v v') vs vs'
-
-
- -- Adds a variable, value mapping to environment
-addToVarEnv :: VarEnv -> D.Var -> D.Var -> VarEnv
-addToVarEnv env v v' = case M.lookup v env of
-             Nothing  -> M.insert v v' env
-             Just val -> M.insert v v' (M.delete v env)
+defsToCase :: [D.Var] -> [D.Var] -> [A.Def] -> D.Exp
+defsToCase _     (v:[]) ((A.DDef _ (a:[]) e):[])  = D.ECase (D.EVar v) [((argToPat a), (cExp e))]
+defsToCase vsOrg (v:[]) ((A.DDef _ (a:[]) e):ds)  = D.ECase (D.EVar v)
+                                                    [((argToPat a), (cExp e)),
+                                                    (D.PWild, (defsToCase vsOrg vsOrg ds))]
+defsToCase vsOrg (v:vs) ((A.DDef did (a:as) e):ds)  = D.ECase (D.EVar v)
+                                                    [((argToPat a), (defsToCase vsOrg vs ((A.DDef did as e):ds))),
+                                                     (D.PWild, (defsToCase vsOrg vsOrg ds))]
 
 -- list of generated variables to introduce in declaration
 variables :: [D.Var]
-variables = Prelude.map (("#x"++).show) [1..]
+variables = map (("#x"++).show) [1..]
 
 -- converts a definition to a pattern
 -- defToPat :: [D.Var] -> A.Def -> D.Pattern
@@ -128,19 +96,19 @@ cArg (A.DArg3 typeId) = case typeId of
     (A.STypeIdent (TypeId name))    -> D.EVar name
     (A.LiTypeIdent (LiTypeId name)) -> D.EVar name --}
 
-cPattern :: A.Pattern -> A.Exp -> VarEnv -> (D.Pattern, D.Exp)
+cPattern :: A.Pattern -> A.Exp -> (D.Pattern, D.Exp)
 -- cPattern (PListPat lp) e = TODO Add suport for lists
 -- cPattern (PTuplePat (TPattern1 ps)) e = case length ps of
 --     2   -> D.Tup2 (cPattern (ps !! 0) e) (cPattern (ps !! 1) e) (cExp e)
 --     3   -> D.Tup3 (cPattern (ps !! 0) e) (cPattern (ps !! 1) e) (cPattern (ps !! 2) e) (cExp e)
-cPattern (PPat p) e ve = cPat p e ve
+cPattern (PPat p) e = cPat p e
 
 -- A pattern from bnfc has no expression bound to it
 -- this must be sent from the Def to create the AST pattern
-cPat :: A.Pat -> A.Exp -> VarEnv -> (D.Pattern, D.Exp)
-cPat Pwild           e ve = (D.PWild, (cExp e ve))
-cPat (PId (Id name)) e ve = ((D.PVar name), (cExp e ve))
-cPat (PLit l)        e ve = ((D.PLit (cLit l)), (cExp e ve))
+cPat :: A.Pat -> A.Exp -> (D.Pattern, D.Exp)
+cPat Pwild           e = (D.PWild, (cExp e))
+cPat (PId (Id name)) e = ((D.PVar name), (cExp e))
+cPat (PLit l)        e = ((D.PLit (cLit l)), (cExp e))
 --cPat (PConst c)      e = -- TODO
 
 cType :: A.Type -> D.Exp
@@ -164,40 +132,39 @@ cLit (A.LitString x)   = D.SLit x
             --    (EApp (ELam "x" (EBinOp Add (EVar "x")
             --    eFour)) eSix)
 
-cExp :: A.Exp -> VarEnv -> D.Exp
+cExp :: A.Exp -> D.Exp
 --cExp (A.EAdd e1 e2)         = (D.EApp (D.ELam "x" (D.EBinOp D.Add (D.EVar "x") (cExp e1))) (cExp e2))
-cExp (A.EAdd e1 e2) ve         = (D.EBinOp D.Add (cExp e1 ve) (cExp e2 ve))
-cExp (A.EVar (A.Id name)) ve   = (D.EVar (fromJust $ M.lookup name ve))
-                            -- switches user definied variable for internal
-cExp (A.ELiteral lit) ve       = (D.ELit $ cLit lit)
+cExp (A.EAdd e1 e2)         = (D.EBinOp D.Add (cExp e1) (cExp e2))
+cExp (A.EVar (A.Id name))   = (D.EVar name)
+cExp (A.ELiteral lit)       = (D.ELit $ cLit lit)
 -- cExp (A.ELet vID)       = (D.ELetIn )
-cExp (A.EApp e1 e2) ve         = (D.EApp (cExp e1 ve) (cExp e2 ve))
-cExp (A.EAbs (A.Id name) e) ve = (D.ELam name (cExp e ve))
-cExp (A.ECase e cs) ve         = (D.ECase (cExp e ve) (cCase cs ve))
-cExp (EIf e1 e2 e3) ve         = (D.ECase (cExp e1 ve) [((D.PConstr "True" []), (cExp e2 ve)),
-                                                  ((D.PConstr "False" []), (cExp e3 ve))])
-cExp (ETuple t) ve = case t of
-    (Tuple2 e1 e2)    -> D.ETup2 (cExp e1 ve) (cExp e2 ve)
-    (Tuple3 e1 e2 e3) -> D.ETup3 (cExp e1 ve) (cExp e2 ve) (cExp e3 ve)
+cExp (A.EApp e1 e2)         = (D.EApp (cExp e1) (cExp e2))
+cExp (A.EAbs (A.Id name) e) = (D.ELam name (cExp e))
+cExp (A.ECase e cs)         = (D.ECase (cExp e) (cCase cs))
+cExp (EIf e1 e2 e3)         = (D.ECase (cExp e1) [((D.PConstr "True" []), (cExp e2)),
+                                                  ((D.PConstr "False" []), (cExp e3))])
+cExp (ETuple t) = case t of
+    (Tuple2 e1 e2)    -> D.ETup2 (cExp e1) (cExp e2)
+    (Tuple3 e1 e2 e3) -> D.ETup3 (cExp e1) (cExp e2) (cExp e3)
 
-cCase :: A.Cases -> VarEnv -> [(D.Pattern, D.Exp)]
-cCase A.ECases3          ve = []
-cCase (A.ECases1 p e cs) ve = cCase (A.ECases2 p e cs) ve
-cCase (A.ECases2 p e cs) ve = (cPattern p e ve):(cCase cs ve)
+cCase :: A.Cases -> [(D.Pattern, D.Exp)]
+cCase A.ECases3          = []
+cCase (A.ECases1 p e cs) = cCase (A.ECases2 p e cs)
+cCase (A.ECases2 p e cs) = (cPattern p e):(cCase cs)
     -- (A.PListPat lp) ->
     -- (A.PTuplePat tp)         -> (cPattern (P2 tp) e):(cCase cs)
     -- TODO add support for lists in cases
 
-{-- cTuple :: A.Tuple -> D.Exp
+cTuple :: A.Tuple -> D.Exp
 cTuple (Tuple2 e1 e2)    = D.ETup2 (cExp e1) (cExp e2)
-cTuple (Tuple3 e1 e2 e3) = D.ETup3 (cExp e1) (cExp e2) (cExp e3) --}
+cTuple (Tuple3 e1 e2 e3) = D.ETup3 (cExp e1) (cExp e2) (cExp e3)
 
-cGuard :: A.Guards -> VarEnv -> D.Exp
-cGuard (A.DGuards1 e1 e2 gs) ve = D.ECase (cExp e2 ve) [((D.PConstr "True" []), (cExp e1 ve)),
-                                                  ((D.PConstr "False" []), (cGuard gs ve))]
-cGuard (A.DGuards2 e1 e2 gs) ve = D.ECase (cExp e2 ve) [((D.PConstr "True" []), (cExp e1 ve)),
-                                                  ((D.PConstr "False" []), (cGuard gs ve))]
-cGuard (A.DExpGuard e) ve       = (cExp e ve)
+cGuard :: A.Guards -> D.Exp
+cGuard (A.DGuards1 e1 e2 gs) = D.ECase (cExp e2) [((D.PConstr "True" []), (cExp e1)),
+                                                  ((D.PConstr "False" []), (cGuard gs))]
+cGuard (A.DGuards2 e1 e2 gs) = D.ECase (cExp e2) [((D.PConstr "True" []), (cExp e1)),
+                                                  ((D.PConstr "False" []), (cGuard gs))]
+cGuard (A.DExpGuard e)       = (cExp e)
 
 
 -- todo: Convert if-statement to case
