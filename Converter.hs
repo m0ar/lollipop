@@ -119,7 +119,9 @@ cPat :: A.Pat -> A.Exp -> (D.Pattern, D.Exp)
 cPat Pwild           e = (D.PWild, (cExp e))
 cPat (PId (Id name)) e = ((D.PVar name), (cExp e))
 cPat (PLit l)        e = ((D.PLit (cLit l)), (cExp e))
---cPat (PConst c)      e = -- TODO
+cPat (PConst c)      e = case c of
+    DConst1 (TypeId bool) -> ((D.PConstr bool []), (cExp e))
+    --DConst (TypeId bool) id ids -> -- TODO
 
 cType :: A.Type -> D.Exp
 cType (A.TTypeId t) = case t of -- TODO check this part
@@ -144,6 +146,9 @@ cLit (A.LitString x)   = D.SLit x
 
 cExp :: A.Exp -> D.Exp
 --cExp (A.EAdd e1 e2)         = (D.EApp (D.ELam "x" (D.EBinOp D.Add (D.EVar "x") (cExp e1))) (cExp e2))
+cExp (A.EConst c)            = case c of
+    (A.DConst1 (A.TypeId bool)) -> (D.EConstr bool)
+    -- DConst (TypeId bool) id ids -> -- TODO
 cExp (A.EAdd e1 e2)         = (D.EBinOp D.Add (cExp e1) (cExp e2))
 cExp (A.EVar (A.Id name))   = (D.EVar name)
 cExp (A.ELiteral lit)       = (D.ELit $ cLit lit)
