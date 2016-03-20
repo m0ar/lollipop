@@ -26,29 +26,37 @@ cDeclaration (A.DFunc (A.Id name) _ defs)
                 | nbrAs == 0 && length defs > 1 -- if there is no input arguments, but several defs
                     = error $ "Conflicting definitions for function " ++ name
                 | nbrAs >= 1 -- pattern matching can arrise
-                    = D.DFunc name vars (defsToCase vars vars defs)
+                    = D.DFunc name vars (defsToCase vars vars defs')
                 | otherwise = D.DFunc name [] (defToExp $ head defs) -- pattern matching can't arrise
      where vars = take (countAs $ head defs) variables -- reserves variables for the input arguments
            nbrAs = countAs $ head defs -- an arbitrary definitions number of arguments
            countAs (A.DDef _ as _) = length as -- counts number of arguments of a definition
            countAs (A.DGuardsDef _ as _) = length as -- counts number of arguments of a definition
            sameNbrAs = all (== nbrAs) (map countAs defs) -- all defs should have same number of arguments
+           defs' = allDef defs
 
 -- extracts the expression from a def
 defToExp :: A.Def -> D.Exp
 defToExp (A.DDef _ _ e)      = cExp e
-defToExp (DGuardsDef _ _ gs) = cGuard gs
+defToExp (DGuardsDef _ _ gs) = cExp $ cGuard gs
 -- converts a number of definitions to case-tree
 -- first matches the first argument to firt input variable then creates following
 -- case-trees
 defsToCase :: [D.Var] -> [D.Var] -> [A.Def] -> D.Exp
-defsToCase _     (v:[]) ((A.DDef _ (a:[]) e):[])  = D.ECase (D.EVar v) [((argToPat a), (cExp e))]
-defsToCase vsOrg (v:[]) ((A.DDef _ (a:[]) e):ds)  = D.ECase (D.EVar v)
-                                                    [((argToPat a), (cExp e)),
-                                                    (D.PWild, (defsToCase vsOrg vsOrg ds))]
-defsToCase vsOrg (v:vs) ((A.DDef did (a:as) e):ds)  = D.ECase (D.EVar v)
-                                                    [((argToPat a), (defsToCase vsOrg vs ((A.DDef did as e):ds))),
-                                                     (D.PWild, (defsToCase vsOrg vsOrg ds))]
+defsToCase  _    (v:[]) ((A.DDef _ (a:[]) e):[])   = D.ECase (D.EVar v) [((argToPat a), (cExp e))]
+defsToCase vsOrg (v:[]) ((A.DDef _ (a:[]) e):ds)   = D.ECase (D.EVar v)
+                                                      [ ((argToPat a), (cExp e)),
+                                                        (D.PWild, (defsToCase vsOrg vsOrg ds))]
+defsToCase vsOrg (v:vs) ((A.DDef did (a:as) e):ds) = D.ECase (D.EVar v)
+                                                      [ ((argToPat a), (defsToCase vsOrg vs ((A.DDef did as e):ds))),
+                                                        (D.PWild, (defsToCase vsOrg vsOrg ds))]
+
+-- translates all definitions into DDef-definitions
+allDef :: [A.Def] -> [A.Def]
+allDef []     = []
+allDef (d:ds) = case d of
+    (A.DDef _ _ _)         -> d:(allDef ds)
+    (A.DGuardsDef did as gs) -> (A.DDef did as (cGuard gs)):(allDef ds)
 
 -- list of generated variables to introduce in declaration
 variables :: [D.Var]
@@ -161,12 +169,19 @@ cTuple :: A.Tuple -> D.Exp
 cTuple (Tuple2 e1 e2)    = D.ETup2 (cExp e1) (cExp e2)
 cTuple (Tuple3 e1 e2 e3) = D.ETup3 (cExp e1) (cExp e2) (cExp e3)
 
-cGuard :: A.Guards -> D.Exp
+{--cGuard :: A.Guards -> A.Exp
 cGuard (A.DGuards1 e1 e2 gs) = D.ECase (cExp e2) [((D.PConstr "True" []), (cExp e1)),
                                                   ((D.PConstr "False" []), (cGuard gs))]
 cGuard (A.DGuards2 e1 e2 gs) = D.ECase (cExp e2) [((D.PConstr "True" []), (cExp e1)),
                                                   ((D.PConstr "False" []), (cGuard gs))]
-cGuard (A.DExpGuard e)       = (cExp e)
+cGuard (A.DExpGuard e)       = (cExp e)--}
+
+-- translates guards into equal case-expressions
+cGuard :: A.Guards -> A.Exp
+cGuard (A.DGuards1 e1 e2 gs)   = cGuard (A.DGuards2 e1 e2 gs)
+cGuard g@(A.DGuards2 e1 e2 gs) = A.ECase e2 (A.ECases2 (PPat (PConst (DConst1 (TypeId "True")))) e1 (cGuard' gs))
+    where cGuard' (A.DGuards2 e1 e2 gs) = (A.ECases2 (PPat (PConst (DConst1 (TypeId "False")))) (cGuard gs) ECases3)
+cGuard (A.DExpGuard e)         = e
 
 
 -- todo: Convert if-statement to case

@@ -8,7 +8,9 @@ pat _ _ _ := 14 ;
 
 function patR : Int -> Int ;
 patR x 2 5 := x + 1 ;
-patR y 2 2 := y ;
+patR y 2 2 := True when True
+	       := False when False
+	       := False ;
 
 function useDbl : Int -> Int ;
 useDbl x := dbl x ;
