@@ -65,7 +65,7 @@ eval :: Env -> Exp -> Value
 eval env expr = case expr of
         ELetIn var e1 e2         -> eval env' e2
             where env' = addToEnv env var (eval env' e1)
-        EConstr cid              -> lookupInEnv env cid
+        EConstr cid              -> VConstr cid []
         EApp e1 e2               -> case (eval env e1) of
              VFun v1                -> v1 v2
                 where v2 = eval env e2

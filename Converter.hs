@@ -60,10 +60,10 @@ allDef (d:ds) = case d of
 
 -- translates guards into equal case-expressions
 cGuard :: A.Guards -> A.Exp
-cGuard (A.DGuards1 e1 e2 gs)   = cGuard (A.DGuards2 e1 e2 gs)
-cGuard g@(A.DGuards2 e1 e2 gs) = A.ECase e2 (A.ECases2 (A.PPat (A.PConst (A.DConst1 (A.TypeId "True")))) e1 (cGuard' gs))
+cGuard (A.DGuards1 e1 e2 gs) = cGuard (A.DGuards2 e1 e2 gs)
+cGuard (A.DGuards2 e1 e2 gs) = A.ECase e2 (A.ECases2 (A.PPat (A.PConst (A.DConst1 (A.TypeId "True")))) e1 (cGuard' gs))
     where cGuard' (A.DGuards2 e1 e2 gs) = (A.ECases2 (A.PPat (A.PConst (A.DConst1 (A.TypeId "False")))) (cGuard gs) A.ECases3)
-cGuard (A.DExpGuard e)         = A.ECase e ((A.ECases2 (A.PPat (A.Pwild))) e (A.ECases3))
+cGuard (A.DExpGuard e)       = A.ECase e ((A.ECases2 (A.PPat (A.Pwild))) e (A.ECases3))
                             -- last one is "otherwise"-case
 
 -- list of generated variables to introduce in declaration
@@ -99,7 +99,8 @@ argToPat (A.DArg p) = case p of
         (A.PLit lit)      -> D.PLit (cLit lit)
         (A.PConst (DConst (TypeId name) _ _)) -> D.PConstr name []
         --(A.PConst (DConst (TypeId name) _ _)) -> D.PVar name
-        (A.PConst (DConst1 (TypeId name)))    -> D.PVar name
+        (A.PConst (DConst1 (TypeId name)))    -> D.PConstr name []
+        --(A.PConst (DConst1 (TypeId name)))    -> D.PVar name
 
     -- A.P1 lp TODO
     -- A.P2 tp TODO
@@ -125,12 +126,12 @@ cPattern (PPat p) e = cPat p e
 -- A pattern from bnfc has no expression bound to it
 -- this must be sent from the Def to create the AST pattern
 cPat :: A.Pat -> A.Exp -> (D.Pattern, D.Exp)
-cPat Pwild           e = (D.PWild, (cExp e))
-cPat (PId (Id name)) e = ((D.PVar name), (cExp e))
-cPat (PLit l)        e = ((D.PLit (cLit l)), (cExp e))
-cPat (PConst c)      e = case c of
-    DConst1 (TypeId bool) -> ((D.PConstr bool []), (cExp e))
-    --DConst (TypeId bool) id ids -> -- TODO
+cPat A.Pwild           e = (D.PWild, (cExp e))
+cPat (A.PId (A.Id name)) e = ((D.PVar name), (cExp e))
+cPat (A.PLit l)        e = ((D.PLit (cLit l)), (cExp e))
+cPat (A.PConst c)      e = case c of
+    A.DConst1 (A.TypeId bool)       -> ((D.PConstr bool []), (cExp e))
+    A.DConst (A.TypeId bool) id ids -> ((D.PConstr bool []), (cExp e))
 
 cType :: A.Type -> D.Exp
 cType (A.TTypeId t) = case t of -- TODO check this part
