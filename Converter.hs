@@ -34,9 +34,10 @@ cDeclaration (A.DFunc (A.Id name) _ defs)
            countAs (A.DGuardsDef _ as _) = length as -- counts number of arguments of a definition
            sameNbrAs = all (== nbrAs) (map countAs defs) -- all defs should have same number of arguments
 
+-- extracts the expression from a def
 defToExp :: A.Def -> D.Exp
-defToExp (A.DDef _ _ e) = cExp e -- gets the expression from a def
-
+defToExp (A.DDef _ _ e)      = cExp e
+defToExp (DGuardsDef _ _ gs) = cGuard gs
 -- converts a number of definitions to case-tree
 -- first matches the first argument to firt input variable then creates following
 -- case-trees
