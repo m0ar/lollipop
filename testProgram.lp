@@ -8,9 +8,11 @@ pat _ _ _ := 14 ;
 
 function patR : Int -> Int ;
 patR x 2 5 := x + 1 ;
-patR y 2 2 := True when True
-	       := False when False
-	       := False ;
+patR y 2 2 := 2 ;
+
+function grd : Int ;
+grd := 5 when True
+    := 2 ;
 
 function useDbl : Int -> Int ;
 useDbl x := dbl x ;

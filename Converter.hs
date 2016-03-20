@@ -58,6 +58,14 @@ allDef (d:ds) = case d of
     (A.DDef _ _ _)         -> d:(allDef ds)
     (A.DGuardsDef did as gs) -> (A.DDef did as (cGuard gs)):(allDef ds)
 
+-- translates guards into equal case-expressions
+cGuard :: A.Guards -> A.Exp
+cGuard (A.DGuards1 e1 e2 gs)   = cGuard (A.DGuards2 e1 e2 gs)
+cGuard g@(A.DGuards2 e1 e2 gs) = A.ECase e2 (A.ECases2 (A.PPat (A.PConst (A.DConst1 (A.TypeId "True")))) e1 (cGuard' gs))
+    where cGuard' (A.DGuards2 e1 e2 gs) = (A.ECases2 (A.PPat (A.PConst (A.DConst1 (A.TypeId "False")))) (cGuard gs) A.ECases3)
+cGuard (A.DExpGuard e)         = A.ECase e ((A.ECases2 (A.PPat (A.Pwild))) e (A.ECases3))
+                            -- last one is "otherwise"-case
+
 -- list of generated variables to introduce in declaration
 variables :: [D.Var]
 variables = map (("#x"++).show) [1..]
@@ -89,7 +97,8 @@ argToPat (A.DArg p) = case p of
         A.Pwild           -> D.PWild
         (A.PId (Id name)) -> D.PVar name
         (A.PLit lit)      -> D.PLit (cLit lit)
-        (A.PConst (DConst (TypeId name) _ _)) -> D.PVar name
+        (A.PConst (DConst (TypeId name) _ _)) -> D.PConstr name []
+        --(A.PConst (DConst (TypeId name) _ _)) -> D.PVar name
         (A.PConst (DConst1 (TypeId name)))    -> D.PVar name
 
     -- A.P1 lp TODO
@@ -181,12 +190,6 @@ cGuard (A.DGuards2 e1 e2 gs) = D.ECase (cExp e2) [((D.PConstr "True" []), (cExp 
                                                   ((D.PConstr "False" []), (cGuard gs))]
 cGuard (A.DExpGuard e)       = (cExp e)--}
 
--- translates guards into equal case-expressions
-cGuard :: A.Guards -> A.Exp
-cGuard (A.DGuards1 e1 e2 gs)   = cGuard (A.DGuards2 e1 e2 gs)
-cGuard g@(A.DGuards2 e1 e2 gs) = A.ECase e2 (A.ECases2 (PPat (PConst (DConst1 (TypeId "True")))) e1 (cGuard' gs))
-    where cGuard' (A.DGuards2 e1 e2 gs) = (A.ECases2 (PPat (PConst (DConst1 (TypeId "False")))) (cGuard gs) ECases3)
-cGuard (A.DExpGuard e)         = e
 
 
 -- todo: Convert if-statement to case
