@@ -28,7 +28,7 @@ addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
         e' = addDecsToEnv env ds
 
 startEnv :: Env
-startEnv = printF $ readLnF $ addF $ subF $ mulF $ bind $ tuple $ M.empty
+startEnv = printF $ readLnF $ addF $ subF $ mulF $ bind $ true $ false $ tuple $ M.empty
     where   printF  = M.insert "print" $ VFun $ \(VString s) -> VIO $ print s >> return (VConstr "()" []) -- TODO remove VString
             readLnF = M.insert "readLine" $ VIO $ fmap VString readLn
             subF    = M.insert "#sub" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x-y
@@ -67,7 +67,7 @@ eval :: Env -> Exp -> Value
 eval env expr = case expr of
         ELetIn var e1 e2         -> eval env' e2
             where env' = addToEnv env var (eval env' e1)
-        EConstr cid              -> VConstr cid []
+        EConstr cid              -> (lookupInEnv env cid)
         EApp e1 e2               -> case (eval env e1) of
              VFun v1                -> v1 v2
                 where v2 = eval env e2
