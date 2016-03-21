@@ -97,10 +97,11 @@ evalCase v e ((p, expr):pes) = case p of
                          then Just $ eval e expr
                          else evalCase v e pes
         where (VLit lit') = v
-    PConstr cid' vars -> if cid' == cid
+    PConstr cid' ps -> if cid' == cid
                          then Just $ eval e' expr
                          else evalCase v e pes
         where e' = addManyToEnv e vars vals
+              vars = Prelude.map (\(PVar v) -> v) ps
               (VConstr cid vals) = v
     PVar var          -> Just $ eval e' expr
         where e' = addToEnv e var v

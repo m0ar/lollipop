@@ -22,8 +22,7 @@ data Exp = EApp Exp Exp
 
 data Op = Add | Sub | Mul | Div | Bind
 
-
-data Pattern = PConstr ConstrID [Var]
+data Pattern = PConstr ConstrID [Pattern]
             | PLit Lit
             | PWild
             | PVar Var

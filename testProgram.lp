@@ -1,8 +1,8 @@
 function tpl : (Int, Int) ;
 tpl := (1, 2) ;
 
-function trpl : (Int, Int, Int) ;
-trpl := (1, 2, 3) ;
+function tpl2 : (Int, Int) -> Int ;
+tpl2 (1, 2) := 10 ;
 
 function one : Int ;
 one := 1 ;
