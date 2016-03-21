@@ -1,7 +1,7 @@
 -- Based on github.com/mgrabmueller/AlgorithmW
 -- expanded to fit lollipop core syntax
 
-import Control.Monad.Error
+import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State
 import qualified Data.Map as M
@@ -78,11 +78,11 @@ data TIEnv = TIEnv {}
 data TIState = TIState {tiSupply :: Int,
                         tiSubst  :: Subst}
 
-type TI a = ErrorT String (ReaderT TIEnv (StateT TIState IO)) a
+type TI a = ExceptT String (ReaderT TIEnv (StateT TIState IO)) a
 
 runTI :: TI a -> IO (Either String a, TIState)
 runTI t = do 
-        (res, st) <- runStateT (runReaderT (runErrorT t) initTIEnv) initTIState
+        (res, st) <- runStateT (runReaderT (runExceptT t) initTIEnv) initTIState
         return (res, st)
     where initTIEnv   = TIEnv{}
           initTIState = TIState{tiSupply = 0,
