@@ -14,18 +14,18 @@ DSyn.           Declaration     ::= "type" TypeIdent [Id] ":=" TypeSyn Deriving 
 -- The structure of type declarations for functions.
 STypeDecl.      TypeDecls       ::= Type ;
 MTypeDecl.      TypeDecls       ::= Type "->" TypeDecls ;
-MLiTypeDecl.    TypeDecls       ::= LiTypeId "-o" TypeDecls ;
+MLiTypeDecl.    TypeDecls       ::= Type "-o" TypeDecls ;
 
 -- Function definition
 DDef.           Def             ::= Id [Arg] ":=" Exp ;
 DGuardsDef.     Def             ::= Id [Arg] Guards ;
 terminator nonempty Def ";" ;
 
--- Arguments in function definitions can be either a literal,
--- identifier, type (linear or non-linear), list pattern or a tuple
-DArg3.          Arg             ::= TypeIdent ; -- Should be type constructors, right?
-DArg4.          Arg             ::= Pattern ;
+DArg.           Arg             ::= Pattern ;
 separator Arg "" ;
+
+DConst.         Cons            ::= "(" TypeId Id [Id] ")" ;
+DConst1.        Cons            ::= TypeId ;
 
 
 -- Structure of guards in function definitions
@@ -45,24 +45,14 @@ DDTypes2.       DataTypes       ::= DPatterns "|" DataTypes ;
 
 -- The structure of algebraic data types
 DDTypes3.       DPatterns       ::= TypeIdent DPatterns ;
-DDTypes4.       DPatterns       ::= TypeIdent Id [Id] DPatterns ;
 DDTypes5.       DPatterns       ::= "(" TypeIdent Id [Id] ")" DPatterns ;
 DDTypes6.       DPatterns       ::= ;
 
 
--- Deriving structure
+-- Deriving structure, DerArg can be any TypeClass,
+-- predefined or custom-made
 DDeriving1.     Deriving        ::= ";" ;
-DDeriving2.     Deriving        ::= "deriving" "(" [DerArg] ")" ";" ;
-separator nonempty DerArg "," ;
-DDerArg1.       DerArg          ::= "Show" ;
-DDerArg2.       DerArg          ::= "Read" ;
-DDerArg3.       DerArg          ::= "Eq" ;
-DDerArg4.       DerArg          ::= "Ord" ;
-DDerArg5.       DerArg          ::= "Num" ;
-DDerArg6.       DerArg          ::= "Integral" ;
-DDerArg7.       DerArg          ::= "Floating" ;
-DDerArg8.       DerArg          ::= "Enum" ;
-DDerArg9.       DerArg          ::= "Bounded" ;
+DDeriving2.     Deriving        ::= "deriving" "(" [TypeId] ")" ";" ;
 
 -- Pattern matching for lists in function definition arguments
 LPattern1.      ListPat         ::= "[]" ;
@@ -71,16 +61,17 @@ LPattern3.      LPattern        ::= "[]" ;
 LPattern4.      LPattern        ::= Pat ;
 LPattern5.      LPattern        ::= Pat ":" LPattern ;
 
-TPattern1.      TuplePat        ::= "(" [Pattern] ")" ;
+TPattern.       TuplePat        ::= "(" [Pattern] ")" ;
 
 -- categroy for every case when an underscore or an identifier is accepted
 Pwild.          Pat             ::= "_" ;
 PId.            Pat             ::= Id ;
+PConst.         Pat             ::= Cons ;
 PLit.           Pat             ::= Literal ;
 
-P1.             Pattern         ::= ListPat ;
-P2.             Pattern         ::= TuplePat ;
-P3.             Pattern         ::= Pat ;
+PListPat.       Pattern         ::= ListPat ;
+PTuplePat.      Pattern         ::= TuplePat ;
+PPat.           Pattern         ::= Pat ;
 separator Pattern "," ;
 
 -- A literal can be any predefined token type
@@ -88,13 +79,11 @@ LitInt.         Literal         ::= Integer ;
 LitDouble.      Literal         ::= Double ;
 LitChar.        Literal         ::= Char ;
 LitString.      Literal         ::= String ;
-LitTrue.        Literal         ::= "True" ;
-LitFalse.       Literal         ::= "False" ;
 
 
 -- Tailor-made token type for type identifiers
 token TypeId upper (letter | digit | '_' | '\'')* ;
-token LiTypeId 'i' upper (letter | digit | '_' | '\'')* ;
+separator nonempty TypeId "," ;
 
 -- Variable identifier token
 token Id lower (letter | digit | '_' | '\'')* ;
@@ -105,8 +94,10 @@ EEnclosed.      Exp11           ::= "(" Exp ")" ;
 EVar.           Exp10           ::= Id ;
 ETuple.         Exp10           ::= Tuple ;
 ELiteral.       Exp10           ::= Literal ;
+EConst.         Exp10           ::= Cons ;
 EListComp.      Exp10           ::= "[" Exp "|" LCPatterns "]" ;
 EList.          Exp10           ::= "[" [Exp] "]" ;
+EEmptyList.     Exp10           ::= "[]" ;
 ELet.           Exp10           ::= LetBinding ;
 EApp.           Exp9            ::= Exp9 Exp10 ;
 EPow.           Exp8            ::= Exp8 "^" Exp9 ;
@@ -159,13 +150,15 @@ terminator nonempty LetBinding1 ";" ;
 
 -- Types, either regular or linear
 TTypeId.        Type            ::= TypeIdent ;
-TPoly.          Type            ::= Id ;
 TList.          Type            ::= "[" [Type] "]" ;
 TTuple.         Type            ::= "(" [Type] ")" ;
+TFun.           Type            ::= "(" Type "->" Type ")";
+TLFun.          Type            ::= "(" Type "-o" Type ")" ;
+
 separator Type "," ;
 
 STypeIdent.     TypeIdent        ::= TypeId ;
-LiTypeIdent.    TypeIdent        ::= LiTypeId ;
+LiTypeIdent.    TypeIdent        ::= Id ;
 
 -- Haskell-style comments for now
 comment "--" ;

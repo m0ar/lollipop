@@ -28,9 +28,28 @@ addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
         e' = addDecsToEnv env ds
 
 startEnv :: Env
-startEnv = printF $ readLnF $ M.empty
-    where   printF  = M.insert "print" (VFun (\(VString s) -> (VIO (print s >> return (VString s)))))
-            readLnF = M.insert "readLine" (VIO (fmap VString readLn))
+startEnv = printF $ readLnF $ addF $ subF $ mulF $ bind $ true $ false $ tuple $ truple $ M.empty
+    where   printF  = M.insert "print" $ VFun $ \(VString s) -> VIO $ print s >> return (VConstr "()" []) -- TODO remove VString
+            readLnF = M.insert "readLine" $ VIO $ fmap VString readLn
+            subF    = M.insert "#sub" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x-y
+            addF    = M.insert "#add" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x+y
+            mulF    = M.insert "#mul" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x*y -- a1 >>= \s -> a2 s
+            bind    = M.insert "#bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> run $ a2 s
+            true    = M.insert "True" $ vConstructor "True" 0 []
+            false   = M.insert "False" $ vConstructor "False" 0 []
+            tuple   = M.insert "(,)" $ vConstructor "(,)" 2 []
+            truple  = M.insert "(,,)" $ vConstructor "(,,)" 3 []
+
+vConstructor :: ConstrID -> Int -> [Value] -> Value
+vConstructor cid 0 vs = VConstr cid vs
+vConstructor cid n vs = VFun (\v -> (vConstructor cid (n-1) (vs++[v])))
+
+
+run :: Value -> IO Value
+run act = case act of
+    VIO a -> a
+    _     -> error "faulty type"
+
 
 -- makeBinding is a helper function to addDecsToEnv
 -- Makes bindings from declarations to environment
@@ -43,18 +62,18 @@ makeBinding (DFunc name vs e) env = (name, eval env (addLams vs e))
 
 
 equals :: Value -> Value -> Bool
-equals (VInt x) (VInt y) = x == y
+equals (VLit (ILit x)) (VLit (ILit y)) = x == y
+equals (VLit (DLit x)) (VLit (DLit y)) = x == y
+equals (VLit (SLit x)) (VLit (SLit y)) = x == y
+equals (VLit (CLit x)) (VLit (CLit y)) = x == y
+equals _                _              = False
 
 -- evaluation of an expression in an environment
 eval :: Env -> Exp -> Value
 eval env expr = case expr of
         ELetIn var e1 e2         -> eval env' e2
             where env' = addToEnv env var (eval env' e1)
-        EConstr cid              -> lookupInEnv env cid
-        ECase e ps               -> eval env' e'
-            where (VConstr cid vals)    = eval env e
-                  (Constr cid' vars e') = findPattern ps cid
-                  env'             = addManyToEnv env vars vals
+        EConstr cid              -> (lookupInEnv env cid)
         EApp e1 e2               -> case (eval env e1) of
              VFun v1                -> v1 v2
                 where v2 = eval env e2
@@ -62,20 +81,43 @@ eval env expr = case expr of
         ELam var e               -> VFun f
             where f v = eval (addToEnv env var v) e
         EVar var                 -> (lookupInEnv env var)
-        ELit (ILit i)            -> VInt i
-        ELit (SLit s)            -> VString s
-        EBinOp op e1 e2          -> case op of
-            Add                     -> (\(VInt x) (VInt y) -> (VInt (x+y)))
-                                            (eval env e1) (eval env e2)
-            Sub                     -> (\(VInt x) (VInt y) -> (VInt (x-y)))
-                                            (eval env e1) (eval env e2)
-            Mul                     -> (\(VInt x) (VInt y) -> (VInt (x*y)))
-                                            (eval env e1) (eval env e2)
+        ELit (SLit s)            -> VString s -- TODO remove
+        ELit lit                 -> VLit lit
+        EBinOp op e1 e2          -> f $ eval env e2
+                where (VFun f') = lookupInEnv env (show op)
+                      (VFun f) = f' $ eval env e1
+        ECase expr' []           -> VLit (ILit 0)
+        ECase expr' pEs          -> fromJust $ evalCase v env pEs
+            where v = eval env expr'
 
+evalCase :: Value -> Env -> [(Pattern, Exp)] -> Maybe Value
+evalCase _ _ []              = Nothing
+evalCase v e ((p, expr):pes) = case p of
+    PLit lit          -> if lit == lit'
+                         then Just $ eval e expr
+                         else evalCase v e pes
+        where (VLit lit') = v
+    PConstr cid' vars -> if cid' == cid
+                         then Just $ eval e' expr
+                         else evalCase v e pes
+        where e' = addManyToEnv e vars vals
+              (VConstr cid vals) = v
+    PVar var          -> Just $ eval e' expr
+        where e' = addToEnv e var v
+    PWild             -> Just $ eval e expr
 
+-- checks if the value of a lit is the same as the value of the Value
+{-- equalsLitVal :: Lit -> Value -> Bool
+equalsLitVal (SLit x) (VString x') = x == x'
+equalsLitVal (ILit x) (VInt x')    = x == x'
+equalsLitVal (DLit x) (VDouble x') = x == x'
+equalsLitVal (CLit x) (VChar x')   = x == x'
+equalsLitVal _ _                   = error "incompatible types"
+--}
 -- finds pattern based on constructor ID
-findPattern :: [Pattern] -> ConstrID -> Pattern
+{-- findPattern :: [Pattern] -> ConstrID -> Pattern
 findPattern [] _                          = error "could not find pattern"
-findPattern (p@(Constr cid vs expr):ps) cid'
+findPattern (p:[]) _                      = p
+findPattern (p@(Constr cid vs):ps) cid'
                             | cid == cid' = p
-                            | otherwise   = findPattern ps cid'
+                            | otherwise   = findPattern ps cid' --}

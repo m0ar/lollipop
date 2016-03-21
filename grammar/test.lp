@@ -17,6 +17,11 @@ type String := [Char] ;
 type AssocList k v := [(k,v)] ;
 type IntMap v := Map Int v ;
 
+-- Test for higher order function
+function map : (a -> b) -> [a] -> [b];
+map f (x:xs) := cons(f x, map f xs) ;
+
+
 -- Test for a function with zero arguments
 function zeroArguments : Int ;
 zeroArguments := 6 ;
@@ -102,3 +107,7 @@ oneArgument a := a + 3 ;
 -- Test for enclosed expressions
 function encl : Int ;
 encl := (3 + 6) ;
+
+-- test empty expression
+function testEmpExp : [a] ;
+testEmpExp := [] ;
