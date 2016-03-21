@@ -36,6 +36,7 @@ startEnv = printF $ readLnF $ addF $ subF $ mulF $ bind $ M.empty
             mulF    = M.insert "#mul" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x*y -- a1 >>= \s -> a2 s
             bind    = M.insert "#bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> run $ a2 s
             true    = M.insert "True" $ VConstr "True" []
+            false    = M.insert "False" $ VConstr "False" []
 
 run :: Value -> IO Value
 run act = case act of
