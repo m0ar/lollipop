@@ -35,9 +35,15 @@ startEnv = printF $ readLnF $ addF $ subF $ mulF $ bind $ true $ false $ tuple $
             addF    = M.insert "#add" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x+y
             mulF    = M.insert "#mul" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x*y -- a1 >>= \s -> a2 s
             bind    = M.insert "#bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> run $ a2 s
-            true    = M.insert "True" $ VConstr "True" []
-            false   = M.insert "False" $ VConstr "False" []
-            tuple   = M.insert "(,)" $ VFun $ (\v1 -> VFun $ \v2 -> VConstr "(,)" [v1,v2])
+            true    = M.insert "True" $ vConstructor "True" 0 []
+            false   = M.insert "False" $ vConstructor "False" 0 []
+            tuple   = M.insert "(,)" $ vConstructor "(,)" 2 []
+            --tuple   = M.insert "(,)" $ VFun $ (\v1 -> VFun $ \v2 -> VConstr "(,)" [v1,v2])
+
+vConstructor :: ConstrID -> Int -> [Value] -> Value
+vConstructor cid 0 vs = VConstr cid vs
+vConstructor cid n vs = VFun (\v -> (vConstructor cid (n-1) (vs++[v])))
+
 
 run :: Value -> IO Value
 run act = case act of
