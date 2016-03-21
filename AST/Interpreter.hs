@@ -28,7 +28,7 @@ addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
         e' = addDecsToEnv env ds
 
 startEnv :: Env
-startEnv = printF $ readLnF $ addF $ subF $ mulF $ bind $ M.empty
+startEnv = printF $ readLnF $ addF $ subF $ mulF $ bind $ tuple $ M.empty
     where   printF  = M.insert "print" $ VFun $ \(VString s) -> VIO $ print s >> return (VConstr "()" []) -- TODO remove VString
             readLnF = M.insert "readLine" $ VIO $ fmap VString readLn
             subF    = M.insert "#sub" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x-y
@@ -36,7 +36,8 @@ startEnv = printF $ readLnF $ addF $ subF $ mulF $ bind $ M.empty
             mulF    = M.insert "#mul" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x*y -- a1 >>= \s -> a2 s
             bind    = M.insert "#bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> run $ a2 s
             true    = M.insert "True" $ VConstr "True" []
-            false    = M.insert "False" $ VConstr "False" []
+            false   = M.insert "False" $ VConstr "False" []
+            tuple   = M.insert "(,)" $ VFun $ (\v1 -> VFun $ \v2 -> VConstr "(,)" [v1,v2])
 
 run :: Value -> IO Value
 run act = case act of
@@ -79,8 +80,6 @@ eval env expr = case expr of
         EBinOp op e1 e2          -> f $ eval env e2
                 where (VFun f') = lookupInEnv env (show op)
                       (VFun f) = f' $ eval env e1
-        ETup2 e1 e2              -> VTup2 (eval env e1) (eval env e2)
-        ETup3 e1 e2 e3           -> VTup3 (eval env e1) (eval env e2) (eval env e3)
         ECase expr' []           -> VLit (ILit 0)
         ECase expr' pEs          -> fromJust $ evalCase v env pEs
             where v = eval env expr'

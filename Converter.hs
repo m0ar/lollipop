@@ -166,11 +166,11 @@ cExp (A.ELiteral lit)       = (D.ELit $ cLit lit)
 cExp (A.EApp e1 e2)         = (D.EApp (cExp e1) (cExp e2))
 cExp (A.EAbs (A.Id name) e) = (D.ELam name (cExp e))
 cExp (A.ECase e cs)         = (D.ECase (cExp e) (cCase cs))
-cExp (EIf e1 e2 e3)         = (D.ECase (cExp e1) [((D.PConstr "True" []), (cExp e2)),
+cExp (A.EIf e1 e2 e3)         = (D.ECase (cExp e1) [((D.PConstr "True" []), (cExp e2)),
                                                   ((D.PConstr "False" []), (cExp e3))])
-cExp (ETuple t) = case t of
-    (Tuple2 e1 e2)    -> D.ETup2 (cExp e1) (cExp e2)
-    (Tuple3 e1 e2 e3) -> D.ETup3 (cExp e1) (cExp e2) (cExp e3)
+cExp (A.ETuple t) = case t of
+    (A.Tuple2 e1 e2)    -> D.EApp (D.EApp (D.EVar "(,)") (cExp e1)) (cExp e2)
+    --(A.Tuple3 e1 e2 e3) ->
 
 cCase :: A.Cases -> [(D.Pattern, D.Exp)]
 cCase A.ECases3          = []

@@ -1,3 +1,6 @@
+function tpl : (Int, Int) ;
+tpl := (1, 2) ;
+
 function one : Int ;
 one := 1 ;
 
