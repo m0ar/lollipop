@@ -138,7 +138,7 @@ ti env (ELit l) = tiLit env l
 ti env (EAbs n e) = do 
     tv <- newTyVar "a"
     let TypeEnv env' = remove env n
-    env'' = TypeEnv (env' `M.union` (M.singleton n (Scheme [] tv)))
+        env'' = TypeEnv (env' `M.union` (M.singleton n (Scheme [] tv)))
     (s1, t1) <- ti env'' e
     return (s1, TFun (apply s1 tv) t1)
 ti env (EApp e1 e2) = do 
