@@ -1,8 +1,14 @@
+function tpl : (Int, Int) ;
+tpl := (1, 2) ;
+
+function trpl : (Int, Int, Int) ;
+trpl := (1, 2, 3) ;
+
 function one : Int ;
 one := 1 ;
 
 function pat : Int -> Int -> Int -> Int ;
-pat 0 9 2 := 10 ;
+pat 0 x 2 := 5 ;
 pat 0 1 _ := 12 ;
 pat _ _ _ := 14 ;
 
@@ -15,7 +21,7 @@ grd := 5 when True
     := 2 ;
 
 function useDbl : Int -> Int ;
-useDbl x := dbl x ;
+useDbl x := 4 + dbl x ;
 
 function dbl : Int -> Int ;
 dbl x := case x of
