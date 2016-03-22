@@ -91,8 +91,9 @@ argToVar (A.DArg3 typeId) = case typeId of
 -- where Pat = PLit Lit | PWild | PVar Var
 argToPat :: A.Arg -> D.Pattern
 argToPat (A.DArg p) = case p of
-    A.PTuplePat (A.TPattern ps) -> D.PConstr "," (Prelude.map argToPat (Prelude.map (\p -> A.DArg p) ps))
-    -- A.PTuplePat tp -> -- TODO
+    A.PTuplePat (A.TPattern ps) -> case (length ps) of
+        2 -> D.PConstr "(,)" (Prelude.map argToPat (Prelude.map (\p -> A.DArg p) ps))
+        3 -> D.PConstr "(,,)" (Prelude.map argToPat (Prelude.map (\p -> A.DArg p) ps))
     -- A.PListPat tp  -> -- TODO
     A.PPat pat     -> case pat of
         A.Pwild           -> D.PWild

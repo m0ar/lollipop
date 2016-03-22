@@ -4,6 +4,9 @@ tpl := (1, 2) ;
 function tpl2 : (Int, Int) -> Int ;
 tpl2 (1, 2) := 10 ;
 
+function tpl3 : (Int, Int, Int) -> Int ;
+tpl3 (1, 2, 3) := 10 ;
+
 function one : Int ;
 one := 1 ;
 
