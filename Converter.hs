@@ -70,39 +70,20 @@ cGuard (A.DExpGuard e)       = A.ECase e ((A.ECases2 (A.PPat (A.Pwild))) e (A.EC
 variables :: [D.Var]
 variables = map (("#x"++).show) [1..]
 
--- converts a definition to a pattern
--- defToPat :: [D.Var] -> A.Def -> D.Pattern
--- defToPat vs (A.DDef (A.Id cid) args e) = D.Mix (map argToPat args) (cExp e)
--- defToPat vs (A.DGuardsDef (A.Id cid) args guards) = undefined
--- defToPat vs (A.DDef (A.Id cid) args e) = (D.Constr cid [] (cExp e))
-    -- where vars as = (map argToVar as)
-
--- ["x","y"] (sum 9 2 = e)
-
---defToPat (A.DDef (A.Id cid) args e) = (D.Constr cid (vars args) (cExp e))
-
--- REPLACED BY PASSED
-{-- argToVar :: A.Arg -> D.Var
-argToVar (A.DArg3 typeId) = case typeId of
-    (STypeIdent (TypeId name))    -> name
-    (LiTypeIdent (LiTypeId name)) -> name --}
-
 -- converts args to pat in DataTypes.hs
 -- where Pat = PLit Lit | PWild | PVar Var
 argToPat :: A.Arg -> D.Pattern
 argToPat (A.DArg p) = case p of
-    A.PTuplePat (A.TPattern ps) -> case (length ps) of
-        2 -> D.PConstr "(,)" (Prelude.map argToPat (Prelude.map (\p -> A.DArg p) ps))
-        3 -> D.PConstr "(,,)" (Prelude.map argToPat (Prelude.map (\p -> A.DArg p) ps))
+    A.PTuplePat (A.TPattern ps) -> case length ps of
+        2 -> D.PConstr "(,)" (Prelude.map argToPat $ Prelude.map (\p -> A.DArg p) ps)
+        3 -> D.PConstr "(,,)" (Prelude.map argToPat $ Prelude.map (\p -> A.DArg p) ps)
     -- A.PListPat tp  -> -- TODO
     A.PPat pat     -> case pat of
         A.Pwild           -> D.PWild
         (A.PId (Id name)) -> D.PVar name
         (A.PLit lit)      -> D.PLit (cLit lit)
         (A.PConst (DConst (TypeId name) _ _)) -> D.PConstr name []
-        --(A.PConst (DConst (TypeId name) _ _)) -> D.PVar name
         (A.PConst (DConst1 (TypeId name)))    -> D.PConstr name []
-        --(A.PConst (DConst1 (TypeId name)))    -> D.PVar name
 
     -- A.P1 lp TODO
     -- A.P2 tp TODO

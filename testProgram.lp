@@ -2,10 +2,12 @@ function tpl : (Int, Int) ;
 tpl := (1, 2) ;
 
 function tpl2 : (Int, Int) -> Int ;
-tpl2 (1, 2) := 10 ;
+tpl2 (1, 2) := 12 ;
+tpl2 (3, 4) := 34 ;
 
 function tpl3 : (Int, Int, Int) -> Int ;
-tpl3 (1, 2, 3) := 10 ;
+tpl3 (x, 2, 3) := 2 ;
+tpl3 (4, _, 6) := 456 ;
 
 function one : Int ;
 one := 1 ;

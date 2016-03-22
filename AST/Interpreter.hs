@@ -98,7 +98,14 @@ evalCase v e ((p, expr):pes) = case p of
                          else evalCase v e pes
         where (VLit lit') = v
     PConstr cid' ps -> if cid' == cid
-                         then Just $ eval e' expr
+                         then (case cid' of
+                             "(,)"  -> case evalTpls (zip ps vals) e' expr of
+                                 Nothing -> evalCase v e pes
+                                 v       -> v
+                             "(,,)" -> case evalTpls (zip ps vals) e' expr of
+                                 Nothing -> evalCase v e pes
+                                 v       -> v
+                             _     -> Just $ eval e' expr)
                          else evalCase v e pes
         where e' = addManyToEnv e vars vals
               vars = Prelude.map (\(PVar v) -> v) ps
@@ -106,6 +113,16 @@ evalCase v e ((p, expr):pes) = case p of
     PVar var          -> Just $ eval e' expr
         where e' = addToEnv e var v
     PWild             -> Just $ eval e expr
+
+evalTpls psVs e' expr env = if and $ Prelude.map evalTpl psVs
+                            then Just $ eval e'' expr
+                            else Nothing
+        where evalTpl ((PWild),_)              = True
+              evalTpl ((PVar var),val)         = True
+              evalTpl ((PLit lit),(VLit lit')) = if lit == lit'
+                                                 then True
+                                                 else False
+              e'' = addBindings psVs e'
 
 -- checks if the value of a lit is the same as the value of the Value
 {-- equalsLitVal :: Lit -> Value -> Bool
