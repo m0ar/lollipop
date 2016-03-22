@@ -6,8 +6,8 @@ tpl2 (1, 2) := 12 ;
 tpl2 (3, 4) := 34 ;
 
 function tpl3 : (Int, Int, Int) -> Int ;
-tpl3 (x, 2, 3) := 2 ;
-tpl3 (4, _, 6) := 456 ;
+tpl3 x (1, 2, 3) := x+2 ;
+tpl3 x (4, _, 6) := 456 ;
 
 function one : Int ;
 one := 1 ;
