@@ -98,14 +98,11 @@ evalCase v e ((p, expr):pes) = case p of
                          else evalCase v e pes
         where (VLit lit') = v
     PConstr cid' ps -> if cid' == cid
-                         then (case cid' of
-                             "(,)"  -> case (evalTpls (zip ps vals) e' expr) of
-                                 Nothing -> evalCase v e pes
-                                 v       -> v
-                             "(,,)" -> case (evalTpls (zip ps vals) e' expr) of
-                                 Nothing -> evalCase v e pes
-                                 v       -> v
-                             _     -> Just $ eval e' expr)
+                         then (if (cid' == "(,)" || cid' == "(,,)")
+                               then case (evalTpls (zip ps vals) e' expr) of
+                                     Nothing -> evalCase v e pes
+                                     v       -> v
+                                else Just $ eval e' expr )
                          else evalCase v e pes
         where e' = addManyToEnv e vars vals
               vars = Prelude.map patternToVar ps
