@@ -119,6 +119,10 @@ cLit (A.LitDouble x)   = D.DLit x
 cLit (A.LitChar x)     = D.CLit x
 cLit (A.LitString x)   = D.SLit x
 
+cConst :: A.Cons -> D.Exp
+cConst (DConst (TypeId cid) cid' ids) = D.EConstr cid
+cConst (DConst1 (TypeId cid))         = D.EConstr cid
+
 -- (A.EAdd (A.ELiteral (A.LitInt 2)) (A.ELiteral (A.LitInt 5)))])
 -- -->
 -- EApp (ELam "x" (EBinOp Add (EVar "x") eFour))
@@ -141,6 +145,21 @@ cExp (A.ECase e cs)         = (D.ECase (cExp e) (cCase cs))
 cExp (A.EIf e1 e2 e3)       = (D.ECase (cExp e1) [((D.PConstr "True" []), (cExp e2)),
                                                   ((D.PConstr "False" []), (cExp e3))])
 cExp (A.ETuple t)           = cTuple t
+cExp (A.EList ls)           = cList ls
+
+cList ls = case (head ls) of
+    ELiteral _ -> cLitList ls
+    -- ETuple _ ->
+    EConst _   -> cConstList ls
+    --EList _    -> cListList ls
+
+cConstList []              = D.EConstr "Nil"
+cConstList ((EConst c):cs) = D.EApp ((D.EApp (D.EConstr "Cons") (cConst c))) (cConstList cs)
+
+cLitList []                = D.EConstr "Nil"
+cLitList ((ELiteral l):ls) = D.EApp ((D.EApp (D.EConstr "Cons") (D.ELit $ cLit l))) (cLitList ls)
+
+--(EList [ELiteral (LitInt 1),ELiteral (LitInt 2),ELiteral (LitInt 3)])
 
 cCase :: A.Cases -> [(D.Pattern, D.Exp)]
 cCase A.ECases3          = []

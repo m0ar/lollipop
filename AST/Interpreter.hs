@@ -28,7 +28,7 @@ addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
         e' = addDecsToEnv env ds
 
 startEnv :: Env
-startEnv = printF $ readLnF $ addF $ subF $ mulF $ bind $ true $ false $ tuple $ truple $ M.empty
+startEnv = printF $ readLnF $ addF $ subF $ mulF $ bind $ true $ false $ tuple $ truple $ nil $ cons $ M.empty
     where   printF  = M.insert "print" $ VFun $ \(VString s) -> VIO $ print s >> return (VConstr "()" []) -- TODO remove VString
             readLnF = M.insert "readLine" $ VIO $ fmap VString readLn
             subF    = M.insert "#sub" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x-y
@@ -39,6 +39,8 @@ startEnv = printF $ readLnF $ addF $ subF $ mulF $ bind $ true $ false $ tuple $
             false   = M.insert "False" $ vConstructor "False" 0 []
             tuple   = M.insert "(,)" $ vConstructor "(,)" 2 []
             truple  = M.insert "(,,)" $ vConstructor "(,,)" 3 []
+            nil     = M.insert "Nil" $ vConstructor "Nil" 0 []
+            cons    = M.insert "Cons" $ vConstructor "Cons" 2 []
 
 vConstructor :: ConstrID -> Int -> [Value] -> Value
 vConstructor cid 0 vs = VConstr cid vs

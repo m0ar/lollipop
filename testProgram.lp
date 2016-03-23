@@ -1,5 +1,11 @@
+function lst : [Int] ;
+lst := [True,False,True] ;
+
 function tpl : (Int, Int) ;
 tpl := (1, 2) ;
+
+function bl : Bool ;
+bl := True ;
 
 function tpl2 : (Int, Int) -> Int ;
 tpl2 (1, 2) := 12 ;
