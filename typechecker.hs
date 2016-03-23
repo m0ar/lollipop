@@ -17,11 +17,13 @@ data Exp = EVar String
 
 data Lit = LInt Integer
     | LBool Bool
+    | LChar Char
     deriving (Eq, Ord)
 
 data Type = TVar String
     | TInt
     | TBool
+    | TChar
     | TFun Type Type
     deriving (Eq, Ord)
 
@@ -36,6 +38,7 @@ class Types a where
 
 instance Types Type where
     ftv (TVar n)      =  S.singleton n
+    ftv TChar         =  S.empty
     ftv TInt          =  S.empty
     ftv TBool         =  S.empty
     ftv (TFun t1 t2)  =  ftv t1 `S.union` ftv t2
@@ -112,6 +115,7 @@ mgu (TVar u) t              =  varBind u t
 mgu t (TVar u)              =  varBind u t
 mgu TInt TInt               =  return nullSubst
 mgu TBool TBool             =  return nullSubst
+mgu TChar TChar             =  return nullSubst
 mgu t1 t2                   =  throwError $ "types do not unify: " ++ show t1 ++ 
                                 " vs. " ++ show t2
 
@@ -126,6 +130,7 @@ varBind u t | t == TVar u        =  return nullSubst
 tiLit :: TypeEnv -> Lit -> TI (Subst, Type)
 tiLit _ (LInt _)  = return (nullSubst, TInt)
 tiLit _ (LBool _) = return (nullSubst, TBool)
+tiLit _ (LChar _) = return (nullSubst, TChar)
 
 
 ti ::  TypeEnv -> Exp -> TI (Subst, Type)
@@ -175,10 +180,11 @@ e4  =  ELet "id" (EAbs "x" (EApp (EVar "x") (EVar "x")))
 e5  =  EAbs "m" (ELet "y" (EVar "m")
                  (ELet "x" (EApp (EVar "y") (ELit (LBool True)))
                        (EVar "x")))
+e6  =  EAbs "x" (ELit (LChar 'c'))
 
 
 main :: IO ()
-main = mapM_ test' [e0, e1, e2, e3, e4, e5]
+main = mapM_ test' [e0, e1, e2, e3, e4, e5, e6]
 
 
 instance Show Type where
@@ -189,6 +195,7 @@ prType :: Type -> PP.Doc
 prType (TVar n)   = PP.text n
 prType TInt       = PP.text "Int"
 prType TBool      = PP.text "Bool"
+prType TChar      = PP.text "Char"
 prType (TFun t s) = prParenType t PP.<+> PP.text "->" PP.<+> prType s
 
 prParenType :: Type -> PP.Doc
@@ -222,6 +229,7 @@ instance Show Lit where
 
 prLit :: Lit -> PP.Doc
 prLit (LInt i)  = PP.integer i
+prLit (LChar c) = PP.char c
 prLit (LBool b) = if b then PP.text "True" else PP.text "False"
 
 instance Show Scheme where
@@ -231,7 +239,7 @@ prScheme :: Scheme -> PP.Doc
 prScheme (Scheme vars t) = PP.text "All" PP.<+>
                            PP.hcat (PP.punctuate PP.comma (map PP.text vars))
                            PP.<> PP.text "." PP.<+> prType t
-
+katten = test'
 
 test' :: Exp -> IO ()
 test' e = do 
@@ -274,6 +282,9 @@ bu m (ELit (LInt _)) = do
 bu m (ELit (LBool _)) = do 
     b <- newTyVar "b"
     return ([], [CEquivalent b TBool], b)
+bu m (ELit (LChar _)) = do
+    b <- newTyVar "b"
+    return ([], [CEquivalent b TChar], b)
 bu m (EApp e1 e2) = do 
     (a1, c1, t1) <- bu m e1
     (a2, c2, t2) <- bu m e2
