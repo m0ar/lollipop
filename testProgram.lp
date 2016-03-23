@@ -30,10 +30,8 @@ useDbl x := 4 + dbl x ;
 
 function dbl : Int -> Int ;
 dbl x := case x of
-    2 -> 4 ;
-    4 -> 8 ;
-    8 -> 16 ;
-    _ -> 0 ;;
+    (6,3) -> 6 ;
+    (2,3) -> 8 ;;
 
 function ca : Int -> Int ;
 ca 3 x 2 := case x of
