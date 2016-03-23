@@ -3,11 +3,11 @@ tpl := (1, 2) ;
 
 function tpl2 : (Int, Int) -> Int ;
 tpl2 (1, 2) := 12 ;
+tpl2 (x, 5) := 5 ;
 tpl2 (3, 4) := 34 ;
 
 function tpl3 : (Int, Int, Int) -> Int ;
-tpl3 x (1, 2, 3) := x+2 ;
-tpl3 x (4, _, 6) := 456 ;
+tpl3 x (3, y, 3) := x+y ;
 
 function one : Int ;
 one := 1 ;

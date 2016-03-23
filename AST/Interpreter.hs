@@ -108,8 +108,12 @@ evalCase v e ((p, expr):pes) = case p of
                              _     -> Just $ eval e' expr)
                          else evalCase v e pes
         where e' = addManyToEnv e vars vals
-              vars = Prelude.map (\(PVar v) -> v) ps
+              vars = Prelude.map patternToVar ps
               (VConstr cid vals) = v
+              patternToVar p = case p of
+                  (PVar v)      -> v
+                  _             -> ""
+
     PVar var          -> Just $ eval e' expr
         where e' = addToEnv e var v
     PWild             -> Just $ eval e expr
