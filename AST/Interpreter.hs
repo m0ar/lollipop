@@ -100,11 +100,11 @@ evalCase v e ((p, expr):pes) = case p of
                          else evalCase v e pes
         where (VLit lit') = v
     PConstr cid' ps -> if cid' == cid
-                         then (if (cid' == "(,)" || cid' == "(,,)")
-                               then case (evalTpls (zip ps vals) e' expr) of
-                                     Nothing -> evalCase v e pes
-                                     v       -> v
-                                else Just $ eval e' expr )
+                         then (case cid' of
+                             "Cons" -> consCase p vals expr e
+                             "(,)"  -> tplCase vals e' expr
+                             "(,,)" -> tplCase vals e' expr
+                             _      -> Just $ eval e' expr )
                          else evalCase v e pes
         where e' = addManyToEnv e vars vals
               vars = Prelude.map patternToVar ps
@@ -112,10 +112,21 @@ evalCase v e ((p, expr):pes) = case p of
               patternToVar p = case p of
                   (PVar v)      -> v
                   _             -> ""
+              tplCase vals e' expr = case (evalTpls (zip ps vals) e' expr) of
+                                          Nothing -> evalCase v e pes
+                                          v       -> v
 
     PVar var          -> Just $ eval e' expr
         where e' = addToEnv e var v
     PWild             -> Just $ eval e expr
+
+consCase (PConstr "Nil" []) [] expr env = Just $ eval env expr
+consCase (PConstr "Cons" [p,p']) (v:vs) expr env = case p of
+                PWild    -> consCase p' vs expr env
+                PVar var -> consCase p' vs expr (addToEnv env var v)
+                PLit lit -> if lit == ((\(VLit l) -> l) v)
+                            then consCase p' vs expr env
+                            else Nothing
 
 evalTpls psVs e' expr = if and $ Prelude.map evalTpl psVs
                         then Just $ eval (bindEnv psVs e') expr
@@ -127,20 +138,3 @@ evalTpls psVs e' expr = if and $ Prelude.map evalTpl psVs
               bindEnv (p:psVs) e' = case p of
                   ((PVar var),val) -> bindEnv psVs (addToEnv e' var val)
                   _                -> bindEnv psVs e'
-
-
--- checks if the value of a lit is the same as the value of the Value
-{-- equalsLitVal :: Lit -> Value -> Bool
-equalsLitVal (SLit x) (VString x') = x == x'
-equalsLitVal (ILit x) (VInt x')    = x == x'
-equalsLitVal (DLit x) (VDouble x') = x == x'
-equalsLitVal (CLit x) (VChar x')   = x == x'
-equalsLitVal _ _                   = error "incompatible types"
---}
--- finds pattern based on constructor ID
-{-- findPattern :: [Pattern] -> ConstrID -> Pattern
-findPattern [] _                          = error "could not find pattern"
-findPattern (p:[]) _                      = p
-findPattern (p@(Constr cid vs):ps) cid'
-                            | cid == cid' = p
-                            | otherwise   = findPattern ps cid' --}

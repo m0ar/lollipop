@@ -1,3 +1,6 @@
+function lst2 : [Int] -> Int ;
+lst2 (x:xs) := x ;
+
 function lst : [Int] ;
 lst := [True,False,True] ;
 

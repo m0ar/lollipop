@@ -77,7 +77,12 @@ argToPat (A.DArg p) = case p of
     A.PTuplePat (A.TPattern ps) -> case length ps of
         2 -> D.PConstr "(,)" (Prelude.map argToPat $ Prelude.map (\p -> A.DArg p) ps)
         3 -> D.PConstr "(,,)" (Prelude.map argToPat $ Prelude.map (\p -> A.DArg p) ps)
-    -- A.PListPat tp  -> -- TODO
+    A.PListPat lp  -> case lp of
+        LPattern2 p lp' -> cLPat (LPattern5 p lp')
+        LPattern1       -> cLPat LPattern3
+
+--LPattern2 (PId (Id "x")) (LPattern4 (PId (Id "xs")))
+
     A.PPat pat     -> case pat of
         A.Pwild           -> D.PWild
         (A.PId (Id name)) -> D.PVar name
@@ -88,21 +93,27 @@ argToPat (A.DArg p) = case p of
     -- A.P1 lp TODO
     -- A.P2 tp TODO
 
+cLPat :: A.LPattern -> D.Pattern
+cLPat LPattern3         = D.PConstr "Nil" []
+cLPat (LPattern4 p)     = D.PConstr "Cons" [(cPat p), (cLPat LPattern3)]
+cLPat (LPattern5 p lps) = D.PConstr "Cons" [(cPat p), (cLPat lps)]
+
 cPattern :: A.Pattern -> A.Exp -> (D.Pattern, D.Exp)
--- cPattern (PListPat lp) e = TODO Add suport for lists
+cPattern l@(PListPat _) e     = (lPat, (cExp e))
+    where lPat = argToPat (A.DArg l)
 cPattern p@(A.PTuplePat _) e = (tPat, (cExp e))
     where tPat = argToPat (A.DArg p)
-cPattern (PPat p) e = cPat p e
+cPattern (PPat p) e          = ((cPat p), (cExp e))
 
 -- A pattern from bnfc has no expression bound to it
 -- this must be sent from the Def to create the AST pattern
-cPat :: A.Pat -> A.Exp -> (D.Pattern, D.Exp)
-cPat A.Pwild           e = (D.PWild, (cExp e))
-cPat (A.PId (A.Id name)) e = ((D.PVar name), (cExp e))
-cPat (A.PLit l)        e = ((D.PLit (cLit l)), (cExp e))
-cPat (A.PConst c)      e = case c of
-    A.DConst1 (A.TypeId bool)       -> ((D.PConstr bool []), (cExp e))
-    A.DConst (A.TypeId bool) id ids -> ((D.PConstr bool []), (cExp e))
+cPat :: A.Pat -> D.Pattern
+cPat A.Pwild             = D.PWild
+cPat (A.PId (A.Id name)) = (D.PVar name)
+cPat (A.PLit l)          = (D.PLit (cLit l))
+cPat (A.PConst c)        = case c of
+    A.DConst1 (A.TypeId bool)       -> (D.PConstr bool [])
+    A.DConst (A.TypeId bool) id ids -> (D.PConstr bool [])
 
 cType :: A.Type -> D.Exp
 cType (A.TTypeId t) = case t of -- TODO check this part
