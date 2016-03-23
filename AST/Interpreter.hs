@@ -123,9 +123,7 @@ evalTpls psVs e' expr = if and $ Prelude.map evalTpl psVs
                         else Nothing
         where evalTpl ((PWild),_)              = True
               evalTpl ((PVar var),val)         = True
-              evalTpl ((PLit lit),(VLit lit')) = if lit == lit'
-                                                 then True
-                                                 else False
+              evalTpl ((PLit lit),(VLit lit')) = lit == lit'
               bindEnv [] e'       = e'
               bindEnv (p:psVs) e' = case p of
                   ((PVar var),val) -> bindEnv psVs (addToEnv e' var val)
