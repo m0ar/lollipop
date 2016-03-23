@@ -143,6 +143,7 @@ cExp (A.EConst c)            = case c of
     (A.DConst1 (A.TypeId bool)) -> (D.EConstr bool)
     -- DConst (TypeId bool) id ids -> -- TODO
 cExp (A.EAdd e1 e2)         = (D.EBinOp D.Add (cExp e1) (cExp e2))
+cExp (A.ESub e1 e2)         = (D.EBinOp D.Sub (cExp e1) (cExp e2))
 cExp (A.EVar (A.Id name))   = (D.EVar name)
 cExp (A.ELiteral lit)       = (D.ELit $ cLit lit)
 -- cExp (A.ELet vID)       = (D.ELetIn )
