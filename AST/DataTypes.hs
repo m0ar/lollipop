@@ -74,15 +74,15 @@ instance Show Declaration where
 -- Show functions --
 instance Show Exp where
     show e = case e of
-        EApp e1 e2         -> ""
+        EApp e1 e2         -> show e1 ++ " " ++ show e2
         EVar s             -> s
         ELit l             -> show l
         EConstr cid        -> show cid
         EBinOp op e1 e2    -> case op of
-            Add -> (show e1) ++ " + " ++ (show e2)
-        ELam v e           -> "\\" ++ v ++ " -> " ++ (show e)
-        ECase e ps         -> "case " ++ (show e) ++ " of \n" ++ (concatMap show ps)
-        ELetIn v e1 e2     -> "let " ++ v ++ " = " ++ (show e1) ++ " in \n   " ++ (show e2)
+            Add -> show e1 ++ " + " ++ show e2
+        ELam v e           -> "\\" ++ v ++ " -> " ++ show e
+        ECase e ps         -> "case " ++ show e ++ " of \n" ++ (concatMap show ps)
+        ELetIn v e1 e2     -> "let " ++ v ++ " = " ++ show e1 ++ " in \n   " ++ show e2
 
 instance Show Pattern where
     show p = case p of
