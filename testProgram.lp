@@ -1,5 +1,6 @@
-function lst2 : [Int] -> Int ;
-lst2 (x:xs) := x ;
+function sum : [Int] -> Int ;
+sum (x:[]) := x ;
+sum (x:xs) := x + sum xs ;
 
 function lst : [Int] ;
 lst := [True,False,True] ;

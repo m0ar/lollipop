@@ -101,7 +101,9 @@ evalCase v e ((p, expr):pes) = case p of
         where (VLit lit') = v
     PConstr cid' ps -> if cid' == cid
                          then (case cid' of
-                             "Cons" -> consCase p vals expr e
+                             "Cons" -> case (consCase p vals expr e) of
+                                 Nothing -> evalCase v e pes
+                                 v       -> v
                              "(,)"  -> tplCase vals e' expr
                              "(,,)" -> tplCase vals e' expr
                              _      -> Just $ eval e' expr )
@@ -120,8 +122,19 @@ evalCase v e ((p, expr):pes) = case p of
         where e' = addToEnv e var v
     PWild             -> Just $ eval e expr
 
-consCase (PConstr "Nil" []) [] expr env = Just $ eval env expr
+{--LPattern2 (PId (Id "x")) LPattern3)
+PConstr "Cons" [(PVar "x"), (PConstr "Nil" [])]
+(x:[])
+
+PConstr "Cons" [(PLit 1), (PConstr "Cons" [(PLit 2),(PConstr "Nil" [])])]--}
+
+
+consCase (PConstr "Nil" _) vs expr env = case vs of
+    []                   -> Just $ eval env expr
+    [(VConstr "Nil" [])] -> Just $ eval env expr
+    _                    -> Nothing --error ("Nil not end of list. \n vs:  " ++ (concatMap show vs))
 consCase (PConstr "Cons" [p,p']) (v:vs) expr env = case p of
+                --PConstr pid ps ->
                 PWild    -> consCase p' vs expr env
                 PVar var -> consCase p' vs expr (addToEnv env var v)
                 PLit lit -> if lit == ((\(VLit l) -> l) v)
