@@ -1,8 +1,23 @@
+function sum : [Int] -> Int ;
+sum (x:[]) := x ;
+sum (x:xs) := x + sum xs ;
+
+function lst : [Int] ;
+lst := [True,False,True] ;
+
 function tpl : (Int, Int) ;
 tpl := (1, 2) ;
 
-function trpl : (Int, Int, Int) ;
-trpl := (1, 2, 3) ;
+function bl : Bool ;
+bl := True ;
+
+function tpl2 : (Int, Int) -> Int ;
+tpl2 (1, 2) := 12 ;
+tpl2 (x, y) := x-y ;
+tpl2 (3, 4) := 34 ;
+
+function tpl3 : (Int, Int, Int) -> Int ;
+tpl3 x (3, y, 3) := 6-3 ;
 
 function one : Int ;
 one := 1 ;
@@ -25,10 +40,8 @@ useDbl x := 4 + dbl x ;
 
 function dbl : Int -> Int ;
 dbl x := case x of
-    2 -> 4 ;
-    4 -> 8 ;
-    8 -> 16 ;
-    _ -> 0 ;;
+    (6,3) -> 6 ;
+    (2,3) -> 8 ;;
 
 function ca : Int -> Int ;
 ca 3 x 2 := case x of

@@ -70,68 +70,50 @@ cGuard (A.DExpGuard e)       = A.ECase e ((A.ECases2 (A.PPat (A.Pwild))) e (A.EC
 variables :: [D.Var]
 variables = map (("#x"++).show) [1..]
 
--- converts a definition to a pattern
--- defToPat :: [D.Var] -> A.Def -> D.Pattern
--- defToPat vs (A.DDef (A.Id cid) args e) = D.Mix (map argToPat args) (cExp e)
--- defToPat vs (A.DGuardsDef (A.Id cid) args guards) = undefined
--- defToPat vs (A.DDef (A.Id cid) args e) = (D.Constr cid [] (cExp e))
-    -- where vars as = (map argToVar as)
-
--- ["x","y"] (sum 9 2 = e)
-
---defToPat (A.DDef (A.Id cid) args e) = (D.Constr cid (vars args) (cExp e))
-
--- REPLACED BY PASSED
-{-- argToVar :: A.Arg -> D.Var
-argToVar (A.DArg3 typeId) = case typeId of
-    (STypeIdent (TypeId name))    -> name
-    (LiTypeIdent (LiTypeId name)) -> name --}
-
 -- converts args to pat in DataTypes.hs
 -- where Pat = PLit Lit | PWild | PVar Var
 argToPat :: A.Arg -> D.Pattern
 argToPat (A.DArg p) = case p of
-    -- A.PTuplePat tp -> -- TODO
-    -- A.PListPat tp  -> -- TODO
+    A.PTuplePat (A.TPattern ps) -> case length ps of
+        2 -> D.PConstr "(,)" (Prelude.map argToPat $ Prelude.map (\p -> A.DArg p) ps)
+        3 -> D.PConstr "(,,)" (Prelude.map argToPat $ Prelude.map (\p -> A.DArg p) ps)
+    A.PListPat lp  -> case lp of
+        LPattern2 p lp' -> cLPat (LPattern5 p lp')
+        LPattern1       -> cLPat LPattern3
+
+--LPattern2 (PId (Id "x")) (LPattern4 (PId (Id "xs")))
+
     A.PPat pat     -> case pat of
         A.Pwild           -> D.PWild
         (A.PId (Id name)) -> D.PVar name
         (A.PLit lit)      -> D.PLit (cLit lit)
         (A.PConst (DConst (TypeId name) _ _)) -> D.PConstr name []
-        --(A.PConst (DConst (TypeId name) _ _)) -> D.PVar name
         (A.PConst (DConst1 (TypeId name)))    -> D.PConstr name []
-        --(A.PConst (DConst1 (TypeId name)))    -> D.PVar name
 
     -- A.P1 lp TODO
     -- A.P2 tp TODO
 
-{-- cArg :: A.Arg -> D.Exp
--- cArg (A.DArg4 (A.P1 lp)) = TODO Implement list-patterns in AST
--- cArg (A.DArg4 (A.P2 (A.TPattern1 ps))) = TODO Implement tuples-patterns in AST
-cArg (A.DArg4 (A.P3 (A.PLit lit))) = case lit of
-    (A.LitInt x)    -> D.ELit (D.ILit (fromInteger x))
-    (A.LitDouble x) -> D.ELit (D.DLit x)
-    (A.LitChar x)   -> D.ELit (D.CLit x)
-cArg (A.DArg3 typeId) = case typeId of
-    (A.STypeIdent (TypeId name))    -> D.EVar name
-    (A.LiTypeIdent (LiTypeId name)) -> D.EVar name --}
+cLPat :: A.LPattern -> D.Pattern
+cLPat LPattern3         = D.PConstr "Nil" []
+cLPat (LPattern4 p)     = D.PConstr "Cons" [(cPat p), (cLPat LPattern3)]
+cLPat (LPattern5 p lps) = D.PConstr "Cons" [(cPat p), (cLPat lps)]
 
 cPattern :: A.Pattern -> A.Exp -> (D.Pattern, D.Exp)
--- cPattern (PListPat lp) e = TODO Add suport for lists
--- cPattern (PTuplePat (TPattern1 ps)) e = case length ps of
---     2   -> D.Tup2 (cPattern (ps !! 0) e) (cPattern (ps !! 1) e) (cExp e)
---     3   -> D.Tup3 (cPattern (ps !! 0) e) (cPattern (ps !! 1) e) (cPattern (ps !! 2) e) (cExp e)
-cPattern (PPat p) e = cPat p e
+cPattern l@(PListPat _) e     = (lPat, (cExp e))
+    where lPat = argToPat (A.DArg l)
+cPattern p@(A.PTuplePat _) e = (tPat, (cExp e))
+    where tPat = argToPat (A.DArg p)
+cPattern (PPat p) e          = ((cPat p), (cExp e))
 
 -- A pattern from bnfc has no expression bound to it
 -- this must be sent from the Def to create the AST pattern
-cPat :: A.Pat -> A.Exp -> (D.Pattern, D.Exp)
-cPat A.Pwild           e = (D.PWild, (cExp e))
-cPat (A.PId (A.Id name)) e = ((D.PVar name), (cExp e))
-cPat (A.PLit l)        e = ((D.PLit (cLit l)), (cExp e))
-cPat (A.PConst c)      e = case c of
-    A.DConst1 (A.TypeId bool)       -> ((D.PConstr bool []), (cExp e))
-    A.DConst (A.TypeId bool) id ids -> ((D.PConstr bool []), (cExp e))
+cPat :: A.Pat -> D.Pattern
+cPat A.Pwild             = D.PWild
+cPat (A.PId (A.Id name)) = (D.PVar name)
+cPat (A.PLit l)          = (D.PLit (cLit l))
+cPat (A.PConst c)        = case c of
+    A.DConst1 (A.TypeId bool)       -> (D.PConstr bool [])
+    A.DConst (A.TypeId bool) id ids -> (D.PConstr bool [])
 
 cType :: A.Type -> D.Exp
 cType (A.TTypeId t) = case t of -- TODO check this part
@@ -148,6 +130,10 @@ cLit (A.LitDouble x)   = D.DLit x
 cLit (A.LitChar x)     = D.CLit x
 cLit (A.LitString x)   = D.SLit x
 
+cConst :: A.Cons -> D.Exp
+cConst (DConst (TypeId cid) cid' ids) = D.EConstr cid
+cConst (DConst1 (TypeId cid))         = D.EConstr cid
+
 -- (A.EAdd (A.ELiteral (A.LitInt 2)) (A.ELiteral (A.LitInt 5)))])
 -- -->
 -- EApp (ELam "x" (EBinOp Add (EVar "x") eFour))
@@ -160,6 +146,7 @@ cExp (A.EConst c)            = case c of
     (A.DConst1 (A.TypeId bool)) -> (D.EConstr bool)
     -- DConst (TypeId bool) id ids -> -- TODO
 cExp (A.EAdd e1 e2)         = (D.EBinOp D.Add (cExp e1) (cExp e2))
+cExp (A.ESub e1 e2)         = (D.EBinOp D.Sub (cExp e1) (cExp e2))
 cExp (A.EVar (A.Id name))   = (D.EVar name)
 cExp (A.ELiteral lit)       = (D.ELit $ cLit lit)
 -- cExp (A.ELet vID)       = (D.ELetIn )
@@ -169,6 +156,21 @@ cExp (A.ECase e cs)         = (D.ECase (cExp e) (cCase cs))
 cExp (A.EIf e1 e2 e3)       = (D.ECase (cExp e1) [((D.PConstr "True" []), (cExp e2)),
                                                   ((D.PConstr "False" []), (cExp e3))])
 cExp (A.ETuple t)           = cTuple t
+cExp (A.EList ls)           = cList ls
+
+cList ls = case (head ls) of
+    ELiteral _ -> cLitList ls
+    -- ETuple _ ->
+    EConst _   -> cConstList ls
+    --EList _    -> cListList ls
+
+cConstList []              = D.EConstr "Nil"
+cConstList ((EConst c):cs) = D.EApp ((D.EApp (D.EConstr "Cons") (cConst c))) (cConstList cs)
+
+cLitList []                = D.EConstr "Nil"
+cLitList ((ELiteral l):ls) = D.EApp ((D.EApp (D.EConstr "Cons") (D.ELit $ cLit l))) (cLitList ls)
+
+--(EList [ELiteral (LitInt 1),ELiteral (LitInt 2),ELiteral (LitInt 3)])
 
 cCase :: A.Cases -> [(D.Pattern, D.Exp)]
 cCase A.ECases3          = []
