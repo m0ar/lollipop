@@ -87,6 +87,7 @@ instance Show Exp where
 instance Show Pattern where
     show p = case p of
         PConstr cid vs -> cid ++ " "  ++ (concatMap show vs) ++ " = "
+        PLit l         -> show l
         PWild          -> "_ -> "
         PVar v    -> v ++ " -> "
 
