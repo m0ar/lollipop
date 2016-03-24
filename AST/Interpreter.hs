@@ -92,6 +92,7 @@ eval env expr = case expr of
         ECase expr' pEs          -> fromJust $ evalCase v env pEs
             where v = eval env expr'
 
+-- evalCase is a helper function to eval.
 evalCase :: Value -> Env -> [(Pattern, Exp)] -> Maybe Value
 evalCase _ _ []              = Nothing
 evalCase v env ((p, expr):pes) = case match p v of
@@ -101,89 +102,21 @@ evalCase v env ((p, expr):pes) = case match p v of
             env' = addManyToEnv env (fst vvs') (snd vvs')
     Nothing     -> evalCase v env pes
 
--- match takes a pattern and a value and returns the bidings introduced by the
--- patterns (Nothing if the value doesn't match the pattern). This is a helper
--- function to evalCase.
+-- match is a helper function to evalCase. It takes a pattern and a value and 
+-- returns the bidings introduced by the patterns (Nothing if the value doesn't 
+-- match the pattern).
 match :: Pattern -> Value -> Maybe [(Var, Value)]
 match PWild _ = Just []
 match (PLit pl) (VLit vl)
     | pl == vl  = Just []
     | otherwise = Nothing
+match (PVar pv) val = Just [(pv, val)]
+match (PConstr pcid ps) (VConstr vcid vs)
+    | pcid == vcid  = matchConstr ps vs
+    | otherwise     = Nothing
 
-
-{-
-case p of
-    PLit lit          -> if lit == lit'
-                         then Just $ eval e expr
-                         else evalCase v e pes
-        where (VLit lit') = v
-    PConstr cid' ps -> if cid' == cid
-                         then (case cid' of
-                             "Cons" -> case (consCase p vals expr e) of
-                                 Nothing -> evalCase v e pes
-                                 v       -> v
-                             "(,)"  -> tplCase vals e' expr
-                             "(,,)" -> tplCase vals e' expr
-                             _      -> Just $ eval e' expr )
-                         else evalCase v e pes
-        where e' = addManyToEnv e vars vals
-              vars = Prelude.map patternToVar ps
-              (VConstr cid vals) = v
-              patternToVar p = case p of
-                  (PVar v)      -> v
-                  _             -> ""
-              tplCase vals e' expr = case (evalTpls (zip ps vals) e' expr) of
-                                          Nothing -> evalCase v e pes
-                                          v       -> v
-
-    PVar var          -> Just $ eval e' expr
-        where e' = addToEnv e var v
-    PWild             -> Just $ eval e expr
--}
-
+-- matchConstr is a helper function to match. It returns a list of the bindings
+-- introduced by the patterns (Nothing if any of the values doesn't match its
+-- corresponding pattern).
 matchConstr :: [Pattern] -> [Value] -> Maybe [(Var, Value)]
 matchConstr ps vs = fmap concat $ sequence (zipWith match ps vs)
-
-
-{-
-data Pattern = 
-      PConstr ConstrID [Pattern]
-    | PLit Lit
-    | PWild
-    | PVar Var
-            
-data Value = 
-    VLit Lit
-  | VConstr ConstrID [Value]
--}
-    
-{--LPattern2 (PId (Id "x")) LPattern3)
-PConstr "Cons" [(PVar "x"), (PConstr "Nil" [])]
-(x:[])
-
-PConstr "Cons" [(PLit 1), (PConstr "Cons" [(PLit 2),(PConstr "Nil" [])])]--}
-
-{-
-consCase (PConstr "Nil" _) vs expr env = case vs of
-    []                   -> Just $ eval env expr
-    [(VConstr "Nil" [])] -> Just $ eval env expr
-    _                    -> Nothing --error ("Nil not end of list. \n vs:  " ++ (concatMap show vs))
-consCase (PConstr "Cons" [p,p']) (v:vs) expr env = case p of
-                --PConstr pid ps ->
-                PWild    -> consCase p' vs expr env
-                PVar var -> consCase p' vs expr (addToEnv env var v)
-                PLit lit -> if lit == ((\(VLit l) -> l) v)
-                            then consCase p' vs expr env
-                            else Nothing
-
-evalTpls psVs e' expr = if and $ Prelude.map evalTpl psVs
-                        then Just $ eval (bindEnv psVs e') expr
-                        else Nothing
-        where evalTpl ((PWild),_)              = True
-              evalTpl ((PVar var),val)         = True
-              evalTpl ((PLit lit),(VLit lit')) = lit == lit'
-              bindEnv [] e'       = e'
-              bindEnv (p:psVs) e' = case p of
-                  ((PVar var),val) -> bindEnv psVs (addToEnv e' var val)
-                  _                -> bindEnv psVs e'
--}
