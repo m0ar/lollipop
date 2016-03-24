@@ -80,7 +80,7 @@ instance Show Exp where
         EConstr cid        -> show cid
         EBinOp op e1 e2    -> case op of
             Add -> (show e1) ++ " + " ++ (show e2)
-        ELam v e           -> "(\'" ++ v ++ " -> " ++ (show e)
+        ELam v e           -> "\\" ++ v ++ " -> " ++ (show e)
         ECase e ps         -> "case " ++ (show e) ++ " of \n" ++ (concatMap show ps)
         ELetIn v e1 e2     -> "let " ++ v ++ " = " ++ (show e1) ++ " in \n   " ++ (show e2)
 
