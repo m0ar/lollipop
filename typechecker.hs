@@ -195,8 +195,8 @@ prParenType t = case t of
                     TFun _ _  -> PP.parens (prType t)
                     _         -> prType t
 
-instance Show Exp where
-    showsPrec _ x = shows (prExp x)
+--instance Show Exp where
+--    showsPrec _ x = shows (prExp x)
 
 prExp :: Exp -> PP.Doc
 prExp (EVar name)     = PP.text name
@@ -216,11 +216,11 @@ prParenExp t = case t of
                     ELam _ _    -> PP.parens (prExp t)
                     _           -> prExp t
 
-instance Show Lit where
-    showsPrec _ x = shows (prLit x)
+--instance Show Lit where
+--    showsPrec _ x = shows (prLit x)
 
 prLit :: Lit -> PP.Doc
-prLit (ILit i)  = PP.integer i
+prLit (ILit i)  = PP.int i
 --prLit (LBool b) = if b then PP.text "True" else PP.text "False"
 
 instance Show Scheme where
