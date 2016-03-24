@@ -149,7 +149,7 @@ ti env (ELetIn x e1 e2) = do
     ls       <- mapM (ti env . snd) es -- :: [(sub, type)] -}
 
 patToExp :: Pattern -> Exp
-patToExp (PConstr v vs) = foldl EApp (EConstr v) xs
+patToExp (PConstr v vs) = foldl EApp (EConstr v) (map patToExp vs)
 patToExp (PVar v)       = EVar v
 patToExp (PLit x)       = ELit x
 
