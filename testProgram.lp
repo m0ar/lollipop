@@ -2,6 +2,11 @@ function sum : [Int] -> Int ;
 sum (x:[]) := x ;
 sum (x:xs) := x + sum xs ;
 
+function last : [Int] -> Int ;
+last x := case x of
+    (x:[]) -> x ;
+    (x:xs) -> last xs ;;
+
 function lst : [Int] ;
 lst := [True,False,True] ;
 
