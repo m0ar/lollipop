@@ -4,26 +4,13 @@
 import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State
+import DataTypes
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Text.PrettyPrint as PP
 
-data Exp = EVar String
-    | ELit Lit
-    | EApp Exp Exp
-    | EAbs String Exp
-    | ELet String Exp Exp
-    deriving (Eq, Ord)
-
-data Lit = LInt Integer
-    | LBool Bool
-    | LChar Char
-    deriving (Eq, Ord)
-
 data Type = TVar String
     | TInt
-    | TBool
-    | TChar
     | TFun Type Type
     deriving (Eq, Ord)
 
@@ -38,9 +25,8 @@ class Types a where
 
 instance Types Type where
     ftv (TVar n)      =  S.singleton n
-    ftv TChar         =  S.empty
     ftv TInt          =  S.empty
-    ftv TBool         =  S.empty
+--    ftv TBool         =  S.empty
     ftv (TFun t1 t2)  =  ftv t1 `S.union` ftv t2
     apply s (TVar n)      =  case M.lookup n s of
                                Nothing  -> TVar n
@@ -99,7 +85,7 @@ newTyVar prefix = do
     return (TVar  (prefix ++ show (tiSupply s)))
 
 
-instantiate :: Scheme -> TI Type
+instantiate :: Scheme -> TI Type 
 instantiate (Scheme vars t) = do  
     nvars <- mapM (\ _ -> newTyVar "a") vars
     let s = M.fromList (zip vars nvars)
@@ -114,8 +100,7 @@ mgu (TFun l r) (TFun l' r') = do
 mgu (TVar u) t              =  varBind u t
 mgu t (TVar u)              =  varBind u t
 mgu TInt TInt               =  return nullSubst
-mgu TBool TBool             =  return nullSubst
-mgu TChar TChar             =  return nullSubst
+--mgu TBool TBool             =  return nullSubst
 mgu t1 t2                   =  throwError $ "types do not unify: " ++ show t1 ++ 
                                 " vs. " ++ show t2
 
@@ -128,9 +113,8 @@ varBind u t | t == TVar u        =  return nullSubst
 
 
 tiLit :: TypeEnv -> Lit -> TI (Subst, Type)
-tiLit _ (LInt _)  = return (nullSubst, TInt)
-tiLit _ (LBool _) = return (nullSubst, TBool)
-tiLit _ (LChar _) = return (nullSubst, TChar)
+tiLit _ (ILit _)  = return (nullSubst, TInt)
+--tiLit _ (LBool _) = return (nullSubst, TBool)
 
 
 ti ::  TypeEnv -> Exp -> TI (Subst, Type)
@@ -140,7 +124,7 @@ ti (TypeEnv env) (EVar n) =
        Just sigma -> do t <- instantiate sigma
                         return (nullSubst, t)
 ti env (ELit l) = tiLit env l
-ti env (EAbs n e) = do 
+ti env (ELam n e) = do 
     tv <- newTyVar "a"
     let TypeEnv env' = remove env n
         env'' = TypeEnv (env' `M.union` (M.singleton n (Scheme [] tv)))
@@ -152,13 +136,23 @@ ti env (EApp e1 e2) = do
     (s2, t2) <- ti (apply s1 env) e2
     s3 <- mgu (apply s2 t1) (TFun t2 tv)
     return (s3 `composeSubst` s2 `composeSubst` s1, apply s3 tv)
-ti env (ELet x e1 e2) = do
+ti env (ELetIn x e1 e2) = do
     (s1, t1) <- ti env e1
     let TypeEnv env' = remove env x
         t'           = generalize (apply s1 env) t1
         env''        = TypeEnv (M.insert x t' env')
     (s2, t2) <- ti (apply s1 env'') e2
     return (s1 `composeSubst` s2, t2)
+{-ti env (ECase e1 es) = do
+    (s1, t1) <- ti env e1
+    -- ti for patterns
+    ls       <- mapM (ti env . snd) es -- :: [(sub, type)] -}
+
+patToExp :: Pattern -> Exp
+patToExp (PConstr v vs) = foldl EApp (EConstr v) xs
+patToExp (PVar v)       = EVar v
+patToExp (PLit x)       = ELit x
+
 
 
 typeInference :: M.Map String Scheme -> Exp -> TI Type
@@ -167,24 +161,23 @@ typeInference env e = do
     return (apply s t)
 
 
-e0  =  ELet "id" (EAbs "x" (EVar "x"))
+e0  =  ELetIn "id" (ELam "x" (EVar "x"))
         (EVar "id")
-e1  =  ELet "id" (EAbs "x" (EVar "x"))
+e1  =  ELetIn "id" (ELam "x" (EVar "x"))
         (EApp (EVar "id") (EVar "id"))
-e2  =  ELet "id" (EAbs "x" (ELet "y" (EVar "x") (EVar "y")))
+e2  =  ELetIn "id" (ELam "x" (ELetIn "y" (EVar "x") (EVar "y")))
         (EApp (EVar "id") (EVar "id"))
-e3  =  ELet "id" (EAbs "x" (ELet "y" (EVar "x") (EVar "y")))
-        (EApp (EApp (EVar "id") (EVar "id")) (ELit (LInt 2)))
-e4  =  ELet "id" (EAbs "x" (EApp (EVar "x") (EVar "x")))
+e3  =  ELetIn "id" (ELam "x" (ELetIn "y" (EVar "x") (EVar "y")))
+        (EApp (EApp (EVar "id") (EVar "id")) (ELit (ILit 2)))
+e4  =  ELetIn "id" (ELam "x" (EApp (EVar "x") (EVar "x")))
         (EVar "id")
-e5  =  EAbs "m" (ELet "y" (EVar "m")
-                 (ELet "x" (EApp (EVar "y") (ELit (LBool True)))
-                       (EVar "x")))
-e6  =  EAbs "x" (ELit (LChar 'c'))
+--e5  =  ELam "m" (ELetIn "y" (EVar "m")
+--                 (ELetIn "x" (EApp (EVar "y") (ELit (LBool True)))
+--                       (EVar "x")))
 
 
 main :: IO ()
-main = mapM_ test' [e0, e1, e2, e3, e4, e5, e6]
+main = mapM_ test' [e0, e1, e2, e3, e4]
 
 
 instance Show Type where
@@ -194,8 +187,7 @@ instance Show Type where
 prType :: Type -> PP.Doc
 prType (TVar n)   = PP.text n
 prType TInt       = PP.text "Int"
-prType TBool      = PP.text "Bool"
-prType TChar      = PP.text "Char"
+--prType TBool      = PP.text "Bool"
 prType (TFun t s) = prParenType t PP.<+> PP.text "->" PP.<+> prType s
 
 prParenType :: Type -> PP.Doc
@@ -209,28 +201,27 @@ instance Show Exp where
 prExp :: Exp -> PP.Doc
 prExp (EVar name)     = PP.text name
 prExp (ELit lit)      = prLit lit
-prExp (ELet x b body) = PP.text "let" PP.<+> 
+prExp (ELetIn x b body) = PP.text "let" PP.<+> 
                         PP.text x PP.<+> PP.text "=" PP.<+>
                         prExp b PP.<+> PP.text "in" PP.$$
                         PP.nest 2 (prExp body)
 prExp (EApp e1 e2)    = prExp e1 PP.<+> prParenExp e2
-prExp (EAbs n e)      = PP.char '\\' PP.<+> PP.text n PP.<+>
+prExp (ELam n e)      = PP.char '\\' PP.<+> PP.text n PP.<+>
                         PP.text "->" PP.<+> prExp e
                                                                    
 prParenExp :: Exp -> PP.Doc
 prParenExp t = case t of
-                    ELet _ _ _  -> PP.parens (prExp t)
+                    ELetIn _ _ _  -> PP.parens (prExp t)
                     EApp _ _    -> PP.parens (prExp t)
-                    EAbs _ _    -> PP.parens (prExp t)
+                    ELam _ _    -> PP.parens (prExp t)
                     _           -> prExp t
 
 instance Show Lit where
     showsPrec _ x = shows (prLit x)
 
 prLit :: Lit -> PP.Doc
-prLit (LInt i)  = PP.integer i
-prLit (LChar c) = PP.char c
-prLit (LBool b) = if b then PP.text "True" else PP.text "False"
+prLit (ILit i)  = PP.integer i
+--prLit (LBool b) = if b then PP.text "True" else PP.text "False"
 
 instance Show Scheme where
     showsPrec _ x = shows (prScheme x)
@@ -239,7 +230,7 @@ prScheme :: Scheme -> PP.Doc
 prScheme (Scheme vars t) = PP.text "All" PP.<+>
                            PP.hcat (PP.punctuate PP.comma (map PP.text vars))
                            PP.<> PP.text "." PP.<+> prType t
-katten = test'
+
 
 test' :: Exp -> IO ()
 test' e = do 
@@ -276,26 +267,23 @@ bu :: S.Set String -> Exp -> TI (Assum, CSet, Type)
 bu m (EVar n) = do 
     b <- newTyVar "b"
     return ([(n, b)], [], b)
-bu m (ELit (LInt _)) = do 
+bu m (ELit (ILit _)) = do 
     b <- newTyVar "b"
     return ([], [CEquivalent b TInt], b)
-bu m (ELit (LBool _)) = do 
-    b <- newTyVar "b"
-    return ([], [CEquivalent b TBool], b)
-bu m (ELit (LChar _)) = do
-    b <- newTyVar "b"
-    return ([], [CEquivalent b TChar], b)
+--bu m (ELit (LBool _)) = do 
+--    b <- newTyVar "b"
+--    return ([], [CEquivalent b TBool], b)
 bu m (EApp e1 e2) = do 
     (a1, c1, t1) <- bu m e1
     (a2, c2, t2) <- bu m e2
     b <- newTyVar "b"
     return (a1 ++ a2, c1 ++ c2 ++ [CEquivalent t1 (TFun t2 b)], b)
-bu m (EAbs x body) = do 
+bu m (ELam x body) = do 
     b@(TVar vn) <- newTyVar "b"
     (a, c, t) <- bu (vn `S.insert` m) body
     return (a `removeAssum` x, c ++ [CEquivalent t' b | (x', t') <- a,
                                      x == x'], TFun b t)
-bu m (ELet x e1 e2) = do 
+bu m (ELetIn x e1 e2) = do 
     (a1, c1, t1) <- bu m e1
     (a2, c2, t2) <- bu (x `S.delete` m) e2
     return (a1 ++ removeAssum a2 x,
