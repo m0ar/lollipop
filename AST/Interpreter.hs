@@ -94,7 +94,25 @@ eval env expr = case expr of
 
 evalCase :: Value -> Env -> [(Pattern, Exp)] -> Maybe Value
 evalCase _ _ []              = Nothing
-evalCase v e ((p, expr):pes) = case p of
+evalCase v env ((p, expr):pes) = case match p v of
+    Just vvs    -> Just $ eval env' expr 
+        where
+            vvs' = unzip vvs    -- ([vars], [vals])
+            env' = addManyToEnv env (fst vvs') (snd vvs')
+    Nothing     -> evalCase v env pes
+
+-- match takes a pattern and a value and returns the bidings introduced by the
+-- patterns (Nothing if the value doesn't match the pattern). This is a helper
+-- function to evalCase.
+match :: Pattern -> Value -> Maybe [(Var, Value)]
+match PWild _ = Just []
+match (PLit pl) (VLit vl)
+    | pl == vl  = Just []
+    | otherwise = Nothing
+
+
+{-
+case p of
     PLit lit          -> if lit == lit'
                          then Just $ eval e expr
                          else evalCase v e pes
@@ -121,14 +139,31 @@ evalCase v e ((p, expr):pes) = case p of
     PVar var          -> Just $ eval e' expr
         where e' = addToEnv e var v
     PWild             -> Just $ eval e expr
+-}
 
+matchConstr :: [Pattern] -> [Value] -> Maybe [(Var, Value)]
+matchConstr ps vs = fmap concat $ sequence (zipWith match ps vs)
+
+
+{-
+data Pattern = 
+      PConstr ConstrID [Pattern]
+    | PLit Lit
+    | PWild
+    | PVar Var
+            
+data Value = 
+    VLit Lit
+  | VConstr ConstrID [Value]
+-}
+    
 {--LPattern2 (PId (Id "x")) LPattern3)
 PConstr "Cons" [(PVar "x"), (PConstr "Nil" [])]
 (x:[])
 
 PConstr "Cons" [(PLit 1), (PConstr "Cons" [(PLit 2),(PConstr "Nil" [])])]--}
 
-
+{-
 consCase (PConstr "Nil" _) vs expr env = case vs of
     []                   -> Just $ eval env expr
     [(VConstr "Nil" [])] -> Just $ eval env expr
@@ -151,3 +186,4 @@ evalTpls psVs e' expr = if and $ Prelude.map evalTpl psVs
               bindEnv (p:psVs) e' = case p of
                   ((PVar var),val) -> bindEnv psVs (addToEnv e' var val)
                   _                -> bindEnv psVs e'
+-}
