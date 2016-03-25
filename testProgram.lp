@@ -3,7 +3,7 @@ sum (x:[]) := x ;
 sum (x:xs) := x + sum xs ;
 
 function last : [Int] -> Int ;
-last x := case x of
+last y := case y of
     (x:[]) -> x ;
     (x:xs) -> last xs ;;
 
@@ -21,7 +21,7 @@ tpl2 (1, 2) := 12 ;
 tpl2 (x, y) := x-y ;
 tpl2 (3, 4) := 34 ;
 
-function tpl3 : (Int, Int, Int) -> Int ;
+function tpl3 : Int -> (Int, Int, Int) -> Int ;
 tpl3 x (3, y, 3) := 6-3 ;
 
 function one : Int ;
@@ -32,7 +32,7 @@ pat 0 x 2 := 5 ;
 pat 0 1 _ := 12 ;
 pat _ _ _ := 14 ;
 
-function patR : Int -> Int ;
+function patR : Int -> Int -> Int -> Int ;
 patR x 2 5 := x + 1 ;
 patR y 2 2 := 2 ;
 
@@ -45,10 +45,10 @@ useDbl x := 4 + dbl x ;
 
 function dbl : Int -> Int ;
 dbl x := case x of
-    (6,3) -> 6 ;
-    (2,3) -> 8 ;;
+    1 -> 2 ;
+    x -> 2 * x ;;
 
-function ca : Int -> Int ;
+function ca : Int -> Int -> Int -> Int ;
 ca 3 x 2 := case x of
     2 -> 2 + x ;
     _ -> 10 ;;
@@ -59,9 +59,10 @@ pat 2 := 11 ;
 pat _ := 0 ;
 
 function take : Int -> [a] -> [a] ;
-take n (x:xs) := case n of 0 -> cons x (take (n-1) xs) ;
-_ -> nil ;
-;
+take n (x:xs) := case n of 
+    0 -> cons x (take (n-1) xs) ;
+    _ -> nil ; ;
+
 take n [] := nil ; -- There is no way to do empty lists :(
 
 function map : atob -> [a] -> [b] ;
