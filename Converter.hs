@@ -1,4 +1,3 @@
-
 -- to run file :
 -- $ bnfc -m grammar.cf
 -- $ runghc -iAST/:grammar/ Converter.hs
@@ -80,18 +79,12 @@ argToPat (A.DArg p) = case p of
     A.PListPat lp  -> case lp of
         LPattern2 p lp' -> cLPat (LPattern5 p lp')
         LPattern1       -> cLPat LPattern3
-
---LPattern2 (PId (Id "x")) (LPattern4 (PId (Id "xs")))
-
     A.PPat pat     -> case pat of
         A.Pwild           -> D.PWild
         (A.PId (Id name)) -> D.PVar name
         (A.PLit lit)      -> D.PLit (cLit lit)
         (A.PConst (DConst (TypeId name) _ _)) -> D.PConstr name []
         (A.PConst (DConst1 (TypeId name)))    -> D.PConstr name []
-
-    -- A.P1 lp TODO
-    -- A.P2 tp TODO
 
 cLPat :: A.LPattern -> D.Pattern
 cLPat LPattern3         = D.PConstr "Nil" []
@@ -134,14 +127,7 @@ cConst :: A.Cons -> D.Exp
 cConst (DConst (TypeId cid) cid' ids) = D.EConstr cid
 cConst (DConst1 (TypeId cid))         = D.EConstr cid
 
--- (A.EAdd (A.ELiteral (A.LitInt 2)) (A.ELiteral (A.LitInt 5)))])
--- -->
--- EApp (ELam "x" (EBinOp Add (EVar "x") eFour))
-            --    (EApp (ELam "x" (EBinOp Add (EVar "x")
-            --    eFour)) eSix)
-
 cExp :: A.Exp -> D.Exp
---cExp (A.EAdd e1 e2)         = (D.EApp (D.ELam "x" (D.EBinOp D.Add (D.EVar "x") (cExp e1))) (cExp e2))
 cExp (A.EConst c)            = case c of
     (A.DConst1 (A.TypeId bool)) -> (D.EConstr bool)
     -- DConst (TypeId bool) id ids -> -- TODO
@@ -156,15 +142,12 @@ cExp (A.ECase e cs)         = (D.ECase (cExp e) (cCase cs))
 cExp (A.EIf e1 e2 e3)       = (D.ECase (cExp e1) [((D.PConstr "True" []), (cExp e2)),
                                                   ((D.PConstr "False" []), (cExp e3))])
 cExp (A.ETuple t)           = cTuple t
-cExp (A.EList ls)           = cList ls
-cExp A.EEmptyList           = D.EConstr "Nil"
-
-cList :: [A.Exp] -> D.Exp
-cList ls = case (head ls) of
+cExp (A.EList ls)           = case (head ls) of
     ELiteral _ -> cLitList ls
     -- ETuple _ ->
     EConst _   -> cConstList ls
     --EList _    -> cListList ls
+cExp A.EEmptyList           = D.EConstr "Nil"
 
 cConstList :: [A.Exp] -> D.Exp
 cConstList []              = D.EConstr "Nil"
@@ -180,9 +163,6 @@ cCase :: A.Cases -> [(D.Pattern, D.Exp)]
 cCase A.ECases3          = []
 cCase (A.ECases1 p e cs) = cCase (A.ECases2 p e cs)
 cCase (A.ECases2 p e cs) = (cPattern p e):(cCase cs)
-    -- (A.PListPat lp) ->
-    -- (A.PTuplePat tp)         -> (cPattern (P2 tp) e):(cCase cs)
-    -- TODO add support for lists in cases
 
 cTuple :: A.Tuple -> D.Exp
 cTuple (Tuple2 e1 e2)    = D.EApp (D.EApp (D.EVar "(,)") (cExp e1)) (cExp e2)
@@ -195,6 +175,3 @@ cGuard (A.DGuards2 e1 e2 gs) = D.ECase (cExp e2) [((D.PConstr "True" []), (cExp 
                                                   ((D.PConstr "False" []), (cGuard gs))]
 cGuard (A.DExpGuard e)       = (cExp e)--}
 
-
-
--- todo: Convert if-statement to case
