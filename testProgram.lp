@@ -1,3 +1,11 @@
+function sumFst : [(Int,Int)] -> Int ;
+sumFst ((1,2):vs) := 1 ;
+sumFst (x:[]) := fst x ;
+sumFst (x:xs) := (fst x) + (sumFst xs) ;
+
+function fst : [(Int,Int)] -> Int ;
+fst (x,y) := x ;
+
 function sum : [Int] -> Int ;
 sum (x:[]) := x ;
 sum (x:xs) := x + sum xs ;
