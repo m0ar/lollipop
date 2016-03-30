@@ -45,8 +45,6 @@ startEnv = printF $ readLnF $ addF $ subF $ mulF $ bind $ true $ false $ tuple $
 vConstructor :: ConstrID -> Int -> [Value] -> Value
 vConstructor cid 0 vs = VConstr cid vs
 vConstructor cid n vs = VFun (\v -> (vConstructor cid (n-1) (vs++[v])))
---  D.EApp ((D.EApp (D.EConstr "Cons") (D.ELit $ (D.ILit 1)))) (D.EApp ((D.EApp (D.EConstr "Cons") (D.ELit $ (D.ILit 2)))) (VConstr "Nil" []))
---  --> VConstr "Cons" [(VConstr "Cons" [(VConstr "Nil" []),(VLit 2)]), (VLit 1)]
 
 run :: Value -> IO Value
 run act = case act of
@@ -93,10 +91,6 @@ eval env expr = case expr of
         ECase expr' pEs          -> fromJust $ evalCase v env pEs
             where v = eval env expr'
 
--- (x:[]) -> D.PConstr "Cons" [(D.PVar "x"),(D.PConstr "Nil" [])]
--- [1,2] -> D.EApp ((D.EApp (D.EConstr "Cons") (D.ELit $ (D.ILit 1)))) (D.EApp ((D.EApp (D.EConstr "Cons") (D.ELit $ (D.ILit 2)))) (D.EConstr "Nil"))
---       -> VConstr "Cons" [(VConstr "Cons" [(VConstr "Nil" []),(VLit 2)]), (VLit 1)] ??
-
 -- evalCase is a helper function to eval.
 evalCase :: Value -> Env -> [(Pattern, Exp)] -> Maybe Value
 evalCase _ _ []              = Nothing
@@ -116,26 +110,19 @@ match (PLit pl) (VLit vl)
     | pl == vl  = Just []
     | otherwise = Nothing
 match (PVar pv) var = Just [(pv, var)]
-match p@(PConstr pcid ps) v@(VConstr vcid vs) = matchConstr p v
+match p v = matchConstr p v
 
+-- help function for match which handledes pattern matching for constructors
 matchConstr :: Pattern -> Value -> Maybe [(Var, Value)]
-matchConstr (PConstr "Cons" ps) (VConstr "Cons" vs)
-    | pcid' == vcid' = case mc of
-            Nothing -> Just [(var, val)]
-            Just vv -> Just [(var, val), vv]  --matchConstr ps vs
+matchConstr (PConstr "Cons" [(PVar var), p@(PConstr pcid' ps')])
+            (VConstr "Cons" [val, v@(VConstr vcid' vs')])
+    | pcid' == vcid' = Just $ [(var,val)]++(matchCons p v)
     | otherwise      = Nothing
-  where
-    (PVar var)            = (!!) ps 0
-    p@(PConstr pcid' ps') = (!!) ps 1
-    val                   = (!!) vs 0
-    v@(VConstr vcid' vs') = (!!) vs 1
-    mc = matchCons p v
 matchConstr (PConstr pcid ps) (VConstr vcid vs)
     | pcid == vcid = fmap concat $ sequence (zipWith match ps vs)
     | otherwise    = Nothing
 
-matchCons :: Pattern -> Value -> Maybe (Var, Value)
-matchCons (PConstr "Nil" _) val   = Nothing
-matchCons (PConstr "Cons" ps) val = Just (var, val)
-    where
-      (PVar var)            = (!!) ps 0
+-- helper function for matchConstr which binds at the end of a list
+matchCons :: Pattern -> Value -> [(Var, Value)]
+matchCons (PConstr "Nil" _) _                  = []
+matchCons (PConstr "Cons" ((PVar var):vs)) val = [(var, val)]
