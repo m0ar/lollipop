@@ -143,12 +143,19 @@ cExp (A.ECase e cs)         = (D.ECase (cExp e) (cCase cs))
 cExp (A.EIf e1 e2 e3)       = (D.ECase (cExp e1) [((D.PConstr "True" []), (cExp e2)),
                                                   ((D.PConstr "False" []), (cExp e3))])
 cExp (A.ETuple t)           = cTuple t
-cExp (A.EList ls)           = case (head ls) of
+cExp (A.EList ls)           = cList ls
+cExp A.EEmptyList           = D.EConstr "Nil"
+
+cList :: [A.Exp] -> D.Exp
+cList ls = case (head ls) of
     ELiteral _ -> cLitList ls
     ETuple _   -> cTupleList ls
     EConst _   -> cConstList ls
-    --EList _    -> cListList ls
-cExp A.EEmptyList           = D.EConstr "Nil"
+    EList _    -> cListList ls
+
+cListList :: [A.Exp] -> D.Exp
+cListList []           = D.EConstr "Nil"
+cListList (l:ls) = D.EApp ((D.EApp (D.EConstr "Cons") (cExp l))) (cListList ls)
 
 cTupleList :: [A.Exp] -> D.Exp
 cTupleList []     = D.EConstr "Nil"

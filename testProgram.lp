@@ -1,7 +1,10 @@
 function sumFst : [(Int,Int)] -> Int ;
-sumFst ((1,2):vs) := 1 ;
 sumFst (x:[]) := fst x ;
 sumFst (x:xs) := (fst x) + (sumFst xs) ;
+
+function sumFstList : [[Int]] -> Int ;
+sumFstList (x:[]) := head x ;
+sumFstList (x:xs) := (head x) + (sumFstList xs) ;
 
 function fst : [(Int,Int)] -> Int ;
 fst (x,y) := x ;
