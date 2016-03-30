@@ -106,8 +106,12 @@ oneArgument a := a + 3 ;
 
 -- Test for enclosed expressions
 function encl : Int ;
-encl := (3 + 6) ;
+encl := (3 + (6 + (factorial 9 + (6-3)))) ;
 
 -- test empty expression
 function testEmpExp : [a] ;
 testEmpExp := [] ;
+
+function sumFst : [(Int,Int)] -> Int ;
+sumFst ((1,2):vs) := 1 ;
+sumFst (X:[]) := fst x ;

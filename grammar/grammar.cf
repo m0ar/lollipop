@@ -56,10 +56,10 @@ DDeriving2.     Deriving        ::= "deriving" "(" [TypeId] ")" ";" ;
 
 -- Pattern matching for lists in function definition arguments
 LPattern1.      ListPat         ::= "[]" ;
-LPattern2.      ListPat         ::= "(" Pat ":" LPattern ")" ;
+LPattern2.      ListPat         ::= "(" Pattern ":" LPattern ")" ;
 LPattern3.      LPattern        ::= "[]" ;
 LPattern4.      LPattern        ::= Pat ;
-LPattern5.      LPattern        ::= Pat ":" LPattern ;
+LPattern5.      LPattern        ::= Pattern ":" LPattern ;
 
 TPattern.       TuplePat        ::= "(" [Pattern] ")" ;
 
@@ -128,7 +128,6 @@ ECases3.        Cases1          ::= ;
 --Fixed size tuples
 Tuple2.         Tuple           ::= "(" Exp "," Exp ")" ;
 Tuple3.         Tuple           ::= "(" Exp "," Exp "," Exp ")" ;
-
 
 -- Structure of list comprehensions input set(s) and predicates.
 -- The elements drawn from the input set are either bound 
