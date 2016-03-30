@@ -2,6 +2,20 @@ function sum : [Int] -> Int ;
 sum (x:[]) := x ;
 sum (x:xs) := x + sum xs ;
 
+function head : [Int] -> Int ;
+head (x:[]) := x ;
+head (x:xs) := x ;
+
+function snd : [Int] -> Int ;
+snd (x:xs) := head xs ;
+
+function trd : [Int] -> Int ;
+trd (x:xs) := snd xs ;
+
+function tail : [Int] -> Int ;
+tail (x:[]) := x ;
+tail (x:xs) := xs ;
+
 function last : [Int] -> Int ;
 last y := case y of
     (x:[]) -> x ;
@@ -59,7 +73,7 @@ pat 2 := 11 ;
 pat _ := 0 ;
 
 function take : Int -> [a] -> [a] ;
-take n (x:xs) := case n of 
+take n (x:xs) := case n of
     0 -> cons x (take (n-1) xs) ;
     _ -> nil ; ;
 

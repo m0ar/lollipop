@@ -158,8 +158,6 @@ cLitList :: [A.Exp] -> D.Exp
 cLitList []                = D.EConstr "Nil"
 cLitList ((ELiteral l):ls) = D.EApp ((D.EApp (D.EConstr "Cons") (D.ELit $ cLit l))) (cLitList ls)
 
---(EList [ELiteral (LitInt 1),ELiteral (LitInt 2),ELiteral (LitInt 3)])
-
 cCase :: A.Cases -> [(D.Pattern, D.Exp)]
 cCase A.ECases3          = []
 cCase (A.ECases1 p e cs) = cCase (A.ECases2 p e cs)
@@ -175,4 +173,3 @@ cGuard (A.DGuards1 e1 e2 gs) = D.ECase (cExp e2) [((D.PConstr "True" []), (cExp 
 cGuard (A.DGuards2 e1 e2 gs) = D.ECase (cExp e2) [((D.PConstr "True" []), (cExp e1)),
                                                   ((D.PConstr "False" []), (cGuard gs))]
 cGuard (A.DExpGuard e)       = (cExp e)--}
-
