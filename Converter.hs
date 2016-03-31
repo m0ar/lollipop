@@ -87,9 +87,9 @@ argToPat (A.DArg p) = case p of
         (A.PConst (DConst1 (TypeId name)))    -> D.PConstr name []
 
 cLPat :: A.LPattern -> D.Pattern
-cLPat LPattern3         = D.PConstr "Nil" []
-cLPat (LPattern4 p)     = D.PConstr "Cons" [(cPat p), (cLPat LPattern3)]
-cLPat (LPattern5 p lps) = D.PConstr "Cons" [(cPat p), (cLPat lps)]
+cLPat LPattern3                = D.PConstr "Nil" []
+cLPat (LPattern4 p)            = D.PConstr "Cons" [(cPat p), (cLPat LPattern3)]
+cLPat (LPattern5 (PPat p) lps) = D.PConstr "Cons" [(cPat p), (cLPat lps)]
 
 cPattern :: A.Pattern -> A.Exp -> (D.Pattern, D.Exp)
 cPattern l@(PListPat _) e     = (lPat, (cExp e))
