@@ -1,3 +1,6 @@
+function putStrLn : Int ;
+putStrLn := bind readLine print;
+
 function testLam : Int -> Int ;
 testLam := (\y -> head y) (tail [1,2,3]) ;
 
