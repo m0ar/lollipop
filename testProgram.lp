@@ -1,3 +1,6 @@
+function testLam : Int -> Int ;
+testLam := (\y -> head y) (tail [1,2,3]) ;
+
 function sumFst : [(Int,Int)] -> Int ;
 sumFst (x:[]) := fst x ;
 sumFst (x:xs) := (fst x) + (sumFst xs) ;
