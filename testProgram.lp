@@ -1,5 +1,5 @@
 function great : Bool ;
-great := 7 > 6 ;
+great := 7 < 8 || 3 > 6 ;
 
 function putStrLn : Int ;
 putStrLn := bind readLine print;

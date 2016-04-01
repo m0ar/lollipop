@@ -28,16 +28,19 @@ addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
         e' = addDecsToEnv env ds
 
 startEnv :: Env
-startEnv = printF $ readLnF $ addF $ subF $ mulF $ bindF $ thenF $ true $ false $ tuple $ truple $ nil $ cons $ undef $ gtF $ M.empty
+startEnv = printF $ readLnF $ addF $ subF $ mulF $ bindF
+                  $ thenF $ true $ false $ tuple $ truple
+                  $ nil $ cons $ undef $ gtF
+                  $ eqF $ notF $ orF $ M.empty
     where   printF  = M.insert "print" $ VFun $ \(VString s) -> VIO $ print s >> return (VConstr "()" []) -- TODO remove VString
             readLnF = M.insert "readLine" $ VIO $ fmap VString readLn
             addF    = M.insert "#add" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x+y
             subF    = M.insert "#sub" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x-y
-            mulF    = M.insert "#mul" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x*y 
+            mulF    = M.insert "#mul" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x*y
             gtF     = M.insert "#gt"  $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> boolToVConstr (x>y)
             eqF     = M.insert "#eq"  $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> boolToVConstr (x==y)
             notF    = M.insert "#not" $ VFun $ \v -> boolToVConstr $ not $ vConstrToBool v
-            orF     = M.insert "#gt"  $ VFun $ \v1 -> VFun $ \v2 -> boolToVConstr $ (vConstrToBool v1) || (vConstrToBool v2)
+            orF     = M.insert "#or"  $ VFun $ \v1 -> VFun $ \v2 -> boolToVConstr $ (vConstrToBool v1) || (vConstrToBool v2)
             bindF   = M.insert "bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> run $ a2 s  -- a1 >>= \s -> a2 s
             thenF   = M.insert "then" $ VFun $ \(VIO a1) -> VFun $ \(VIO a2) -> VIO $ a1 >> a2
             undef   = M.insert "Undefined" $ vConstructor "Undefined" 0 []
@@ -97,6 +100,8 @@ eval env expr = case expr of
         EVar var                 -> (lookupInEnv env var)
         ELit (SLit s)            -> VString s -- TODO remove
         ELit lit                 -> VLit lit
+        EUnOp op e               -> f $ eval env e
+                where (VFun f) = lookupInEnv env (show op)
         EBinOp op e1 e2          -> f $ eval env e2
                 where (VFun f') = lookupInEnv env (show op)
                       (VFun f) = f' $ eval env e1
