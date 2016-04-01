@@ -149,7 +149,13 @@ ti env (EApp e1 e2) = do
     a  <- newTyVar "a"
     unify (TFun t2 a) t1
     return a
-ti env (ELetIn v e1 e2) = undefined
+ti env (ELetIn v e1 e2) = do
+    t1 <- ti env e1
+    let TypeEnv env' = remove v env
+        t'           = generalize env t1
+        env''        = TypeEnv (M.insert v t' env')
+    t2 <- ti env'' e2
+    return t2
 
 -- Returns the free expression variables in patterns
 freeVarsP :: Pattern -> [Var]
