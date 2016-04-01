@@ -10,7 +10,8 @@ import qualified Text.PrettyPrint as PP
 
 
 
-data Type = TVar Var
+data Type =
+    TVar Var
     | TInt
     | TFun Type Type
     deriving (Eq, Ord)
@@ -111,25 +112,33 @@ ti ::  TypeEnv -> Exp -> TI Type
 ti env (ECase e0 pes) = do
     t0 <- ti env e0
     let go (p, e) = do
-        let pvs = freeVarsP p   --freeVarsP returns free expression variables, not type variables
+        let pvs = freeVarsP p
         env' <- declareAll pvs env
-        tp <- ti env' (patToExp p)
+        tp   <- ti env' (patToExp p)
         unify tp t0
         ti env' e
     ts <- mapM go pes
     unifyAll ts
-ti env (EApp e1 e2)
+ti env (EApp e1 e2) = do
+    t1 <- ti env e1
+    t2 <- ti env e2
+    a  <- newTyVar "a"
+    unify (TFun t2 a) t1
+    return a
 
+-- Returns the free expression variables in patterns
 freeVarsP :: Pattern -> [Var]
 freeVarsP (PConstr v vs) = concatMap freeVarsP vs
 freeVarsP (PVar v)       = [v]
 freeVarsP _              = []
 
+-- Adds new type variables for each expression variables
 declareAll :: [String] -> TypeEnv -> TI TypeEnv
-declareAll [] env     = return env
+declareAll []     env = return env
 declareAll (x:xs) env = do
     a <- newTyVar "a"
     declareAll xs $ declareMono x a env
+
 
 --infer e
 --    t <- ti startEnv e
