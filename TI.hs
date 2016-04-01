@@ -13,6 +13,9 @@ import qualified Text.PrettyPrint as PP
 data Type =
     TVar Var
     | TInt
+    | TDouble
+    | TChar
+    | TString
     | TFun Type Type
     deriving (Eq, Ord)
 
@@ -24,14 +27,17 @@ class Types a where
 
 
 instance Types Type where
-    ftv (TVar n)      =  S.singleton n
-    ftv TInt          =  S.empty
-    ftv (TFun t1 t2)  =  ftv t1 `S.union` ftv t2
-    apply s (TVar n)      = case M.lookup n s of
+    ftv (TVar n)            = S.singleton n
+    ftv TInt                = S.empty
+    ftv TDouble             = S.empty
+    ftv TChar               = S.empty
+    ftv TString             = S.empty
+    ftv (TFun t1 t2)        = ftv t1 `S.union` ftv t2
+    apply s (TVar n)        = case M.lookup n s of
                                Nothing  -> TVar n
                                Just t   -> t
-    apply s (TFun t1 t2)  = TFun (apply s t1) (apply s t2)
-    apply s t             = t
+    apply s (TFun t1 t2)    = TFun (apply s t1) (apply s t2)
+    apply s t               = t
 
 instance Types Scheme where
     ftv (Scheme vars t)      =  (ftv t) `S.difference` (S.fromList vars)
@@ -91,6 +97,9 @@ unify t1 t2 = do
     go (TVar u) t              =  varBind u t
     go t (TVar u)              =  varBind u t
     go TInt TInt               =  return TInt
+    go TDouble TDouble         =  return TDouble
+    go TChar TChar             =  return TChar
+    go TString TString         =  return TString
     go t1 t2                   =  throwError $ "types do not unify: " ++ show t1 ++ 
                                 " vs. " ++ show t2
 
@@ -109,7 +118,11 @@ varBind u t | t == TVar u        =  return t
                     return t
 
 ti ::  TypeEnv -> Exp -> TI Type
-ti env (ELit l) = return TInt
+ti env (ELit l) = case l of
+    ILit _ -> return TInt
+    DLit _ -> return TDouble
+    CLit _ -> return TChar
+    SLit _ -> return TString
 ti env (ELam v e) = undefined
 ti env (ECase e0 pes) = do
     t0 <- ti env e0
@@ -203,6 +216,9 @@ instance Show Type where
 prType :: Type -> PP.Doc
 prType (TVar n)   = PP.text n
 prType TInt       = PP.text "Int"
+prType TDouble    = PP.text "Double"
+prType TChar      = PP.text "Char"
+prType TString    = PP.text "String"
 prType (TFun t s) = prParenType t PP.<+> PP.text "->" PP.<+> prType s
 
 prParenType :: Type -> PP.Doc
