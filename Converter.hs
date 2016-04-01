@@ -145,6 +145,9 @@ cExp (A.EIf e1 e2 e3)       = (D.ECase (cExp e1) [((D.PConstr "True" []), (cExp 
 cExp (A.ETuple t)           = cTuple t
 cExp (A.EList ls)           = cList ls
 cExp A.EEmptyList           = D.EConstr "Nil"
+cExp (A.EGt e1 e2)          = (D.EBinOp D.Gt (cExp e1) (cExp e2))
+
+-- EGt (ELiteral (LitInt 5)) (ELiteral (LitInt 7)))
 
 cList :: [A.Exp] -> D.Exp
 cList ls = case (head ls) of

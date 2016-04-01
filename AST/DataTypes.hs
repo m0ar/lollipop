@@ -18,7 +18,7 @@ data Exp = EApp Exp Exp
        | ECase Exp [(Pattern, Exp)]
        | ELetIn Var Exp Exp  -- let var = exp in exp
 
-data Op = Add | Sub | Mul | Div | Bind
+data Op = Add | Sub | Mul | Div | Bind | Gt
 
 data Pattern = PConstr ConstrID [Pattern]
             | PLit Lit
@@ -46,6 +46,7 @@ data Lit = ILit Int
 
 instance Show Op where
     show op = case op of
+        Gt   -> "#gt"
         Add  -> "#add"
         Sub  -> "#sub"
         Mul  -> "#mul"
