@@ -118,6 +118,10 @@ varBind u t | t == TVar u        =  return t
                     return t
 
 ti ::  TypeEnv -> Exp -> TI Type
+ti (TypeEnv env) (EVar v) = do
+    case M.lookup v env of
+        Nothing -> throwError $ "unbound variable: " ++ v
+        Just v' -> instantiate v'
 ti env (ELit l) = case l of
     ILit _ -> return TInt
     DLit _ -> return TDouble
