@@ -71,8 +71,9 @@ patR x 2 5 := x + 1 ;
 patR y 2 2 := 2 ;
 
 function grd : Int ;
-grd := 5 when True
-    := 2 ;
+grd a b := True when a > b
+	       := False when a < b
+	       := False ;
 
 function useDbl : Int -> Int ;
 useDbl x := 4 + dbl x ;
