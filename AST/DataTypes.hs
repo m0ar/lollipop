@@ -12,13 +12,14 @@ data Declaration =
 data Exp = EApp Exp Exp
        | EVar Var
        | ELit Lit
+       | EUnOp Op Exp
        | EBinOp Op Exp Exp
        | ELam Var Exp
        | EConstr ConstrID
        | ECase Exp [(Pattern, Exp)]
        | ELetIn Var Exp Exp  -- let var = exp in exp
 
-data Op = Add | Sub | Mul | Div | Bind | Then | Gt | Eq | Or
+data Op = Add | Sub | Mul | Div | Bind | Then | Gt | Eq | Or | Not
 
 data Pattern = PConstr ConstrID [Pattern]
             | PLit Lit
@@ -48,6 +49,7 @@ instance Show Op where
     show op = case op of
         Gt   -> "#gt"
         Eq   -> "#eq"
+        Not  -> "#not"
         Or   -> "#or"
         Add  -> "#add"
         Sub  -> "#sub"
