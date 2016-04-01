@@ -109,6 +109,8 @@ varBind u t | t == TVar u        =  return t
                     return t
 
 ti ::  TypeEnv -> Exp -> TI Type
+ti env (ELit l) = return TInt
+ti env (ELam v e) = undefined
 ti env (ECase e0 pes) = do
     t0 <- ti env e0
     let go (p, e) = do
@@ -125,6 +127,7 @@ ti env (EApp e1 e2) = do
     a  <- newTyVar "a"
     unify (TFun t2 a) t1
     return a
+ti env (ELetIn v e1 e2) = undefined
 
 -- Returns the free expression variables in patterns
 freeVarsP :: Pattern -> [Var]
