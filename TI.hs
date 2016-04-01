@@ -127,7 +127,12 @@ ti env (ELit l) = case l of
     DLit _ -> return TDouble
     CLit _ -> return TChar
     SLit _ -> return TString
-ti env (ELam v e) = undefined
+ti env (ELam v e) = do 
+    t0 <- newTyVar "a"
+    let TypeEnv env' = remove v env
+        env'' = TypeEnv (env' `M.union` (M.singleton v (Scheme [] t0)))
+    t1 <- ti env'' e
+    return (TFun t0 t1)
 ti env (ECase e0 pes) = do
     t0 <- ti env e0
     let go (p, e) = do
