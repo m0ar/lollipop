@@ -31,11 +31,14 @@ startEnv :: Env
 startEnv = printF $ readLnF $ addF $ subF $ mulF $ bindF $ thenF $ true $ false $ tuple $ truple $ nil $ cons $ undef $ gtF $ M.empty
     where   printF  = M.insert "print" $ VFun $ \(VString s) -> VIO $ print s >> return (VConstr "()" []) -- TODO remove VString
             readLnF = M.insert "readLine" $ VIO $ fmap VString readLn
-            subF    = M.insert "#sub" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x-y
             addF    = M.insert "#add" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x+y
-            mulF    = M.insert "#mul" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x*y -- a1 >>= \s -> a2 s
+            subF    = M.insert "#sub" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x-y
+            mulF    = M.insert "#mul" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x*y 
             gtF     = M.insert "#gt"  $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> boolToVConstr (x>y)
-            bindF   = M.insert "bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> run $ a2 s
+            eqF     = M.insert "#eq"  $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> boolToVConstr (x==y)
+            notF    = M.insert "#not" $ VFun $ \v -> boolToVConstr $ not $ vConstrToBool v
+            orF     = M.insert "#gt"  $ VFun $ \v1 -> VFun $ \v2 -> boolToVConstr $ (vConstrToBool v1) || (vConstrToBool v2)
+            bindF   = M.insert "bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> run $ a2 s  -- a1 >>= \s -> a2 s
             thenF   = M.insert "then" $ VFun $ \(VIO a1) -> VFun $ \(VIO a2) -> VIO $ a1 >> a2
             undef   = M.insert "Undefined" $ vConstructor "Undefined" 0 []
             true    = M.insert "True" $ vConstructor "True" 0 []
@@ -56,6 +59,11 @@ run act = case act of
 
 boolToVConstr :: Bool -> Value
 boolToVConstr b = VConstr (show b) []
+
+vConstrToBool :: Value -> Bool
+vConstrToBool (VConstr "True" []) = True
+vConstrToBool (VConstr "False" []) = False
+
 
 -- makeBinding is a helper function to addDecsToEnv
 -- Makes bindings from declarations to environment

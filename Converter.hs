@@ -134,6 +134,15 @@ cExp (A.EConst c)            = case c of
 cExp (A.EAdd e1 e2)         = (D.EBinOp D.Add (cExp e1) (cExp e2))
 cExp (A.ESub e1 e2)         = (D.EBinOp D.Sub (cExp e1) (cExp e2))
 cExp (A.EMul e1 e2)         = (D.EBinOp D.Mul (cExp e1) (cExp e2))
+cExp (A.EGt e1 e2)          = (D.EBinOp D.Gt (cExp e1) (cExp e2))
+cExp (A.ELt e1 e2)          = (D.EBinOp D.Gt (cExp e2) (cExp e1))
+cExp (A.EGEQ e1 e2)         = (D.EBinOp D.Or (cExp (A.EGt e1 e2)) (cExp (A.EEQ e1 e2)))
+cExp (A.ELEQ e1 e2)         = (D.EBinOp D.Or (cExp (A.ELt e1 e2)) (cExp (A.EEQ e1 e2)))
+cExp (A.EEQ e1 e2)          = (D.EBinOp D.Eq (cExp e1) (cExp e2))
+-- cExp (A.ENEQ e1 e2)         = (D.Not (D.EBinOp D.Eq (cExp e1) (cExp e2)))
+cExp (A.EOR e1 e2)          = (D.EBinOp D.Or (cExp e1) (cExp e2))
+-- cExp (A.EAND e1 e2)         = use deMorgan (need not operator)
+
 cExp (A.EVar (A.Id name))   = (D.EVar name)
 cExp (A.ELiteral lit)       = (D.ELit $ cLit lit)
 -- cExp (A.ELet vID)       = (D.ELetIn )
@@ -145,9 +154,7 @@ cExp (A.EIf e1 e2 e3)       = (D.ECase (cExp e1) [((D.PConstr "True" []), (cExp 
 cExp (A.ETuple t)           = cTuple t
 cExp (A.EList ls)           = cList ls
 cExp A.EEmptyList           = D.EConstr "Nil"
-cExp (A.EGt e1 e2)          = (D.EBinOp D.Gt (cExp e1) (cExp e2))
 
--- EGt (ELiteral (LitInt 5)) (ELiteral (LitInt 7)))
 
 cList :: [A.Exp] -> D.Exp
 cList ls = case (head ls) of
