@@ -3,7 +3,7 @@ power x 0 := 1 ;
 power x n := x * (power x (n-1)) ;
 
 function fac : a -> b ;
-fac 1 := 1 ;
+fac 0 := 1 ;
 fac x := x * (fac (x-1)) ;
 
 function fst : (a,b) -> a ;
