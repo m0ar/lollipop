@@ -128,32 +128,38 @@ cConst (DConst (TypeId cid) cid' ids) = D.EConstr cid
 cConst (DConst1 (TypeId cid))         = D.EConstr cid
 
 cExp :: A.Exp -> D.Exp
+cExp (A.EVar (A.Id name))   = (D.EVar name)
+cExp (A.ETuple t)           = cTuple t
+cExp (A.ELiteral lit)       = (D.ELit $ cLit lit)
 cExp (A.EConst c)            = case c of
     (A.DConst1 (A.TypeId bool)) -> (D.EConstr bool)
     -- DConst (TypeId bool) id ids -> -- TODO
-cExp (A.EAdd e1 e2)         = (D.EBinOp D.Add (cExp e1) (cExp e2))
-cExp (A.ESub e1 e2)         = (D.EBinOp D.Sub (cExp e1) (cExp e2))
-cExp (A.EMul e1 e2)         = (D.EBinOp D.Mul (cExp e1) (cExp e2))
-cExp (A.EGt e1 e2)          = (D.EBinOp D.Gt (cExp e1) (cExp e2))
-cExp (A.ELt e1 e2)          = (D.EBinOp D.Gt (cExp e2) (cExp e1))
-cExp (A.EGEQ e1 e2)         = (D.EBinOp D.Or (cExp (A.EGt e1 e2)) (cExp (A.EEQ e1 e2)))
-cExp (A.ELEQ e1 e2)         = (D.EBinOp D.Or (cExp (A.ELt e1 e2)) (cExp (A.EEQ e1 e2)))
-cExp (A.EEQ e1 e2)          = (D.EBinOp D.Eq (cExp e1) (cExp e2))
-cExp (A.ENEQ e1 e2)         = (D.EUnOp D.Not (D.EBinOp D.Eq (cExp e1) (cExp e2)))
-cExp (A.EOR e1 e2)          = (D.EBinOp D.Or (cExp e1) (cExp e2))
-cExp (A.EAND e1 e2)         = D.EUnOp D.Not $ D.EBinOp D.Or (D.EUnOp D.Not (cExp e1)) (D.EUnOp D.Not (cExp e2))
-
-cExp (A.EVar (A.Id name))   = (D.EVar name)
-cExp (A.ELiteral lit)       = (D.ELit $ cLit lit)
+-- cExp (A.EListComp e lcps)
+cExp (A.EList ls)           = cList ls
+cExp A.EEmptyList           = D.EConstr "Nil"
 -- cExp (A.ELet vID)       = (D.ELetIn )
 cExp (A.EApp e1 e2)         = (D.EApp (cExp e1) (cExp e2))
-cExp (A.EAbs (A.Id name) e) = (D.ELam name (cExp e))
+-- cExp (A.ELogicalNeg e)
+-- cExp (A.ENeg e)
+-- cExp (A.EPow e1 e2)
+cExp (A.EMul e1 e2)         = (D.EBinOp D.Mul (cExp e1) (cExp e2))
+-- cExp (A.EDiv e1 e2)
+cExp (A.EAdd e1 e2)         = (D.EBinOp D.Add (cExp e1) (cExp e2))
+cExp (A.ESub e1 e2)         = (D.EBinOp D.Sub (cExp e1) (cExp e2))
+cExp (A.ELt e1 e2)          = (D.EBinOp D.Gt (cExp e2) (cExp e1))
+cExp (A.EGt e1 e2)          = (D.EBinOp D.Gt (cExp e1) (cExp e2))
+cExp (A.ELEQ e1 e2)         = (D.EBinOp D.Or (cExp (A.ELt e1 e2)) (cExp (A.EEQ e1 e2)))
+cExp (A.EGEQ e1 e2)         = (D.EBinOp D.Or (cExp (A.EGt e1 e2)) (cExp (A.EEQ e1 e2)))
+cExp (A.EEQ e1 e2)          = (D.EBinOp D.Eq (cExp e1) (cExp e2))
+cExp (A.ENEQ e1 e2)         = (D.EUnOp D.Not (D.EBinOp D.Eq (cExp e1) (cExp e2)))
+cExp (A.EAND e1 e2)         = D.EUnOp D.Not $ D.EBinOp D.Or (D.EUnOp D.Not (cExp e1)) (D.EUnOp D.Not (cExp e2))
+cExp (A.EOR e1 e2)          = (D.EBinOp D.Or (cExp e1) (cExp e2))
+-- cExp (A.EBind e1 e2)
+-- cExp (A.ESeq e1 e2)
 cExp (A.ECase e cs)         = (D.ECase (cExp e) (cCase cs))
 cExp (A.EIf e1 e2 e3)       = (D.ECase (cExp e1) [((D.PConstr "True" []), (cExp e2)),
                                                   ((D.PConstr "False" []), (cExp e3))])
-cExp (A.ETuple t)           = cTuple t
-cExp (A.EList ls)           = cList ls
-cExp A.EEmptyList           = D.EConstr "Nil"
+cExp (A.EAbs (A.Id name) e) = (D.ELam name (cExp e))
 
 
 cList :: [A.Exp] -> D.Exp
