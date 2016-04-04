@@ -132,8 +132,7 @@ cExp (A.EVar (A.Id name))   = (D.EVar name)
 cExp (A.ETuple t)           = cTuple t
 cExp (A.ELiteral lit)       = (D.ELit $ cLit lit)
 cExp (A.EConst c)            = case c of
-    (A.DConst1 (A.TypeId bool)) -> (D.EConstr bool)
-    -- DConst (TypeId bool) id ids -> -- TODO
+    (A.DConst1 (A.TypeId name)) -> (D.EConstr name)
 -- cExp (A.EListComp e lcps)
 cExp (A.EList ls)           = cList ls
 cExp A.EEmptyList           = D.EConstr "Nil"
