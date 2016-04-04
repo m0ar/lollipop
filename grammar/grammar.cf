@@ -92,16 +92,18 @@ token Id lower (letter | digit | '_' | '\'')* ;
 separator Id "" ;
 
 -- Expression types
-EEnclosed.      Exp11           ::= "(" Exp ")" ;
-EVar.           Exp10           ::= Id ;
-ETuple.         Exp10           ::= Tuple ;
-ELiteral.       Exp10           ::= Literal ;
-EConst.         Exp10           ::= Cons ;
--- EListComp.      Exp10           ::= "[" Exp "|" LCPatterns "]" ;
-EList.          Exp10           ::= "[" [Exp] "]" ;
-EEmptyList.     Exp10           ::= "[]" ;
-ELet.           Exp10           ::= LetBinding ;
-EApp.           Exp9            ::= Exp9 Exp10 ;
+--EEnclosed.      Exp12           ::= "(" Exp ")" ;
+EVar.           Exp11           ::= Id ;
+ETuple.         Exp11           ::= Tuple ;
+ELiteral.       Exp11           ::= Literal ;
+EConst.         Exp11           ::= Cons ;
+EListComp.      Exp11           ::= "[" Exp "|" LCPatterns "]" ;
+EList.          Exp11           ::= "[" [Exp] "]" ;
+EEmptyList.     Exp11           ::= "[]" ;
+ELet.           Exp11           ::= LetBinding ;
+EApp.           Exp10           ::= Exp10 Exp11 ;
+ELogicalNeg.    Exp9            ::= "not" Exp10 ;
+ENeg.           Exp9            ::= "-" Exp10 ;
 EPow.           Exp8            ::= Exp8 "^" Exp9 ;
 EMul.           Exp7            ::= Exp7 "*" Exp8 ;
 EDiv.           Exp7            ::= Exp7 "/" Exp8 ;
@@ -115,10 +117,12 @@ EEQ.            Exp4            ::= Exp4 "==" Exp5 ;
 ENEQ.           Exp4            ::= Exp4 "!=" Exp5 ;
 EAND.           Exp3            ::= Exp3 "&&" Exp4 ;
 EOR.            Exp2            ::= Exp2 "||" Exp3 ;
+EBind.          Exp1            ::= Exp2 ">>=" Exp2 ;
+Eseq.           Exp1            ::= Exp2 ">>" Exp2 ;
 ECase.          Exp1            ::= "case" Exp "of" Cases ;
 EIf.            Exp1            ::= "if" Exp2 "then" Exp2 "else" Exp ;
 EAbs.           Exp1            ::= "\\" Id "->" Exp ;
-coercions Exp 10 ;
+coercions Exp 11 ;
 separator Exp "," ;
 
 -- Structure for case expressions
