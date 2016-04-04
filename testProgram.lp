@@ -2,7 +2,7 @@ function great : Bool ;
 great := 7 < 8 || 3 > 6 ;
 
 function putStrLn : Int ;
-putStrLn := bind readLine print;
+putStrLn := (print "hej" >> print " da, ") >> print   ;
 
 function testLam : Int -> Int ;
 testLam := (\y -> head y) (tail [1,2,3]) ;
