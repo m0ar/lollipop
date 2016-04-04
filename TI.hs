@@ -90,18 +90,18 @@ unify t1 t2 = do
   t2' <- refresh t2
   go t1' t2' >>= refresh
   where
-    go (TFun l1 r1) (TFun l2 r2) = do  
+    go (TFun l1 r1) (TFun l2 r2) = do
         m1 <- go l1 l2
         m2 <- go r1 r2
         return $ TFun m1 m2
-    go (TVar u) t              =  varBind u t
-    go t (TVar u)              =  varBind u t
-    go TInt TInt               =  return TInt
-    go TDouble TDouble         =  return TDouble
-    go TChar TChar             =  return TChar
-    go TString TString         =  return TString
-    go t1 t2                   =  throwError $ "types do not unify: " ++ show t1 ++ 
-                                " vs. " ++ show t2
+    go (TVar u) t                = varBind u t
+    go t (TVar u)                = varBind u t
+    go TInt TInt                 = return TInt
+    go TDouble TDouble           = return TDouble
+    go TChar TChar               = return TChar
+    go TString TString           = return TString
+    go t1 t2                     = throwError $ "types do not unify: " ++ show t1 ++
+                                        " vs. " ++ show t2
 
 unifyAll :: [Type] -> TI Type
 unifyAll [t] = return t
@@ -122,18 +122,18 @@ ti (TypeEnv env) (EVar v) = do
     case M.lookup v env of
         Nothing -> throwError $ "unbound variable: " ++ v
         Just v' -> instantiate v'
-ti env (ELit l) = case l of
+ti env (ELit l)           = case l of
     ILit _ -> return TInt
     DLit _ -> return TDouble
     CLit _ -> return TChar
     SLit _ -> return TString
-ti env (ELam v e) = do 
+ti env (ELam v e)         = do
     t0 <- newTyVar "a"
     let TypeEnv env' = remove v env
         env'' = TypeEnv (env' `M.union` (M.singleton v (Scheme [] t0)))
     t1 <- ti env'' e
     return (TFun t0 t1)
-ti env (ECase e0 pes) = do
+ti env (ECase e0 pes)     = do
     t0 <- ti env e0
     let go (p, e) = do
         let pvs = freeVarsP p
@@ -143,13 +143,13 @@ ti env (ECase e0 pes) = do
         ti env' e
     ts <- mapM go pes
     unifyAll ts
-ti env (EApp e1 e2) = do
+ti env (EApp e1 e2)       = do
     t1 <- ti env e1
     t2 <- ti env e2
     a  <- newTyVar "a"
     unify (TFun t2 a) t1
     return a
-ti env (ELetIn v e1 e2) = do
+ti env (ELetIn v e1 e2)   = do
     t1 <- ti env e1
     let TypeEnv env' = remove v env
         t'           = generalize env t1
@@ -170,17 +170,15 @@ declareAll (x:xs) env = do
     a <- newTyVar "a"
     declareAll xs $ declareMono x a env
 
-
---infer e
---    t <- ti startEnv e
---    refresh t
-
+-- Converts a pattern to an expression
 patToExp :: Pattern -> Exp
 patToExp (PConstr v vs) = foldl EApp (EConstr v) (map patToExp vs)
 patToExp (PVar v)       = EVar v
 patToExp (PLit x)       = ELit x
 
-
+--infer e
+--    t <- ti startEnv e
+--    refresh t
 
 
 
@@ -241,3 +239,27 @@ prParenType t = case t of
                     TFun _ _  -> PP.parens (prType t)
                     _         -> prType t
 
+testExp :: Exp -> String
+testExp e = case (runTI (ti (TypeEnv M.empty) e)) of
+        ((Left error),_) -> show e ++ "\n-- ERROR: " ++ error
+        ((Right t),_)    -> show e ++ " :: " ++ show t
+
+-- test expressions
+te1  = ELit (ILit 3)
+
+te2  = ELetIn "id" (ELam "x" (EVar "x"))
+       (EVar "id")
+
+te3  = ELetIn "id" (ELam "x" (EVar "x"))
+       (EApp (EVar "id") (EVar "id"))
+
+te4  = ELetIn "id" (ELam "x" (ELetIn "y" (EVar "x") (EVar "y")))
+       (EApp (EVar "id") (EVar "id"))
+
+te5  = ELetIn "id" (ELam "x" (ELetIn "y" (EVar "x") (EVar "y")))
+       (EApp (EApp (EVar "id") (EVar "id")) (ELit (ILit 2)))
+
+te6  = ELetIn "id" (ELam "x" (EApp (EVar "x") (EVar "x")))
+       (EVar "id")
+
+main = do putStrLn $ "\n --- TESTING EXPRESSIONS --- \n\n" ++ (concat (map ((++ "\n\n") . testExp) [te1,te2,te3,te4,te5,te6]))
