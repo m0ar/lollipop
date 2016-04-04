@@ -12,27 +12,19 @@ data Declaration =
 data Exp = EApp Exp Exp
        | EVar Var
        | ELit Lit
+       | EUnOp Op Exp
        | EBinOp Op Exp Exp
        | ELam Var Exp
        | EConstr ConstrID
        | ECase Exp [(Pattern, Exp)]
        | ELetIn Var Exp Exp  -- let var = exp in exp
-       | ETup2 Exp Exp
-       | ETup3 Exp Exp Exp
 
-data Op = Add | Sub | Mul | Div | Bind
+data Op = Add | Sub | Mul | Div | Bind | Then | Gt | Eq | Or | Not | Pow
 
 data Pattern = PConstr ConstrID [Pattern]
             | PLit Lit
             | PWild
             | PVar Var
-            -- | List LPattern
-            -- | Tup2 Pattern Pattern
-            -- | Tup3 Pattern Pattern Pattern
-
--- data LPattern = LP LEntry LPattern | Nil
-
--- data LEntry = Var Var | Lit Lit | LWild | Empty
 
 type Var = String
 
@@ -53,13 +45,29 @@ data Lit = ILit Int
         | SLit [Char]
     deriving Eq
 
+
+instance Num Lit where
+    (+) (ILit x) (ILit y) = ILit (x+y)
+    (+) (DLit x) (DLit y) = DLit (x+y)
+    (+) (ILit x) (DLit y) = DLit ((fromIntegral x)+y)
+    (+) (DLit x) (ILit y) = DLit (x+(fromIntegral y))
+    (*) (ILit x) (ILit y) = ILit (x*y)
+    (*) (DLit x) (DLit y) = DLit (x*y)
+    (*) (ILit x) (DLit y) = DLit ((fromIntegral x)*y)
+    (*) (DLit x) (ILit y) = DLit (x*(fromIntegral y))
+
 instance Show Op where
     show op = case op of
+        Gt   -> "#gt"
+        Eq   -> "#eq"
+        Not  -> "#not"
+        Or   -> "#or"
         Add  -> "#add"
-        Sub  -> "#sub"
         Mul  -> "#mul"
+        Pow  -> "#pow"
         Div  -> "#div"
-        Bind -> "#bind"
+        Bind -> "bind"
+        Then -> "then"
 
 instance Show Lit where
     show lit = case lit of

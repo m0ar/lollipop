@@ -114,4 +114,17 @@ testEmpExp := [] ;
 
 function sumFst : [(Int,Int)] -> Int ;
 sumFst ((1,2):vs) := 1 ;
+
 sumFst (X:[]) := fst x ;
+
+function testLamda : Int -> Int ;
+testLamda x := \x -> x + x ;
+
+function testBind : IO ;
+testBind := readLn >>= (\ x -> putStrLn x) ;
+
+function testLogicalNeg : Int -> Bool ;
+testLogicalNeg x := not (not (x > 3)) ;
+
+function testNegative : Int -> Bool ;
+testNegative x := x == -3 ;

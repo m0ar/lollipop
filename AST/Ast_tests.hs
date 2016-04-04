@@ -10,27 +10,29 @@ main = do
     t2 <- testLetIn
     t3 <- testLazyLetIn
     t4 <- testEConstr
-    t5 <- testCase
-    t6 <- testSumList list4
-    t7 <- testSumList2
+    --t5 <- testCase
+    --t6 <- testSumList list4
+    --t7 <- testSumList2
     t8 <- testLam
     t9 <- testFuncs
     t10 <- testFuncs2
     t11 <- testBinOps
     t12 <- testLazyFuncs
+    t13 <- testThen
 
     return (t1
            ,t2
            ,t3
            ,t4
-           ,t5
-           ,t6
-           ,t7
+          -- ,t5
+           --,t6
+           --,t7
            ,t8
            ,t9
            ,t10
            ,t11
            ,t12
+           ,t13
             )
 
 
@@ -102,7 +104,13 @@ Testing of cLiting a user input. The input funcs result is passed to the print f
 testBind = interpret bind
     where
         bind = [(DFunc "main" [] bind')]
-        bind' = EApp (EApp (EVar "#bind") (EVar "readLine")) (EVar "print")
+        bind' = EApp (EApp (EVar "bind") (EVar "readLine")) (EVar "print")
+
+testThen = interpret thenF
+    where
+        thenF = [(DFunc "main" [] thenF')]
+        thenF' = EApp (EApp (EVar "then") (EApp (EVar "print") (ELit (SLit "Hello")))) (EApp (EVar "print") (ELit (SLit "Jonas")))
+
 
 {-
 main = let x = 5 + 9 in x + 3
@@ -127,12 +135,7 @@ testEConstr = interpret [econMain,dCon,dNil]
     where
         econMain = DFunc "main" [] (EApp (EApp (EConstr "Cons") (eFive)) (EConstr "Nil"))
 
-{-
-main = case (Cons 5 Nil) of
-    Cons x xs -> x + 0
-    Nil       -> 0
--}
-testCase = interpret caseMain
+{-- testCase = interpret caseMain
     where elist    = list1
           -- elist = EConstr "Nil" []
           p1       = PConstr "Cons" ["x", "xs"]
@@ -145,14 +148,9 @@ testCase1 = interpret caseMain
     where caseMain = [(DFunc "main" ["x"] ecase)]
           ecase    = ECase (EVar "x") [(p,e)]
           p        = PConstr "main" []
-          e        = ELit (ILit 2)
+          e        = ELit (ILit 2) --}
 
-{-
-sum xs = case xs of
-    Cons x xs2  ->  x + sum xs2
-    Nil         -> 0
--}
-testSumList :: Exp -> IO ()
+{-- testSumList :: Exp -> IO ()
 testSumList l = interpret [dMain, dSum, dCon, dNil]
     where dMain = DFunc "main" [] (EApp (EVar "sum") l)
           p1    = PConstr "Cons" ["x", "xs2"]
@@ -160,7 +158,7 @@ testSumList l = interpret [dMain, dSum, dCon, dNil]
                   (EApp (EVar "sum") (EVar "xs2"))
           p2    = PConstr "Nil" []
           ecase = ECase (EVar "xs") [(p1, e1), (p2, eZero)]
-          dSum  = DFunc "sum" ["xs"] ecase
+          dSum  = DFunc "sum" ["xs"] ecase --}
 
 testPattern1 = interpret [(DFunc "main" [] lam)]
     where p1    = PLit (ILit 5)
@@ -169,13 +167,8 @@ testPattern1 = interpret [(DFunc "main" [] lam)]
           e2    = EApp (EVar "print") (ELit (SLit "Second case"))
           lam   = EApp (ELam "x" (ECase x [(p1,e1),(p2,e2)])) eZero
 
-{-
-main = sum list1
-sum xs = case xs of
-    Nil        -> 0
-    Cons x xs' -> x + sum xs
--}
-testSumList2 = interpret [dMain, dSum, dCon, dNil]
+
+{-- testSumList2 = interpret [dMain, dSum, dCon, dNil]
     where
         dMain = DFunc "main" [] (EApp (EVar "sum") list1)
         dSum  = DFunc "sum" ["xs"] (ECase (EVar "xs") [(p1, eZero), (p2, e2)])
@@ -183,7 +176,7 @@ testSumList2 = interpret [dMain, dSum, dCon, dNil]
                 p1 = PConstr "Nil" []
                 p2 = PConstr "Cons" ["x", "xs'"]
                 e2 = EBinOp Add (EVar "x") (EApp (EVar "sum") (EVar "xs'"))
-
+--}
 {-
 main = (\x -> x + 4) ((\x -> x + 4) 6)   -- should return 14
 -}
@@ -235,28 +228,3 @@ testLazyFuncs = interpret [funcMain, funcFirst, funcInfty] where
     funcMain = DFunc "main" [] (EApp (EApp (EVar "first") eFive) (EApp (EVar "infty") eZero))
     funcFirst = DFunc "first" ["x", "y"] (EVar "x")
     funcInfty = DFunc "infty" ["x"] (EBinOp Add eOne (EApp (EVar "infty") (EVar "x")))
-
-
-{-
-main = (5, 7)
--}
-testTuple = interpret [DFunc "main" [] tup] where
-    tup = ETup2 eFive eSeven
-
-{-
-test2 = interpret ds >>= putStrLn . take 1000 . show where
-    cons = "Cons"
-    ds   = [main,go,map]
-    main = DFunc "main" [] body where
-        body = EApp (EVar "go") eOne
-    go   = DFunc "go" ["x"] body where
-        x    = EVar "x"
-        body = EConstr cons [x, EVar "go" `EApp` (x `EBinOp Add` x)]
-    map  = DFunc "map" [f,"xs0"] body where
-        (f,x,xs) = ("f","x","xs")
-        body = ECase (EVar "xs0")
-            [(cons,[x,xs],EConstr cons [EVar f `EApp` EVar x,
-              EVar "map" `EApp` EVar f `EApp` EVar xs])
-            ,("Nil",[],EConstr "Nil" [])
-            ]
--}

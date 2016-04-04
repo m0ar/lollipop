@@ -1,22 +1,5 @@
-function great : Bool ;
-great := 7 < 8 || 3 > 6 ;
-
-function lett : Int ;
-lett := let x := pw ;
-            y := dv ;
-        in x + y ;;
-
-function nt : Int ;
-nt := not True ;
-
-function dv : Int ;
-dv := -5 - -2 ;
-
-function pw : Int ;
-pw := 5 ^ (-2) ;
-
 function putStrLn : Int ;
-putStrLn := (print "hej" >> print " da, ") >> print " mamma"  ;
+putStrLn x := print x ;
 
 function testLam : Int -> Int ;
 testLam := (\y -> head y) (tail [1,2,3]) ;
@@ -85,9 +68,8 @@ patR x 2 5 := x + 1 ;
 patR y 2 2 := 2 ;
 
 function grd : Int ;
-grd a b := True when a > b
-	       := False when a < b
-	       := False ;
+grd := 5 when True
+    := 2 ;
 
 function useDbl : Int -> Int ;
 useDbl x := 4 + dbl x ;
@@ -106,25 +88,3 @@ ca _ 0 0 := 0 ;
 function onePat : Int -> Int ;
 pat 2 := 11 ;
 pat _ := 0 ;
-
-function take : Int -> [a] -> [a] ;
-take n (x:xs) := case n of
-    0 -> cons x (take (n-1) xs) ;
-    _ -> nil ; ;
-
-take n [] := nil ; -- There is no way to do empty lists :(
-
-function map : atob -> [a] -> [b] ;
-map f (x:xs) := cons (f x) (map f xs) ;
-map f [] := nil ;
-
-function naturals : [Int] ;
-naturals := cons 0 (map (\x -> x+1) naturals) ;
-
-function foldr : atobtob -> b -> [a] -> b ;
-foldr f b [] := b ;
-foldr f b (x:xs) := f x (foldr f b xs) ;
-
--- Sum of first 100 naturals
-function main : Int ;
-main := foldr (\x -> \y -> (x+y)) 0 (take 100 naturals) ;
