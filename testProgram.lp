@@ -1,6 +1,9 @@
 function great : Bool ;
 great := 7 < 8 || 3 > 6 ;
 
+function nt : Int ;
+nt := not True ;
+
 function dv : Int ;
 dv := -5 - -2 ;
 
