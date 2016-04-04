@@ -1,4 +1,4 @@
--- A program is 0 or more imports followed by 
+-- A program is 0 or more imports followed by
 -- zero or more function declarations
 PImports.       Program         ::= Import ";" Program ;
 PFuncs.         Program1        ::= Declaration Program1 ;
@@ -54,25 +54,27 @@ DDTypes6.       DPatterns       ::= ;
 DDeriving1.     Deriving        ::= ";" ;
 DDeriving2.     Deriving        ::= "deriving" "(" [TypeId] ")" ";" ;
 
--- Pattern matching for lists in function definition arguments
-LPattern1.      ListPat         ::= "[]" ;
-LPattern2.      ListPat         ::= "(" Pattern ":" LPattern ")" ;
-LPattern3.      LPattern        ::= "[]" ;
-LPattern4.      LPattern        ::= Pat ;
-LPattern5.      LPattern        ::= Pattern ":" LPattern ;
+-- Pattern matching
+PWild.          Pattern1        ::= "_" ;
+PId.            Pattern1        ::= Id ;
+PConstrEmp.     Pattern1        ::= TypeId ;
+PLit.           Pattern1        ::= Literal ;
+PEmpty.         Pattern1        ::= "[]" ;
+PListPat.       Pattern1        ::= "[" ListPat "]" ;
+PTuplePat.      Pattern1        ::= "(" Pattern "," Pattern ")" ;
+PTruplePat.     Pattern1        ::= "(" Pattern "," Pattern "," Pattern ")" ;
+PCons.          Pattern         ::= Pattern1 ":" Pattern ;
+PConsConstr.    Pattern         ::= "(" TypeId Pattern [Pattern] ")" ":" Pattern ;
+--_.              Pattern2        ::= "(" Pattern ")" ; This is still broken
+coercions Pattern 2 ;
 
-TPattern.       TuplePat        ::= "(" [Pattern] ")" ;
+-- This is needed since the list definition below is space-separated
+-- for use in constructors
+PList.          ListPat         ::= Pattern ;
+PList1.         ListPat         ::= Pattern "," ListPat ;
 
--- categroy for every case when an underscore or an identifier is accepted
-Pwild.          Pat             ::= "_" ;
-PId.            Pat             ::= Id ;
-PConst.         Pat             ::= Cons ;
-PLit.           Pat             ::= Literal ;
-
-PListPat.       Pattern         ::= ListPat ;
-PTuplePat.      Pattern         ::= TuplePat ;
-PPat.           Pattern         ::= Pat ;
-separator Pattern "," ;
+[].             [Pattern]       ::= ;
+(:).            [Pattern]       ::= Pattern1 [Pattern] ;
 
 -- A literal can be any predefined token type
 LitInt.         Literal         ::= Integer ;
@@ -90,18 +92,16 @@ token Id lower (letter | digit | '_' | '\'')* ;
 separator Id "" ;
 
 -- Expression types
---EEnclosed.      Exp12           ::= "(" Exp ")" ;
-EVar.           Exp11           ::= Id ;
-ETuple.         Exp11           ::= Tuple ;
-ELiteral.       Exp11           ::= Literal ;
-EConst.         Exp11           ::= Cons ;
-EListComp.      Exp11           ::= "[" Exp "|" LCPatterns "]" ;
-EList.          Exp11           ::= "[" [Exp] "]" ;
-EEmptyList.     Exp11           ::= "[]" ;
-ELet.           Exp11           ::= LetBinding ;
-EApp.           Exp10           ::= Exp10 Exp11 ;
-ELogicalNeg.    Exp9            ::= "not" Exp10 ;
-ENeg.           Exp9            ::= "-" Exp10 ;
+EEnclosed.      Exp11           ::= "(" Exp ")" ;
+EVar.           Exp10           ::= Id ;
+ETuple.         Exp10           ::= Tuple ;
+ELiteral.       Exp10           ::= Literal ;
+EConst.         Exp10           ::= Cons ;
+-- EListComp.      Exp10           ::= "[" Exp "|" LCPatterns "]" ;
+EList.          Exp10           ::= "[" [Exp] "]" ;
+EEmptyList.     Exp10           ::= "[]" ;
+ELet.           Exp10           ::= LetBinding ;
+EApp.           Exp9            ::= Exp9 Exp10 ;
 EPow.           Exp8            ::= Exp8 "^" Exp9 ;
 EMul.           Exp7            ::= Exp7 "*" Exp8 ;
 EDiv.           Exp7            ::= Exp7 "/" Exp8 ;
@@ -115,12 +115,10 @@ EEQ.            Exp4            ::= Exp4 "==" Exp5 ;
 ENEQ.           Exp4            ::= Exp4 "!=" Exp5 ;
 EAND.           Exp3            ::= Exp3 "&&" Exp4 ;
 EOR.            Exp2            ::= Exp2 "||" Exp3 ;
-EBind.          Exp1            ::= Exp2 ">>=" Exp2 ;
-Eseq.           Exp1            ::= Exp2 ">>" Exp2 ;
 ECase.          Exp1            ::= "case" Exp "of" Cases ;
 EIf.            Exp1            ::= "if" Exp2 "then" Exp2 "else" Exp ;
 EAbs.           Exp1            ::= "\\" Id "->" Exp ;
-coercions Exp 11 ;
+coercions Exp 10 ;
 separator Exp "," ;
 
 -- Structure for case expressions
@@ -134,14 +132,14 @@ Tuple2.         Tuple           ::= "(" Exp "," Exp ")" ;
 Tuple3.         Tuple           ::= "(" Exp "," Exp "," Exp ")" ;
 
 -- Structure of list comprehensions input set(s) and predicates.
--- The elements drawn from the input set are either bound 
+-- The elements drawn from the input set are either bound
 -- to an identifier or a wild-card.
-ELCPatterns1.   LCPatterns      ::= Pat "<-" Id ;
+{-- ELCPatterns1.   LCPatterns      ::= Pat "<-" Id ;
 ELCPatterns2.   LCPatterns      ::= Pat "<-" Id "," LCPatterns ;
 ELCPatterns3.   LCPatterns      ::= Pat "<-" Id "," Predicate ;
 ELCPatterns4.   LCPatterns      ::= Pat "<-" "[" [Literal] "]" ;
 ELCPatterns5.   LCPatterns      ::= Pat "<-" "[" [Literal] "]" "," LCPatterns ;
-ELCPatterns6.   LCPatterns      ::= Pat "<-" "[" [Literal] "]" "," Predicate ;
+ELCPatterns6.   LCPatterns      ::= Pat "<-" "[" [Literal] "]" "," Predicate ; --}
 separator nonempty Literal "," ;
 LCPredicate.    Predicate       ::= Exp ;
 LCPredicates.   Predicate       ::= Exp "," Predicate ;
