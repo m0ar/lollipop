@@ -1,6 +1,11 @@
 function great : Bool ;
 great := 7 < 8 || 3 > 6 ;
 
+function lett : Int ;
+lett := let x := 8 ;
+            y := dv ;
+        in x + y ;;
+
 function nt : Int ;
 nt := not True ;
 

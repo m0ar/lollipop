@@ -137,7 +137,7 @@ cExp (A.EConst c)            = case c of
 -- cExp (A.EListComp e lcps)
 cExp (A.EList ls)           = cList ls
 cExp A.EEmptyList           = D.EConstr "Nil"
--- cExp (A.ELet vID)       = (D.ELetIn )
+cExp (A.ELet lb)            = cLetIn lb
 cExp (A.EApp e1 e2)         = (D.EApp (cExp e1) (cExp e2))
 cExp (A.ELogicalNeg e)      = (D.EUnOp D.Not (cExp e))
 cExp (A.ENeg e)             = (D.EBinOp D.Mul (cExp e) (D.ELit (D.ILit (-1))))
@@ -160,6 +160,12 @@ cExp (A.ECase e cs)         = (D.ECase (cExp e) (cCase cs))
 cExp (A.EIf e1 e2 e3)       = (D.ECase (cExp e1) [((D.PConstr "True" []), (cExp e2)),
                                                   ((D.PConstr "False" []), (cExp e3))])
 cExp (A.EAbs (A.Id name) e) = (D.ELam name (cExp e))
+
+cLetIn :: A.LetBinding -> D.Exp
+cLetIn (ELetBinding1 ls e) = cLetIn' ls e
+    where
+        cLetIn' ((ELetBinding2 (Id name) e1):[]) e = D.ELetIn name (cExp e1) (cExp e)
+        cLetIn' ((ELetBinding2 (Id name) e1):ls) e = D.ELetIn name (cExp e1) (cLetIn' ls e)
 
 
 cList :: [A.Exp] -> D.Exp
