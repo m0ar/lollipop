@@ -2,7 +2,7 @@ function great : Bool ;
 great := 7 < 8 || 3 > 6 ;
 
 function dv : Int ;
-dv := -5 / -2 ;
+dv := -5 - -2 ;
 
 function putStrLn : Int ;
 putStrLn := (print "hej" >> print " da, ") >> print " mamma"  ;
