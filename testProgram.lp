@@ -1,8 +1,11 @@
 function great : Bool ;
 great := 7 < 8 || 3 > 6 ;
 
+function dv : Int ;
+dv := -5 / -2 ;
+
 function putStrLn : Int ;
-putStrLn := (print "hej" >> print " da, ") >> print   ;
+putStrLn := (print "hej" >> print " da, ") >> print " mamma"  ;
 
 function testLam : Int -> Int ;
 testLam := (\y -> head y) (tail [1,2,3]) ;
