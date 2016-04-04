@@ -43,17 +43,19 @@ startEnv = printF $ readLnF $ addF $ subF $ mulF $ bindF
             orF     = M.insert "#or"  $ VFun $ \v1 -> VFun $ \v2 -> boolToVConstr $ (vConstrToBool v1) || (vConstrToBool v2)
             bindF   = M.insert "bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> run $ a2 s  -- a1 >>= \s -> a2 s
             thenF   = M.insert "then" $ VFun $ \(VIO a1) -> VFun $ \(VIO a2) -> VIO $ a1 >> a2
-            undef   = M.insert "Undefined" $ vConstructor "Undefined" 0 []
-            true    = M.insert "True" $ vConstructor "True" 0 []
-            false   = M.insert "False" $ vConstructor "False" 0 []
-            tuple   = M.insert "(,)" $ vConstructor "(,)" 2 []
-            truple  = M.insert "(,,)" $ vConstructor "(,,)" 3 []
-            nil     = M.insert "Nil" $ vConstructor "Nil" 0 []
-            cons    = M.insert "Cons" $ vConstructor "Cons" 2 []
+            undef   = M.insert "Undefined" $ vConstructor "Undefined" 0 id
+            true    = M.insert "True" $ vConstructor "True" 0 id
+            false   = M.insert "False" $ vConstructor "False" 0 id
+            tuple   = M.insert "(,)" $ vConstructor "(,)" 2 id
+            truple  = M.insert "(,,)" $ vConstructor "(,,)" 3 id
+            nil     = M.insert "Nil" $ vConstructor "Nil" 0 id
+            cons    = M.insert "Cons" $ vConstructor "Cons" 2 id
 
-vConstructor :: ConstrID -> Int -> [Value] -> Value
-vConstructor cid 0 vs = VConstr cid vs
-vConstructor cid n vs = VFun (\v -> (vConstructor cid (n-1) (vs++[v])))
+vConstructor :: ConstrID -> Int -> ([Value] -> [Value]) -> Value
+vConstructor cid n k
+    | n < 0      = error "vConstructor must be called with n >= 0"
+    | n == 0     = VConstr cid $ k []
+    | otherwise  = VFun $ \v -> vConstructor cid (n-1) $ (. (v:)) k
 
 run :: Value -> IO Value
 run act = case act of
