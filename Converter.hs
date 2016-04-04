@@ -141,7 +141,7 @@ cExp A.EEmptyList           = D.EConstr "Nil"
 cExp (A.EApp e1 e2)         = (D.EApp (cExp e1) (cExp e2))
 -- cExp (A.ELogicalNeg e)
 cExp (A.ENeg e)             = (D.EBinOp D.Mul (cExp e) (D.ELit (D.ILit (-1))))
--- cExp (A.EPow e1 e2)
+cExp (A.EPow e1 e2)         = (D.EBinOp D.Pow (cExp e1) (cExp e2))
 cExp (A.EMul e1 e2)         = (D.EBinOp D.Mul (cExp e1) (cExp e2))
 cExp (A.EDiv e1 e2)         = (D.EBinOp D.Div (cExp e1) (cExp e2))
 cExp (A.EAdd e1 e2)         = (D.EBinOp D.Add (cExp e1) (cExp e2))

@@ -19,7 +19,7 @@ data Exp = EApp Exp Exp
        | ECase Exp [(Pattern, Exp)]
        | ELetIn Var Exp Exp  -- let var = exp in exp
 
-data Op = Add | Sub | Mul | Div | Bind | Then | Gt | Eq | Or | Not
+data Op = Add | Sub | Mul | Div | Bind | Then | Gt | Eq | Or | Not | Pow
 
 data Pattern = PConstr ConstrID [Pattern]
             | PLit Lit
@@ -52,8 +52,8 @@ instance Show Op where
         Not  -> "#not"
         Or   -> "#or"
         Add  -> "#add"
-        Sub  -> "#sub"
         Mul  -> "#mul"
+        Pow  -> "#pow"
         Div  -> "#div"
         Bind -> "bind"
         Then -> "then"

@@ -28,13 +28,14 @@ addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
         e' = addDecsToEnv env ds
 
 startEnv :: Env
-startEnv = printF $ readLnF $ addF $ mulF $ bindF
+startEnv = printF $ readLnF $ addF $ mulF $ bindF $ powF
                   $ thenF $ true $ false $ tuple $ truple
                   $ nil $ cons $ undef $ gtF $ divF
                   $ eqF $ notF $ orF $ M.empty
     where   printF  = M.insert "print" $ VFun $ \(VString s) -> VIO $ print s >> return (VConstr "()" []) -- TODO remove VString
             readLnF = M.insert "readLine" $ VIO $ fmap VString readLn
             addF    = M.insert "#add" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x+y
+            powF    = M.insert "#pow" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ DLit $ (fromIntegral x) ^^ y
             mulF    = M.insert "#mul" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ ILit $ x*y
             divF    = M.insert "#div" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ DLit $ (fromIntegral x)/(fromIntegral y)
             gtF     = M.insert "#gt"  $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> boolToVConstr (x>y)
