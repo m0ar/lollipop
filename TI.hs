@@ -239,6 +239,9 @@ prParenType t = case t of
                     TFun _ _  -> PP.parens (prType t)
                     _         -> prType t
 
+printTestExp :: Exp -> IO()
+printTestExp e = putStrLn $ testExp e
+
 testExp :: Exp -> String
 testExp e = case (runTI (ti (TypeEnv M.empty) e)) of
         ((Left error),_) -> show e ++ "\n-- ERROR: " ++ error
@@ -262,4 +265,22 @@ te5  = ELetIn "id" (ELam "x" (ELetIn "y" (EVar "x") (EVar "y")))
 te6  = ELetIn "id" (ELam "x" (EApp (EVar "x") (EVar "x")))
        (EVar "id")
 
-main = do putStrLn $ "\n --- TESTING EXPRESSIONS --- \n\n" ++ (concat (map ((++ "\n\n") . testExp) [te1,te2,te3,te4,te5,te6]))
+-- should Succeed
+te7  = ECase (ELit(ILit 2)) [(PLit(ILit 2), ELit(CLit 'i')) ,
+                             (PLit(ILit 3), ELit(CLit 'u'))
+                            ]
+
+-- should Fail, different output types
+te8  = ECase (ELit(ILit 2)) [(PLit(ILit 2), ELit(CLit 'i')) ,
+                             (PLit(ILit 6), ELit(ILit 9))
+                            ]
+
+-- should Fail, different input and matching types
+te9  = ECase (ELit(CLit '2')) [(PLit(ILit 2), ELit(CLit 'i')) ,
+                               (PLit(ILit 3), ELit(CLit 'u'))
+                              ]
+
+main = do putStrLn $ 
+            "\n --- TESTING EXPRESSIONS --- \n\n" ++
+            (concat (map ((++ "\n\n") . testExp)
+            [te1,te2,te3,te4,te5,te6,te7,te8,te9]))
