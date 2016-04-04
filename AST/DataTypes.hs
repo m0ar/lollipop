@@ -45,6 +45,17 @@ data Lit = ILit Int
         | SLit [Char]
     deriving Eq
 
+
+instance Num Lit where
+    (+) (ILit x) (ILit y) = ILit (x+y)
+    (+) (DLit x) (DLit y) = DLit (x+y)
+    (+) (ILit x) (DLit y) = DLit ((fromIntegral x)+y)
+    (+) (DLit x) (ILit y) = DLit (x+(fromIntegral y))
+    (*) (ILit x) (ILit y) = ILit (x*y)
+    (*) (DLit x) (DLit y) = DLit (x*y)
+    (*) (ILit x) (DLit y) = DLit ((fromIntegral x)*y)
+    (*) (DLit x) (ILit y) = DLit (x*(fromIntegral y))
+
 instance Show Op where
     show op = case op of
         Gt   -> "#gt"

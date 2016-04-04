@@ -2,7 +2,7 @@ function great : Bool ;
 great := 7 < 8 || 3 > 6 ;
 
 function lett : Int ;
-lett := let x := 8 ;
+lett := let x := pw ;
             y := dv ;
         in x + y ;;
 
