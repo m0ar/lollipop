@@ -17,7 +17,7 @@ div x y
     := 0 ;
     
 function mod : Int -> Int -> Int ;
-mod x y := x*y - div x y ;
+mod x y := x - y * div x y ;
 -}
 
 function fst : (a,b) -> a ;
