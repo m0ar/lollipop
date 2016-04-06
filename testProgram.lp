@@ -1,3 +1,6 @@
+function addL : Int -> [Int] -> [Int] ;
+great x xs := cons x xs ;
+
 function great : Bool ;
 great := 7 < 8 || 3 > 6 ;
 

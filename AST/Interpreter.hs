@@ -31,9 +31,10 @@ startEnv :: Env
 startEnv = printF $ readLnF $ addF $ mulF $ bindF $ powF
                   $ thenF $ true $ false $ tuple $ truple
                   $ nil $ cons $ undef $ gtF $ divF
-                  $ eqF $ notF $ orF $ M.empty
+                  $ eqF $ notF $ orF $ consF $ M.empty
     where   printF  = M.insert "print" $ VFun $ \(VString s) -> VIO $ print s >> return (VConstr "()" []) -- TODO remove VString
             readLnF = M.insert "readLine" $ VIO $ fmap VString readLn
+            consF   = M.insert "cons" $ VFun $ \v -> VFun $ \(VConstr cid vs) -> (VConstr "Cons" [v, (VConstr cid vs)])
             addF    = M.insert "#add" $ VFun $ \(VLit x) -> VFun $ \(VLit y) -> VLit $ x+y
             powF    = M.insert "#pow" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ DLit $ (fromIntegral x) ^^ y
             mulF    = M.insert "#mul" $ VFun $ \(VLit x) -> VFun $ \(VLit y) -> VLit $ x*y
@@ -42,8 +43,8 @@ startEnv = printF $ readLnF $ addF $ mulF $ bindF $ powF
             eqF     = M.insert "#eq"  $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> boolToVConstr (x==y)
             notF    = M.insert "#not" $ VFun $ \v -> boolToVConstr $ not $ vConstrToBool v
             orF     = M.insert "#or"  $ VFun $ \v1 -> VFun $ \v2 -> boolToVConstr $ (vConstrToBool v1) || (vConstrToBool v2)
-            bindF   = M.insert "bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> run $ a2 s  -- a1 >>= \s -> a2 s
-            thenF   = M.insert "then" $ VFun $ \(VIO a1) -> VFun $ \(VIO a2) -> VIO $ a1 >> a2
+            bindF   = M.insert "#bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> run $ a2 s  -- a1 >>= \s -> a2 s
+            thenF   = M.insert "#then" $ VFun $ \(VIO a1) -> VFun $ \(VIO a2) -> VIO $ a1 >> a2
             undef   = M.insert "Undefined" $ vConstructor "Undefined" 0 id
             true    = M.insert "True" $ vConstructor "True" 0 id
             false   = M.insert "False" $ vConstructor "False" 0 id

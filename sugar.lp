@@ -27,11 +27,11 @@ fst (x,y) := x ;
 function snd : (a,b) -> b ;
 snd (x,y) := y ;
 
-function head : [Int] -> Int ;
+function head : [a] -> a ;
 head []     := Undefined ;
 head (x:xs) := x ;
 
-function tail : [Int] -> [Int] ;
+function tail : [a] -> [a] ;
 tail []     := Undefined ;
 tail (x:xs) := xs ;
 
@@ -40,7 +40,11 @@ sumList []     := 0 ;
 sumList (x:[]) := x ;
 sumList (x:xs) := x + sumList xs ;
 
-function last : [Int] -> Int ;
+function last : [a] -> a ;
 last []     := Undefined ;
 last (x:[]) := x ;
 last (x:xs) := last xs ;
+
+function concat : [a] -> [a] -> [a] ;
+concat []     ys := ys ;
+concat (x:xs) ys := cons x (concat xs ys) ;
