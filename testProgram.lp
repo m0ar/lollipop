@@ -112,14 +112,13 @@ pat _ := 0 ;
 
 function take : Int -> [a] -> [a] ;
 take n (x:xs) := case n of
-    0 -> cons x (take (n-1) xs) ;
-    _ -> nil ; ;
-
-take n [] := nil ; -- There is no way to do empty lists :(
+    0 -> Nil ;
+    _ -> cons x (take (n-1) xs) ; ;
+take n [] := [] ; -- There is no way to do empty lists :(
 
 function map : atob -> [a] -> [b] ;
 map f (x:xs) := cons (f x) (map f xs) ;
-map f [] := nil ;
+map f [] := [] ;
 
 function naturals : [Int] ;
 naturals := cons 0 (map (\x -> x+1) naturals) ;
