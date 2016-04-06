@@ -131,15 +131,9 @@ match (PLit pl) (VLit vl)
     | pl == vl  = Just []
     | otherwise = Nothing
 match (PVar pv) var = Just [(pv, var)]
-match p v = matchConstr p v
+match (PConstr pcid ps) (VConstr vcid vs)
+        | pcid == vcid = matchConstr ps vs
+        | otherwise    = Nothing
 
--- help function for match which handledes pattern matching for constructors
-matchConstr :: Pattern -> Value -> Maybe [(Var, Value)]
-matchConstr (PConstr pcid ps) (VConstr vcid vs)
-    | pcid == vcid = fmap concat $ sequence (zipWith match ps vs)
-    | otherwise    = Nothing
-
--- helper function for matchConstr which binds at the end of a list
-matchCons :: Pattern -> Value -> [(Var, Value)]
-matchCons (PConstr "Nil" _) _                  = []
-matchCons (PConstr "Cons" ((PVar var):vs)) val = [(var, val)]
+matchConstr :: [Pattern] -> [Value] -> Maybe [(Var,Value)]
+matchConstr ps vs = fmap concat $ sequence (zipWith match ps vs)
