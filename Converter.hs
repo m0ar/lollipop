@@ -61,7 +61,9 @@ allDef (d:ds) = case d of
 cGuard :: A.Guards -> A.Exp
 cGuard (A.DGuards1 e1 e2 gs) = cGuard (A.DGuards2 e1 e2 gs)
 cGuard (A.DGuards2 e1 e2 gs) = A.ECase e2 (A.ECases2 (A.PConstrEmp (TypeId "True")) e1 (cGuard' gs))
-    where cGuard' (A.DGuards2 e1 e2 gs) = (A.ECases2 (A.PConstrEmp (TypeId "False")) (cGuard gs) A.ECases3)
+    where
+        cGuard' (A.DGuards2 e1 e2 gs) = (A.ECases2 (A.PConstrEmp (TypeId "False")) (cGuard gs) A.ECases3)
+        cGuard' (A.DExpGuard e)       = (A.ECases2 A.PWild e A.ECases3)
 cGuard (A.DExpGuard e)       = A.ECase e ((A.ECases2 (A.PWild)) e (A.ECases3))
                             -- last one is "otherwise"-case
 
@@ -122,13 +124,13 @@ cExp (A.EList ls)           = cList ls
 cExp A.EEmptyList           = D.EConstr "Nil"
 cExp (A.ELet lb)            = cLetIn lb
 cExp (A.EApp e1 e2)         = (D.EApp (cExp e1) (cExp e2))
--- cExp (A.ELogicalNeg e)      = (D.EUnOp D.Not (cExp e))
--- cExp (A.ENeg e)             = (D.EBinOp D.Mul (cExp e) (D.ELit (D.ILit (-1))))
+cExp (A.ELogicalNeg e)      = (D.EUnOp D.Not (cExp e))
+cExp (A.ENeg e)             = (D.EBinOp D.Mul (cExp e) (D.ELit (D.ILit (-1))))
 cExp (A.EPow e1 e2)         = (D.EBinOp D.Pow (cExp e1) (cExp e2))
 cExp (A.EMul e1 e2)         = (D.EBinOp D.Mul (cExp e1) (cExp e2))
 cExp (A.EDiv e1 e2)         = (D.EBinOp D.Div (cExp e1) (cExp e2))
 cExp (A.EAdd e1 e2)         = (D.EBinOp D.Add (cExp e1) (cExp e2))
---cExp (A.ESub e1 e2)         = (D.EBinOp D.Add (cExp e1) (cExp (A.ENeg e2)))
+cExp (A.ESub e1 e2)         = (D.EBinOp D.Add (cExp e1) (cExp (A.ENeg e2)))
 cExp (A.ELt e1 e2)          = (D.EBinOp D.Gt (cExp e2) (cExp e1))
 cExp (A.EGt e1 e2)          = (D.EBinOp D.Gt (cExp e1) (cExp e2))
 cExp (A.ELEQ e1 e2)         = (D.EBinOp D.Or (cExp (A.ELt e1 e2)) (cExp (A.EEQ e1 e2)))
@@ -137,8 +139,8 @@ cExp (A.EEQ e1 e2)          = (D.EBinOp D.Eq (cExp e1) (cExp e2))
 cExp (A.ENEQ e1 e2)         = (D.EUnOp D.Not (D.EBinOp D.Eq (cExp e1) (cExp e2)))
 cExp (A.EAND e1 e2)         = D.EUnOp D.Not $ D.EBinOp D.Or (D.EUnOp D.Not (cExp e1)) (D.EUnOp D.Not (cExp e2))
 cExp (A.EOR e1 e2)          = (D.EBinOp D.Or (cExp e1) (cExp e2))
---cExp (A.EBind e1 e2)        = (D.EBinOp D.Bind (cExp e1) (cExp e2))
---cExp (A.Eseq e1 e2)         = (D.EBinOp D.Then (cExp e1) (cExp e2))
+cExp (A.EBind e1 e2)        = (D.EBinOp D.Bind (cExp e1) (cExp e2))
+cExp (A.Eseq e1 e2)         = (D.EBinOp D.Then (cExp e1) (cExp e2))
 cExp (A.ECase e cs)         = (D.ECase (cExp e) (cCase cs))
 cExp (A.EIf e1 e2 e3)       = (D.ECase (cExp e1) [((D.PConstr "True" []), (cExp e2)),
                                                   ((D.PConstr "False" []), (cExp e3))])

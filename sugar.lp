@@ -6,19 +6,20 @@ function fac : a -> b ;
 fac 0 := 1 ;
 fac x := x * (fac (x-1)) ;
 
-{-
+
 function div : Int -> Int -> Int ;
 div _ 0 := Undefined ;
 div 0 _ := 0 ;
 div x y
-    := div (-x) (-y) when y < 0
+    := div -x -y        when y < 0
     := -1 + div (x+y) y when x < 0
-    := 1 + div (x-y) y when x > y
+    := 1 + div (x-y) y  when x > y
+    := 1                when x == y
     := 0 ;
-    
+
 function mod : Int -> Int -> Int ;
 mod x y := x - y * div x y ;
--}
+
 
 function fst : (a,b) -> a ;
 fst (x,y) := x ;
