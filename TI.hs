@@ -127,12 +127,15 @@ ti env (ELit l)           = case l of
     DLit _ -> return TDouble
     CLit _ -> return TChar
     SLit _ -> return TString
+ti env (EUnOp o e) = undefined -- TODO
+ti env (EBinOp u e1 e2) = undefined -- TODO
 ti env (ELam v e)         = do
     t0 <- newTyVar "a"
     let TypeEnv env' = remove v env
         env'' = TypeEnv (env' `M.union` (M.singleton v (Scheme [] t0)))
     t1 <- ti env'' e
     return (TFun t0 t1)
+ti env (EConstr id) = undefined -- TODO
 ti env (ECase e0 pes)     = do
     t0 <- ti env e0
     let go (p, e) = do
@@ -182,7 +185,6 @@ patToExp (PLit x)       = ELit x
 
 
 
-
 newtype TypeEnv = TypeEnv (M.Map String Scheme)
 
 remove :: Var -> TypeEnv -> TypeEnv
@@ -221,8 +223,6 @@ declareMono v t e = add v (Scheme [] t) e
 
 
 
-
-
 instance Show Type where
     showsPrec _ x = shows (prType x)
 
@@ -239,6 +239,11 @@ prParenType t = case t of
                     TFun _ _  -> PP.parens (prType t)
                     _         -> prType t
 
+
+
+ -- TESTING --
+
+
 printTestExp :: Exp -> IO()
 printTestExp e = putStrLn $ testExp e
 
@@ -246,6 +251,44 @@ testExp :: Exp -> String
 testExp e = case (runTI (ti (TypeEnv M.empty) e)) of
         ((Left error),_) -> show e ++ "\n-- ERROR: " ++ error
         ((Right t),_)    -> show e ++ " :: " ++ show t
+
+eZero   = ELit (ILit 0)
+eOne    = ELit (ILit 1)
+eTwo    = ELit (ILit 2)
+eThree  = ELit (ILit 3)
+eFour   = ELit (ILit 4)
+eFive   = ELit (ILit 5)
+eSix    = ELit (ILit 6)
+eSeven  = ELit (ILit 7)
+eEight  = ELit (ILit 8)
+eNine   = ELit (ILit 9)
+x       = EVar "x"
+y       = EVar "x"
+z       = EVar "x"
+
+-- Cons 5 Nil -> [5]
+list1 = (EApp (EApp (EConstr "Cons") (eFive)) (EConstr "Nil"))
+
+-- Cons 5 (Cons 2 Nil) -> [5,2]
+list2 = (EApp
+            (EApp (EConstr "Cons") (eFive))
+            (EApp (EApp (EConstr "Cons") (eTwo)) (EConstr "Nil"))
+        )
+
+-- Cons 5 (Cons 2 (Cons 3 Nil)) -> [5,2,3]
+list3 = (EApp
+            (EApp (EConstr "Cons") (eFive))
+            (EApp (EApp (EConstr "Cons") (eTwo))
+            (EApp (EApp (EConstr "Cons") (eThree)) (EConstr "Nil")))
+        )
+
+-- Cons 5 (Cons 2 (Cons 3 (Cons 1))) -> [5,2,3,1]
+list4 = (EApp
+            (EApp (EConstr "Cons") (eFive))
+            (EApp (EApp (EConstr "Cons") (eTwo))
+            (EApp (EApp (EConstr "Cons") (eThree))
+            (EApp (EApp (EConstr "Cons") (eOne)) (EConstr "Nil"))))
+        )
 
 -- test expressions
 te1  = ELit (ILit 3)
@@ -279,6 +322,16 @@ te8  = ECase (ELit(ILit 2)) [(PLit(ILit 2), ELit(CLit 'i')) ,
 te9  = ECase (ELit(CLit '2')) [(PLit(ILit 2), ELit(CLit 'i')) ,
                                (PLit(ILit 3), ELit(CLit 'u'))
                               ]
+
+te10 = EApp (EApp (EConstr "Cons") (eFive)) (EConstr "Nil")
+
+--te11 = EApp (EVar "sum") list1
+--           where p1    = PConstr "Cons" ["x", "xs2"]
+--                 e1    = EBinOp Add (EVar "x")
+--                         (EApp (EVar "sum") (EVar "xs2"))
+--                 p2    = PConstr "Nil" []
+--                 ecase = ECase (EVar "xs") [(p1, e1), (p2, eZero)]
+--                 dSum  = DFunc "sum" ["xs"] ecase
 
 main = do putStrLn $ 
             "\n --- TESTING EXPRESSIONS --- \n\n" ++
