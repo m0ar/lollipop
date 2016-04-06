@@ -135,10 +135,6 @@ match p v = matchConstr p v
 
 -- help function for match which handledes pattern matching for constructors
 matchConstr :: Pattern -> Value -> Maybe [(Var, Value)]
-matchConstr (PConstr "Cons" [(PVar var), p@(PConstr pcid' ps')])
-            (VConstr "Cons" [val, v@(VConstr vcid' vs')])
-    | pcid' == vcid' = Just $ [(var,val)]++(matchCons p v)
-    | otherwise      = Nothing
 matchConstr (PConstr pcid ps) (VConstr vcid vs)
     | pcid == vcid = fmap concat $ sequence (zipWith match ps vs)
     | otherwise    = Nothing
