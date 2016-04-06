@@ -13,7 +13,7 @@ function nt : Int ;
 nt := not True ;
 
 function dv : Int ;
-dv := -5 - -2 ;
+dv := 5 + 2 ;
 
 function pw : Int ;
 pw := 5 ^ (-2) ;
@@ -130,3 +130,15 @@ foldr f b (x:xs) := f x (foldr f b xs) ;
 -- Sum of first 100 naturals
 function main : Int ;
 main := foldr (\x -> \y -> (x+y)) 0 (take 100 naturals) ;
+
+function testPat : Int -> [Int] -> [Int] ;
+testPat := pat 0 dv 2 ;
+
+function lazy : Int ;
+lazy := oneFsc 5 infy ;
+
+function oneFsc : Int ;
+oneFsc x y := x ;
+
+function infy : Int ;
+infy := 1 + infy ;
