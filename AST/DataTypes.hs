@@ -1,4 +1,4 @@
-module DataTypes where
+module AST.DataTypes where
 
 
 type Program = [Declaration]

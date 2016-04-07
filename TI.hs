@@ -1,10 +1,11 @@
 
 import qualified Data.Map as M
 import qualified Data.Set as S
+import Data.Maybe
 import Control.Monad.State
 import Control.Monad.Except
-import Data.Map(Map,insert)
-import DataTypes
+import Data.Map(Map)
+import AST.DataTypes as DataTypes
 import qualified Text.PrettyPrint as PP
 
 data Type =
@@ -32,7 +33,7 @@ instance Types Type where
     ftv (TFun t1 t2)        = ftv t1 `S.union` ftv t2
     apply s (TVar n)        = fromMaybe (TVar n) (M.lookup n s)
     apply s (TFun t1 t2)    = TFun (apply s t1) (apply s t2)
-    apply s t               = t
+    apply _ t               = t
 
 instance Types Scheme where
     ftv (Scheme vars t)      =  ftv t `S.difference` S.fromList vars
@@ -47,14 +48,11 @@ instance Types a => Types [a] where
 -- Invariant: All types in any substitution s must be actual wrt. s
 type Subst = Map Var Type
 
-nullSubst :: Subst
-nullSubst = M.empty
-
 composeSubst :: Subst -> Subst -> Subst
 composeSubst s1 s2   = M.map (apply s1) s2 `M.union` s1
 
 
-data TIEnv = TIEnv {}
+--data TIEnv = TIEnv {} remove?
 data TIState = TIState {tiSupply :: Int,
                         tiSubst  :: Subst}
 
@@ -95,8 +93,8 @@ unify t1 t2 = do
     go TDouble TDouble           = return TDouble
     go TChar TChar               = return TChar
     go TString TString           = return TString
-    go t1 t2                     = throwError $ "types do not unify: " ++ show t1 ++
-                                        " vs. " ++ show t2
+    go e1 e2                     = throwError $ "types do not unify: " ++ show e1 ++
+                                        " vs. " ++ show e2
 
 unifyAll :: [Type] -> TI Type
 unifyAll [t] = return t
@@ -116,7 +114,7 @@ ti ::  TypeEnv -> Exp -> TI Type
 ti (TypeEnv env) (EVar v) = case M.lookup v env of
         Nothing -> throwError $ "unbound variable: " ++ v
         Just v' -> instantiate v'
-ti env (ELit l)           = case l of
+ti _ (ELit l)           = case l of
     ILit _ -> return TInt
     DLit _ -> return TDouble
     CLit _ -> return TChar
@@ -325,5 +323,5 @@ te10 = EApp (EApp (EConstr "Cons") eFive) (EConstr "Nil")
 
 main = putStrLn $ 
     "\n --- TESTING EXPRESSIONS --- \n\n" ++
-    concat (map ((++ "\n\n") . testExp
-        [te1,te2,te3,te4,te5,te6,te7,te8,te9]))
+    concatMap ((++ "\n\n") . testExp)
+        [te1,te2,te3,te4,te5,te6,te7,te8,te9]
