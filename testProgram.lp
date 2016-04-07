@@ -76,7 +76,7 @@ function tpl3 : Int -> (Int, Int, Int) -> Int ;
 tpl3 x (3, y, 3) := 6-3 ;
 
 function one : Int ;
-one := 1 ;
+one (x,y) := (y,x) ;
 
 function pat : Int -> Int -> Int -> Int ;
 pat 0 x 2 := 5 ;

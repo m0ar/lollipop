@@ -48,3 +48,10 @@ last (x:xs) := last xs ;
 function concat : [a] -> [a] -> [a] ;
 concat []     ys := ys ;
 concat (x:xs) ys := cons x (concat xs ys) ;
+
+
+function fib : Int -> Int ;
+fib 0 := 0 ;
+fib 1 := 1 ;
+fib n := fib (n-2) +
+         fib (n-1) ;
