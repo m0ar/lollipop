@@ -135,10 +135,10 @@ function testPat : Int -> [Int] -> [Int] ;
 testPat := pat 0 dv 2 ;
 
 function lazy : Int ;
-lazy := oneFsc 5 infy ;
+lazy := oneFsc infy 5;
 
 function oneFsc : Int ;
-oneFsc x y := x ;
+oneFsc x y := y ;
 
 function infy : Int ;
 infy := 1 + infy ;

@@ -62,8 +62,8 @@ cGuard :: A.Guards -> A.Exp
 cGuard (A.DGuards1 e1 e2 gs) = cGuard (A.DGuards2 e1 e2 gs)
 cGuard (A.DGuards2 e1 e2 gs) = A.ECase e2 (A.ECases2 (A.PConstrEmp (TypeId "True")) e1 (cGuard' gs))
     where
-        cGuard' (A.DGuards2 e1 e2 gs) = (A.ECases2 (A.PConstrEmp (TypeId "False")) (cGuard gs) A.ECases3)
-        cGuard' (A.DExpGuard e)       = (A.ECases2 A.PWild e A.ECases3)
+        cGuard' (A.DGuards2 _ _ _) = (A.ECases2 A.PWild (cGuard gs) A.ECases3)
+        cGuard' (A.DExpGuard e)        = (A.ECases2 A.PWild e A.ECases3)
 cGuard (A.DExpGuard e)       = A.ECase e ((A.ECases2 (A.PWild)) e (A.ECases3))
                             -- last one is "otherwise"-case
 
