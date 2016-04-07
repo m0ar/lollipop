@@ -117,8 +117,8 @@ EEQ.            Exp4            ::= Exp4 "==" Exp5 ;
 ENEQ.           Exp4            ::= Exp4 "!=" Exp5 ;
 EAND.           Exp3            ::= Exp3 "&&" Exp4 ;
 EOR.            Exp2            ::= Exp2 "||" Exp3 ;
-EBind.          Exp1            ::= Exp2 ">>=" Exp2 ;
-Eseq.           Exp1            ::= Exp2 ">>" Exp2 ;
+EBind.          Exp1            ::= Exp2 ">>=" Exp1 ;
+Eseq.           Exp1            ::= Exp2 ">>" Exp1 ;
 ECase.          Exp1            ::= "case" Exp "of" Cases ;
 EIf.            Exp1            ::= "if" Exp2 "then" Exp2 "else" Exp ;
 EAbs.           Exp1            ::= "\\" Id "->" Exp ;
@@ -162,9 +162,9 @@ TLFun.          Type            ::= "(" Type "-o" Type ")" ;
 
 separator Type "," ;
 
-STypeIdent.     TypeIdent        ::= TypeId ;
-LiTypeIdent.    TypeIdent        ::= Id ;
+STypeIdent.     TypeIdent       ::= TypeId ;
+LiTypeIdent.    TypeIdent       ::= Id ;
 
 -- Haskell-style comments for now
 comment "--" ;
-comment "{-" "-}" ;
+comment "{-}" "-}" ;
