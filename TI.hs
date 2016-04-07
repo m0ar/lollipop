@@ -7,9 +7,6 @@ import Data.Map(Map,insert)
 import DataTypes
 import qualified Text.PrettyPrint as PP
 
-
-
-
 data Type =
     TVar Var
     | TInt
@@ -33,19 +30,17 @@ instance Types Type where
     ftv TChar               = S.empty
     ftv TString             = S.empty
     ftv (TFun t1 t2)        = ftv t1 `S.union` ftv t2
-    apply s (TVar n)        = case M.lookup n s of
-                               Nothing  -> TVar n
-                               Just t   -> t
+    apply s (TVar n)        = fromMaybe (TVar n) (M.lookup n s)
     apply s (TFun t1 t2)    = TFun (apply s t1) (apply s t2)
     apply s t               = t
 
 instance Types Scheme where
-    ftv (Scheme vars t)      =  (ftv t) `S.difference` (S.fromList vars)
+    ftv (Scheme vars t)      =  ftv t `S.difference` S.fromList vars
     apply s (Scheme vars t)  =  Scheme vars (apply (foldr M.delete s vars) t)
 
 instance Types a => Types [a] where
-    apply s  =  map (apply s)
-    ftv l    =  foldr S.union S.empty (map ftv l)
+    apply s =  map (apply s)
+    ftv     =  foldr (S.union . ftv) S.empty
 
 
 -- A type t is actual wrt. a substitution s if no type variables in t are mapped in s
@@ -56,7 +51,7 @@ nullSubst :: Subst
 nullSubst = M.empty
 
 composeSubst :: Subst -> Subst -> Subst
-composeSubst s1 s2   = (M.map (apply s1) s2) `M.union` s1
+composeSubst s1 s2   = M.map (apply s1) s2 `M.union` s1
 
 
 data TIEnv = TIEnv {}
@@ -118,8 +113,7 @@ varBind u t | t == TVar u        =  return t
                     return t
 
 ti ::  TypeEnv -> Exp -> TI Type
-ti (TypeEnv env) (EVar v) = do
-    case M.lookup v env of
+ti (TypeEnv env) (EVar v) = case M.lookup v env of
         Nothing -> throwError $ "unbound variable: " ++ v
         Just v' -> instantiate v'
 ti env (ELit l)           = case l of
@@ -132,7 +126,7 @@ ti env (EBinOp u e1 e2) = undefined -- TODO
 ti env (ELam v e)         = do
     t0 <- newTyVar "a"
     let TypeEnv env' = remove v env
-        env'' = TypeEnv (env' `M.union` (M.singleton v (Scheme [] t0)))
+        env'' = TypeEnv (env' `M.union` M.singleton v (Scheme [] t0))
     t1 <- ti env'' e
     return (TFun t0 t1)
 ti env (EConstr id) = undefined -- TODO
@@ -157,8 +151,7 @@ ti env (ELetIn v e1 e2)   = do
     let TypeEnv env' = remove v env
         t'           = generalize env t1
         env''        = TypeEnv (M.insert v t' env')
-    t2 <- ti env'' e2
-    return t2
+    ti env'' e2
 
 -- Returns the free expression variables in patterns
 freeVarsP :: Pattern -> [Var]
@@ -199,7 +192,7 @@ instance Types TypeEnv where
 
 generalize :: TypeEnv -> Type -> Scheme
 generalize env t = Scheme vars t
-    where vars = S.toList ((ftv t) `S.difference` (ftv env))
+    where vars = S.toList (ftv t `S.difference` ftv env)
 
 instantiate :: Scheme -> TI Type 
 instantiate (Scheme vars t) = do  
@@ -218,7 +211,7 @@ declarePoly :: String -> Type -> TypeEnv -> TypeEnv
 declarePoly v t e = add  v (generalize e t) e
 
 declareMono :: String -> Type -> TypeEnv -> TypeEnv
-declareMono v t e = add v (Scheme [] t) e 
+declareMono v t = add v (Scheme [] t)
 
 
 
@@ -248,9 +241,9 @@ printTestExp :: Exp -> IO()
 printTestExp e = putStrLn $ testExp e
 
 testExp :: Exp -> String
-testExp e = case (runTI (ti (TypeEnv M.empty) e)) of
-        ((Left error),_) -> show e ++ "\n-- ERROR: " ++ error
-        ((Right t),_)    -> show e ++ " :: " ++ show t
+testExp e = case runTI (ti (TypeEnv M.empty) e) of
+        (Left error,_) -> show e ++ "\n-- ERROR: " ++ error
+        (Right t,_)    -> show e ++ " :: " ++ show t
 
 eZero   = ELit (ILit 0)
 eOne    = ELit (ILit 1)
@@ -267,31 +260,28 @@ y       = EVar "x"
 z       = EVar "x"
 
 -- Cons 5 Nil -> [5]
-list1 = (EApp (EApp (EConstr "Cons") (eFive)) (EConstr "Nil"))
+list1 = EApp (EApp (EConstr "Cons") eFive) (EConstr "Nil")
 
 -- Cons 5 (Cons 2 Nil) -> [5,2]
-list2 = (EApp
-            (EApp (EConstr "Cons") (eFive))
-            (EApp (EApp (EConstr "Cons") (eTwo)) (EConstr "Nil"))
-        )
+list2 = EApp
+            (EApp (EConstr "Cons") eFive)
+            (EApp (EApp (EConstr "Cons") eTwo) (EConstr "Nil"))
 
 -- Cons 5 (Cons 2 (Cons 3 Nil)) -> [5,2,3]
-list3 = (EApp
-            (EApp (EConstr "Cons") (eFive))
-            (EApp (EApp (EConstr "Cons") (eTwo))
-            (EApp (EApp (EConstr "Cons") (eThree)) (EConstr "Nil")))
-        )
+list3 = EApp
+            (EApp (EConstr "Cons") eFive)
+            (EApp (EApp (EConstr "Cons") eTwo)
+            (EApp (EApp (EConstr "Cons") eThree) (EConstr "Nil")))
 
 -- Cons 5 (Cons 2 (Cons 3 (Cons 1))) -> [5,2,3,1]
-list4 = (EApp
-            (EApp (EConstr "Cons") (eFive))
-            (EApp (EApp (EConstr "Cons") (eTwo))
-            (EApp (EApp (EConstr "Cons") (eThree))
-            (EApp (EApp (EConstr "Cons") (eOne)) (EConstr "Nil"))))
-        )
+list4 = EApp
+            (EApp (EConstr "Cons") eFive)
+            (EApp (EApp (EConstr "Cons") eTwo)
+            (EApp (EApp (EConstr "Cons") eThree)
+            (EApp (EApp (EConstr "Cons") eOne) (EConstr "Nil"))))
 
 -- test expressions
-te1  = ELit (ILit 3)
+te1  = ELit $ ILit 3
 
 te2  = ELetIn "id" (ELam "x" (EVar "x"))
        (EVar "id")
@@ -323,7 +313,7 @@ te9  = ECase (ELit(CLit '2')) [(PLit(ILit 2), ELit(CLit 'i')) ,
                                (PLit(ILit 3), ELit(CLit 'u'))
                               ]
 
-te10 = EApp (EApp (EConstr "Cons") (eFive)) (EConstr "Nil")
+te10 = EApp (EApp (EConstr "Cons") eFive) (EConstr "Nil")
 
 --te11 = EApp (EVar "sum") list1
 --           where p1    = PConstr "Cons" ["x", "xs2"]
@@ -333,7 +323,7 @@ te10 = EApp (EApp (EConstr "Cons") (eFive)) (EConstr "Nil")
 --                 ecase = ECase (EVar "xs") [(p1, e1), (p2, eZero)]
 --                 dSum  = DFunc "sum" ["xs"] ecase
 
-main = do putStrLn $ 
-            "\n --- TESTING EXPRESSIONS --- \n\n" ++
-            (concat (map ((++ "\n\n") . testExp)
-            [te1,te2,te3,te4,te5,te6,te7,te8,te9]))
+main = putStrLn $ 
+    "\n --- TESTING EXPRESSIONS --- \n\n" ++
+    concat (map ((++ "\n\n") . testExp
+        [te1,te2,te3,te4,te5,te6,te7,te8,te9]))
