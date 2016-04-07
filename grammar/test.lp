@@ -127,3 +127,6 @@ testLogicalNeg x := not (not (x > 3)) ;
 
 function testNegative : Int -> Bool ;
 testNegative x := x == -3 ;
+
+function testSeq : IO ;
+testSeq := print "hej" >> print "hello" >> print "nihao" ;

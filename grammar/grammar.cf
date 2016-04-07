@@ -97,7 +97,7 @@ EVar.           Exp11           ::= Id ;
 ETuple.         Exp11           ::= Tuple ;
 ELiteral.       Exp11           ::= Literal ;
 EConst.         Exp11           ::= Cons ;
---EListComp.      Exp11           ::= "[" Exp "|" LCPatterns "]" ;
+EListComp.      Exp11           ::= "[" Exp "|" LCPatterns "]" ;
 EList.          Exp11           ::= "[" [Exp] "]" ;
 EEmptyList.     Exp11           ::= "[]" ;
 ELet.           Exp11           ::= LetBinding ;
@@ -140,15 +140,21 @@ Tuple3.         Tuple           ::= "(" Exp "," Exp "," Exp ")" ;
 -- Structure of list comprehensions input set(s) and predicates.
 -- The elements drawn from the input set are either bound
 -- to an identifier or a wild-card.
-{-- ELCPatterns1.   LCPatterns      ::= Pat "<-" Id ;
-ELCPatterns2.   LCPatterns      ::= Pat "<-" Id "," LCPatterns ;
-ELCPatterns3.   LCPatterns      ::= Pat "<-" Id "," Predicate ;
-ELCPatterns4.   LCPatterns      ::= Pat "<-" "[" [Literal] "]" ;
-ELCPatterns5.   LCPatterns      ::= Pat "<-" "[" [Literal] "]" "," LCPatterns ;
-ELCPatterns6.   LCPatterns      ::= Pat "<-" "[" [Literal] "]" "," Predicate ; --}
+ELCPatterns1.   LCPatterns      ::= Atom "<-" Id ;
+ELCPatterns2.   LCPatterns      ::= Atom "<-" Id "," LCPatterns ;
+ELCPatterns3.   LCPatterns      ::= Atom "<-" Id "," Predicate ;
+ELCPatterns4.   LCPatterns      ::= Atom "<-" "[" [Literal] "]" ;
+ELCPatterns5.   LCPatterns      ::= Atom "<-" "[" [Literal] "]" "," LCPatterns ;
+ELCPatterns6.   LCPatterns      ::= Atom "<-" "[" [Literal] "]" "," Predicate ;
 separator nonempty Literal "," ;
 LCPredicate.    Predicate       ::= Exp ;
 LCPredicates.   Predicate       ::= Exp "," Predicate ;
+
+-- the elements drawn from the input set in list comprehensions.
+ Awild.         Atom            ::= "_" ;
+ AId.           Atom            ::= Id ;
+ AConst.        Atom            ::= Cons ;
+ ALit.          Atom            ::= Literal ;
 
 -- Let bindings, this is requires an additional ';' at the very end of the binding.
 ELetBinding1.   LetBinding      ::= "let" [LetBinding1] "in" Exp ";" ;
