@@ -14,6 +14,7 @@ data Type =
     | TDouble
     | TChar
     | TString
+    | TBool
     | TFun Type Type
     | TConstr String
     deriving (Eq, Ord)
@@ -31,6 +32,7 @@ instance Types Type where
     ftv TDouble             = S.empty
     ftv TChar               = S.empty
     ftv TString             = S.empty
+    ftv TBool               = S.empty
     ftv (TFun t1 t2)        = ftv t1 `S.union` ftv t2
     ftv (TConstr _)         = S.empty
     apply s (TVar n)        = fromMaybe (TVar n) (M.lookup n s)
@@ -95,6 +97,7 @@ unify t1 t2 = do
     go TDouble TDouble           = return TDouble
     go TChar TChar               = return TChar
     go TString TString           = return TString
+    go TBool TBool               = return TBool
     go e1 e2                     = throwError $ "types do not unify: " ++ show e1 ++
                                         " vs. " ++ show e2
 
@@ -230,6 +233,7 @@ prType TInt       = PP.text "Int"
 prType TDouble    = PP.text "Double"
 prType TChar      = PP.text "Char"
 prType TString    = PP.text "String"
+prType TBool      = PP.text "Bool"
 prType (TConstr s)= PP.text ("Constructor " ++ s)
 prType (TFun t s) = prParenType t PP.<+> PP.text "->" PP.<+> prType s
 
