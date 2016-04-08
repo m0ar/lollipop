@@ -1,5 +1,5 @@
 function addL : [Int] -> [Int] -> [Int] ;
-great ys xs := ys ++ xs ;
+great x := x:[2,3,4] ;
 
 function great : Bool ;
 great := 7 < 8 || 3 > 6 ;
