@@ -54,7 +54,7 @@ buildEnv ""   = do
 buildEnv file = do
   fc   <- readFile (file++".lp")
   sg   <- readFile "sugar.lp"
-  prog <- case pProgram (myLexer $ sg ++ " \n" ++ fc) of
+  prog <- case pProgram (myLexer $ fc ++ " \n" ++ sg) of
            Bad s    -> do putStrLn "Parse error!"
                           error s
            Ok  tree -> return tree

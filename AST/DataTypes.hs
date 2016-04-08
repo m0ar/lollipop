@@ -66,8 +66,8 @@ instance Show Op where
         Mul  -> "#mul"
         Pow  -> "#pow"
         Div  -> "#div"
-        Bind -> "bind"
-        Then -> "then"
+        Bind -> "#bind"
+        Then -> "#then"
 
 instance Show Lit where
     show lit = case lit of
