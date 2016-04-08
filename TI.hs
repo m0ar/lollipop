@@ -124,7 +124,11 @@ ti _ (ELit l)           = case l of
     DLit _ -> return TDouble
     CLit _ -> return TChar
     SLit _ -> return TString
-ti env (EUnOp o e) = undefined -- TODO
+ti env (EUnOp o e) = case o of
+    Not -> do 
+        t1 <- ti env e 
+        t2 <- ti env (EConstr "True")
+        unify t1 t2
 ti env (EBinOp u e1 e2) = undefined -- TODO
 ti env (ELam v e)         = do
     t0 <- newTyVar "a"
@@ -132,7 +136,10 @@ ti env (ELam v e)         = do
         env'' = TypeEnv (env' `M.union` M.singleton v (Scheme [] t0))
     t1 <- ti env'' e
     return (TFun t0 t1)
-ti env (EConstr id) = return (TConstr id) -- TODO
+ti env (EConstr id) = case id of
+    "False" -> return TBool
+    "True"  -> return TBool
+    _ -> return (TConstr id)
 ti env (ECase e0 pes)     = do
     t0 <- ti env e0
     let go (p, e) = do
@@ -293,6 +300,7 @@ list4 = EApp
 -- test expressions
 te1  = ELit $ ILit 3
 
+
 te2  = ELetIn "id" (ELam "x" (EVar "x"))
        (EVar "id")
 
@@ -323,7 +331,11 @@ te9  = ECase (ELit(CLit '2')) [(PLit(ILit 2), ELit(CLit 'i')) ,
                                (PLit(ILit 3), ELit(CLit 'u'))
                               ]
 
-te10 = EApp (EApp (EConstr "Cons") eFive) (EConstr "Nil")
+te10 = EConstr "True"
+
+te11 = EUnOp Not $ EConstr "False"
+
+
 
 --te11 = EApp (EVar "sum") list1
 --           where p1    = PConstr "Cons" ["x", "xs2"]
