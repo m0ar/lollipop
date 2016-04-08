@@ -15,6 +15,9 @@ import ParGrammar
 import qualified AbsGrammar as G
 import ErrM
 
+import Data.Map
+import qualified Data.Map as M
+
 import System.Environment as E
 
 main = do
@@ -44,12 +47,14 @@ repl file env = do
                v      -> print v >> loop
 
 
+buildEnv :: String -> IO Env
 buildEnv ""   = do
   putStrLn "No file loaded"
   return startEnv
 buildEnv file = do
-  fc <- readFile (file++".lp")
-  prog <- case pProgram (myLexer fc) of
+  fc   <- readFile (file++".lp")
+  sg   <- readFile "sugar.lp"
+  prog <- case pProgram (myLexer $ sg ++ " \n" ++ fc) of
            Bad s    -> do putStrLn "Parse error!"
                           error s
            Ok  tree -> return tree
