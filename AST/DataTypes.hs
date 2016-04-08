@@ -59,16 +59,16 @@ instance Num Lit where
 instance Show Op where
     show op = case op of
         Concat -> "#concat"
-        Gt   -> "#gt"
-        Eq   -> "#eq"
-        Not  -> "#not"
-        Or   -> "#or"
-        Add  -> "#add"
-        Mul  -> "#mul"
-        Pow  -> "#pow"
-        Div  -> "#div"
-        Bind -> "#bind"
-        Then -> "#then"
+        Gt     -> "#gt"
+        Eq     -> "#eq"
+        Not    -> "#not"
+        Or     -> "#or"
+        Add    -> "#add"
+        Mul    -> "#mul"
+        Pow    -> "#pow"
+        Div    -> "#div"
+        Bind   -> "#bind"
+        Then   -> "#then"
 
 instance Show Lit where
     show lit = case lit of

@@ -31,7 +31,7 @@ startEnv :: Env
 startEnv = printF $ readLnF $ addF $ mulF $ bindF $ powF
                   $ thenF $ true $ false $ tuple $ truple
                   $ nil $ cons $ undef $ gtF $ divF
-                  $ eqF $ notF $ orF $ consF $ M.empty
+                  $ eqF $ notF $ orF $ consF $ concatF $ M.empty
     where   printF  = M.insert "print" $ VFun $ \(VString s) -> VIO $ print s >> return (VConstr "()" []) -- TODO remove VString
             readLnF = M.insert "readLine" $ VIO $ fmap VString readLn
             concatF = M.insert "#concat" $ VFun $ \v1 -> VFun $ \v2 -> vConcat v1 v2
@@ -65,7 +65,7 @@ run act = case act of
     VIO a -> a
     _     -> error "faulty type"
 
-vConcat :: Value -> Value -> Value 
+vConcat :: Value -> Value -> Value
 vConcat (VConstr "Nil" []) v2 = v2
 vConcat (VConstr "Cons" [v1, vs]) v2 = VConstr "Cons" [v1, (vConcat vs v2)]
 
