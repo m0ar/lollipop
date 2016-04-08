@@ -15,6 +15,7 @@ data Type =
     | TChar
     | TString
     | TFun Type Type
+    | TConstr String
     deriving (Eq, Ord)
 
 data Scheme = Scheme [Var] Type
@@ -32,6 +33,7 @@ instance Types Type where
     ftv TString             = S.empty
     ftv (TFun t1 t2)        = ftv t1 `S.union` ftv t2
     apply s (TVar n)        = fromMaybe (TVar n) (M.lookup n s)
+    ftv (TConstr _)         = S.empty
     apply s (TFun t1 t2)    = TFun (apply s t1) (apply s t2)
     apply _ t               = t
 
@@ -127,7 +129,7 @@ ti env (ELam v e)         = do
         env'' = TypeEnv (env' `M.union` M.singleton v (Scheme [] t0))
     t1 <- ti env'' e
     return (TFun t0 t1)
-ti env (EConstr id) = undefined -- TODO
+ti env (EConstr id) = return (TConstr id) -- TODO
 ti env (ECase e0 pes)     = do
     t0 <- ti env e0
     let go (p, e) = do
@@ -142,6 +144,11 @@ ti env (EApp e1 e2)       = do
     t1 <- ti env e1
     t2 <- ti env e2
     a  <- newTyVar "a"
+--    case e1 of
+--        EConstr "Cons" -> return t2
+--        _              -> case e2 of
+--            EConstr "Nil" -> return t1
+--            _             -> unify (TFun t2 a) t1
     unify (TFun t2 a) t1
     return a
 ti env (ELetIn v e1 e2)   = do
@@ -223,6 +230,7 @@ prType TInt       = PP.text "Int"
 prType TDouble    = PP.text "Double"
 prType TChar      = PP.text "Char"
 prType TString    = PP.text "String"
+prType (TConstr s)= PP.text ("Constructor " ++ s)
 prType (TFun t s) = prParenType t PP.<+> PP.text "->" PP.<+> prType s
 
 prParenType :: Type -> PP.Doc
