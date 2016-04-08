@@ -42,7 +42,7 @@ type ConstrID = String
 data Lit = ILit Int
         | DLit Double
         | CLit Char
-        | SLit [Char]
+        | SLit String
     deriving Eq
 
 
@@ -86,8 +86,21 @@ instance Show Exp where
         EVar s             -> s
         ELit l             -> show l
         EConstr cid        -> show cid
+        EUnOp op e         -> case op of
+            Not -> "!" ++ show e
         EBinOp op e1 e2    -> case op of
-            Add -> show e1 ++ " + " ++ show e2
+            Add  -> disp "+"
+            Sub  -> disp "-"
+            Mul  -> disp "*"
+            Div  -> disp "/"
+            Bind -> disp "<-"
+            Then -> disp ">>"
+            Gt   -> disp ">"
+            Eq   -> disp "=="
+            Or   -> disp "||"
+            Pow  -> disp "^"
+            where 
+                disp op = show e1 ++ " " ++ op ++ " " ++ show e2 
         ELam v e           -> "\\" ++ v ++ " -> " ++ show e
         ECase e ps         -> "case " ++ show e ++ " of \n" ++ (concatMap show ps)
         ELetIn v e1 e2     -> "let " ++ v ++ " = " ++ show e1 ++ " in \n   " ++ show e2
