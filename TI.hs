@@ -15,6 +15,7 @@ data Type =
     | TChar
     | TString
     | TBool
+    | TList Type
     | TFun Type Type
     | TConstr String
     deriving (Eq, Ord)
@@ -35,6 +36,7 @@ instance Types Type where
     ftv TBool               = S.empty
     ftv (TFun t1 t2)        = ftv t1 `S.union` ftv t2
     ftv (TConstr _)         = S.empty
+    ftv (TList t)           = ftv t
     apply s (TVar n)        = fromMaybe (TVar n) (M.lookup n s)
     apply s (TFun t1 t2)    = TFun (apply s t1) (apply s t2)
     apply _ t               = t
@@ -91,14 +93,15 @@ unify t1 t2 = do
         m1 <- go l1 l2
         m2 <- go r1 r2
         return $ TFun m1 m2
-    go (TVar u) t                = varBind u t
-    go t (TVar u)                = varBind u t
-    go TInt TInt                 = return TInt
-    go TDouble TDouble           = return TDouble
-    go TChar TChar               = return TChar
-    go TString TString           = return TString
-    go TBool TBool               = return TBool
-    go e1 e2                     = throwError $ "types do not unify: " ++ show e1 ++
+    go (TVar u) t               = varBind u t
+    go t (TVar u)               = varBind u t
+    go TInt TInt                = return TInt
+    go TDouble TDouble          = return TDouble
+    go TChar TChar              = return TChar
+    go TString TString          = return TString
+    go TBool TBool              = return TBool
+    go (TList a) (TList b)      = unify a b
+    go e1 e2                    = throwError $ "types do not unify: " ++ show e1 ++
                                         " vs. " ++ show e2
 
 unifyAll :: [Type] -> TI Type
