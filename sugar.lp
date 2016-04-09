@@ -20,13 +20,11 @@ div x y
 function mod : Int -> Int -> Int ;
 mod x y := x - y * div x y ;
 
-{-
 function odd : Int -> Boolean ;
 odd x := mod x 2 == 1 ;
 
 function even : Int -> Boolean ;
 even x := mod x 2 == 0 ;
--}
 
 function fst : (a,b) -> a ;
 fst (x,y) := x ;
