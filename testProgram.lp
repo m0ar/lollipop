@@ -1,3 +1,6 @@
+function addL : [Int] -> [Int] -> [Int] ;
+great x := x:[2,3,4] ;
+
 function great : Bool ;
 great := 7 < 8 || 3 > 6 ;
 
@@ -10,7 +13,7 @@ function nt : Int ;
 nt := not True ;
 
 function dv : Int ;
-dv := -5 - -2 ;
+dv := 5 + 2 ;
 
 function pw : Int ;
 pw := 5 ^ (-2) ;
@@ -19,7 +22,10 @@ function putStrLn : Int ;
 putStrLn := (print "hej" >> print " da, ") >> print " mamma"  ;
 
 function testLam : Int -> Int ;
-testLam := (\y -> head y) (tail [1,2,3]) ;
+testLam := (\y -> 2+(head y)) (tail [1,2,3]) ;
+
+function testLamMap : [Int] ;
+testLam := map (\x -> x+2) [1,2,3] ;
 
 function sumFst : [(Int,Int)] -> Int ;
 sumFst (x:[]) := fst x ;
@@ -73,7 +79,7 @@ function tpl3 : Int -> (Int, Int, Int) -> Int ;
 tpl3 x (3, y, 3) := 6-3 ;
 
 function one : Int ;
-one := 1 ;
+one (x,y) := (y,x) ;
 
 function pat : Int -> Int -> Int -> Int ;
 pat 0 x 2 := 5 ;
@@ -107,16 +113,8 @@ function onePat : Int -> Int ;
 pat 2 := 11 ;
 pat _ := 0 ;
 
-function take : Int -> [a] -> [a] ;
-take n (x:xs) := case n of
-    0 -> cons x (take (n-1) xs) ;
-    _ -> nil ; ;
-
-take n [] := nil ; -- There is no way to do empty lists :(
-
-function map : atob -> [a] -> [b] ;
-map f (x:xs) := cons (f x) (map f xs) ;
-map f [] := nil ;
+function testMap : a ;
+testMap := map (print "x") [1,2,3] ;
 
 function naturals : [Int] ;
 naturals := cons 0 (map (\x -> x+1) naturals) ;
@@ -127,4 +125,16 @@ foldr f b (x:xs) := f x (foldr f b xs) ;
 
 -- Sum of first 100 naturals
 function main : Int ;
-main := foldr (\x -> \y -> (x+y)) 0 (take 100 naturals) ;
+main := foldr (\x -> \y -> (x+y)) 0 (take 5 [1,2,3,4,5,6,7,8]) ;
+
+function testPat : Int -> [Int] -> [Int] ;
+testPat := pat 0 dv 2 ;
+
+function lazy : Int ;
+lazy := oneFsc infy 5;
+
+function oneFsc : Int ;
+oneFsc x y := y ;
+
+function infy : Int ;
+infy := 1 + infy ;

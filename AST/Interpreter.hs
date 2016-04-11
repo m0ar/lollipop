@@ -31,9 +31,11 @@ startEnv :: Env
 startEnv = printF $ readLnF $ addF $ mulF $ bindF $ powF
                   $ thenF $ true $ false $ tuple $ truple
                   $ nil $ cons $ undef $ gtF $ divF
-                  $ eqF $ notF $ orF $ M.empty
+                  $ eqF $ notF $ orF $ consF $ concatF $ M.empty
     where   printF  = M.insert "print" $ VFun $ \(VString s) -> VIO $ print s >> return (VConstr "()" []) -- TODO remove VString
             readLnF = M.insert "readLine" $ VIO $ fmap VString readLn
+            concatF = M.insert "#concat" $ VFun $ \v1 -> VFun $ \v2 -> vConcat v1 v2
+            consF   = M.insert "#cons" $ VFun $ \v -> VFun $ \(VConstr cid vs) -> (VConstr "Cons" [v, (VConstr cid vs)])
             addF    = M.insert "#add" $ VFun $ \(VLit x) -> VFun $ \(VLit y) -> VLit $ x+y
             powF    = M.insert "#pow" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ DLit $ (fromIntegral x) ^^ y
             mulF    = M.insert "#mul" $ VFun $ \(VLit x) -> VFun $ \(VLit y) -> VLit $ x*y
@@ -42,8 +44,8 @@ startEnv = printF $ readLnF $ addF $ mulF $ bindF $ powF
             eqF     = M.insert "#eq"  $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> boolToVConstr (x==y)
             notF    = M.insert "#not" $ VFun $ \v -> boolToVConstr $ not $ vConstrToBool v
             orF     = M.insert "#or"  $ VFun $ \v1 -> VFun $ \v2 -> boolToVConstr $ (vConstrToBool v1) || (vConstrToBool v2)
-            bindF   = M.insert "bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> run $ a2 s  -- a1 >>= \s -> a2 s
-            thenF   = M.insert "then" $ VFun $ \(VIO a1) -> VFun $ \(VIO a2) -> VIO $ a1 >> a2
+            bindF   = M.insert "#bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> run $ a2 s  -- a1 >>= \s -> a2 s
+            thenF   = M.insert "#then" $ VFun $ \(VIO a1) -> VFun $ \(VIO a2) -> VIO $ a1 >> a2
             undef   = M.insert "Undefined" $ vConstructor "Undefined" 0 id
             true    = M.insert "True" $ vConstructor "True" 0 id
             false   = M.insert "False" $ vConstructor "False" 0 id
@@ -62,6 +64,10 @@ run :: Value -> IO Value
 run act = case act of
     VIO a -> a
     _     -> error "faulty type"
+
+vConcat :: Value -> Value -> Value
+vConcat (VConstr "Nil" []) v2 = v2
+vConcat (VConstr "Cons" [v1, vs]) v2 = VConstr "Cons" [v1, (vConcat vs v2)]
 
 boolToVConstr :: Bool -> Value
 boolToVConstr b = VConstr (show b) []
@@ -131,19 +137,9 @@ match (PLit pl) (VLit vl)
     | pl == vl  = Just []
     | otherwise = Nothing
 match (PVar pv) var = Just [(pv, var)]
-match p v = matchConstr p v
+match (PConstr pcid ps) (VConstr vcid vs)
+        | pcid == vcid = matchConstr ps vs
+        | otherwise    = Nothing
 
--- help function for match which handledes pattern matching for constructors
-matchConstr :: Pattern -> Value -> Maybe [(Var, Value)]
-matchConstr (PConstr "Cons" [(PVar var), p@(PConstr pcid' ps')])
-            (VConstr "Cons" [val, v@(VConstr vcid' vs')])
-    | pcid' == vcid' = Just $ [(var,val)]++(matchCons p v)
-    | otherwise      = Nothing
-matchConstr (PConstr pcid ps) (VConstr vcid vs)
-    | pcid == vcid = fmap concat $ sequence (zipWith match ps vs)
-    | otherwise    = Nothing
-
--- helper function for matchConstr which binds at the end of a list
-matchCons :: Pattern -> Value -> [(Var, Value)]
-matchCons (PConstr "Nil" _) _                  = []
-matchCons (PConstr "Cons" ((PVar var):vs)) val = [(var, val)]
+matchConstr :: [Pattern] -> [Value] -> Maybe [(Var,Value)]
+matchConstr ps vs = fmap concat $ sequence (zipWith match ps vs)

@@ -1,4 +1,4 @@
-module AST.DataTypes where
+module DataTypes where
 
 
 type Program = [Declaration]
@@ -17,8 +17,10 @@ data Exp = EApp Exp Exp
        | EConstr ConstrID
        | ECase Exp [(Pattern, Exp)]
        | ELetIn Var Exp Exp  -- let var = exp in exp
+       | EListComp Exp [(Var, Value)] Exp
 
-data Op = Add | Sub | Mul | Div | Bind | Then | Gt | Eq | Or | Not | Pow
+data Op = Cons | Concat | Add | Sub | Mul | Div
+        | Gt | Eq | Or | Not | Pow | Bind | Then
 
 data Pattern = PConstr ConstrID [Pattern]
             | PLit Lit
@@ -57,16 +59,18 @@ instance Num Lit where
 
 instance Show Op where
     show op = case op of
-        Gt   -> "#gt"
-        Eq   -> "#eq"
-        Not  -> "#not"
-        Or   -> "#or"
-        Add  -> "#add"
-        Mul  -> "#mul"
-        Pow  -> "#pow"
-        Div  -> "#div"
-        Bind -> "bind"
-        Then -> "then"
+        Concat -> "#concat"
+        Cons   -> "#cons"
+        Gt     -> "#gt"
+        Eq     -> "#eq"
+        Not    -> "#not"
+        Or     -> "#or"
+        Add    -> "#add"
+        Mul    -> "#mul"
+        Pow    -> "#pow"
+        Div    -> "#div"
+        Bind   -> "#bind"
+        Then   -> "#then"
 
 instance Show Lit where
     show lit = case lit of

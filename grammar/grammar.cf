@@ -24,8 +24,8 @@ terminator nonempty Def ";" ;
 DArg.           Arg             ::= Pattern ;
 separator Arg "" ;
 
-DConst.         Cons            ::= "(" TypeId Id [Id] ")" ;
-DConst1.        Cons            ::= TypeId ;
+DConst1.        Cons            ::= "(" TypeId Id [Id] ")" ;
+DConst2.        Cons            ::= TypeId ;
 
 
 -- Structure of guards in function definitions
@@ -37,7 +37,7 @@ DEmptyGuard.    Guards1         ::= ;
 --Type synonyms
 DTSyn1.         TypeSyn         ::= ;
 DTSyn2.         TypeSyn         ::= Type TypeSyn ;
-DTSyn4.         TypeSyn         ::= "(" Type Id [Id] ")" TypeSyn ;
+DTSyn3.         TypeSyn         ::= "(" Type Id [Id] ")" TypeSyn ;
 
 -- The structure of algebraic data types
 DDTypes1.       DataTypes       ::= DPatterns ;
@@ -45,8 +45,8 @@ DDTypes2.       DataTypes       ::= DPatterns "|" DataTypes ;
 
 -- The structure of algebraic data types
 DDTypes3.       DPatterns       ::= TypeIdent DPatterns ;
-DDTypes5.       DPatterns       ::= "(" TypeIdent Id [Id] ")" DPatterns ;
-DDTypes6.       DPatterns       ::= ;
+DDTypes4.       DPatterns       ::= "(" TypeIdent Id [Id] ")" DPatterns ;
+DDTypes5.       DPatterns       ::= ;
 
 
 -- Deriving structure, DerArg can be any TypeClass,
@@ -70,8 +70,8 @@ coercions Pattern 2 ;
 
 -- This is needed since the list definition below is space-separated
 -- for use in constructors
-PList.          ListPat         ::= Pattern ;
-PList1.         ListPat         ::= Pattern "," ListPat ;
+PList1.         ListPat         ::= Pattern ;
+PList2.         ListPat         ::= Pattern "," ListPat ;
 
 [].             [Pattern]       ::= ;
 (:).            [Pattern]       ::= Pattern1 [Pattern] ;
@@ -81,7 +81,7 @@ LitInt.         Literal         ::= Integer ;
 LitDouble.      Literal         ::= Double ;
 LitChar.        Literal         ::= Char ;
 LitString.      Literal         ::= String ;
-
+separator nonempty Literal "," ;
 
 -- Tailor-made token type for type identifiers
 token TypeId upper (letter | digit | '_' | '\'')* ;
@@ -104,6 +104,8 @@ ELet.           Exp11           ::= LetBinding ;
 EApp.           Exp10           ::= Exp10 Exp11 ;
 ELogicalNeg.    Exp9            ::= "not" Exp10 ;
 ENeg.           Exp9            ::= "-" Exp10 ;
+EConcat.        Exp9            ::= Exp9 "++" Exp10 ;
+ECons.          Exp9            ::= Exp9 ":" Exp10 ;
 EPow.           Exp8            ::= Exp8 "^" Exp9 ;
 EMul.           Exp7            ::= Exp7 "*" Exp8 ;
 EDiv.           Exp7            ::= Exp7 "/" Exp8 ;
@@ -111,14 +113,14 @@ EAdd.           Exp6            ::= Exp6 "+" Exp7 ;
 ESub.           Exp6            ::= Exp6 "-" Exp7 ;
 ELt.            Exp5            ::= Exp5 "<" Exp6 ;
 EGt.            Exp5            ::= Exp5 ">" Exp6 ;
-ELEQ.           Exp5            ::= Exp5 "<=" Exp6 ;
-EGEQ.           Exp5            ::= Exp5 ">=" Exp6 ;
-EEQ.            Exp4            ::= Exp4 "==" Exp5 ;
-ENEQ.           Exp4            ::= Exp4 "!=" Exp5 ;
-EAND.           Exp3            ::= Exp3 "&&" Exp4 ;
-EOR.            Exp2            ::= Exp2 "||" Exp3 ;
-EBind.          Exp1            ::= Exp2 ">>=" Exp2 ;
-Eseq.           Exp1            ::= Exp2 ">>" Exp2 ;
+ELEq.           Exp5            ::= Exp5 "<=" Exp6 ;
+EGEq.           Exp5            ::= Exp5 ">=" Exp6 ;
+EEq.            Exp4            ::= Exp4 "==" Exp5 ;
+ENEq.           Exp4            ::= Exp4 "!=" Exp5 ;
+EAnd.           Exp3            ::= Exp3 "&&" Exp4 ;
+EOr.            Exp2            ::= Exp2 "||" Exp3 ;
+EBind.          Exp1            ::= Exp2 ">>=" Exp1 ;
+Eseq.           Exp1            ::= Exp2 ">>" Exp1 ;
 ECase.          Exp1            ::= "case" Exp "of" Cases ;
 EIf.            Exp1            ::= "if" Exp2 "then" Exp2 "else" Exp ;
 EAbs.           Exp1            ::= "\\" Id "->" Exp ;
@@ -132,21 +134,28 @@ ECases3.        Cases1          ::= ;
 
 
 --Fixed size tuples
-Tuple2.         Tuple           ::= "(" Exp "," Exp ")" ;
-Tuple3.         Tuple           ::= "(" Exp "," Exp "," Exp ")" ;
+Tuple1.         Tuple           ::= "(" Exp "," Exp ")" ;
+Tuple2.         Tuple           ::= "(" Exp "," Exp "," Exp ")" ;
 
 -- Structure of list comprehensions input set(s) and predicates.
 -- The elements drawn from the input set are either bound
--- to an identifier or a wild-card.
-{-- ELCPatterns1.   LCPatterns      ::= Pat "<-" Id ;
-ELCPatterns2.   LCPatterns      ::= Pat "<-" Id "," LCPatterns ;
-ELCPatterns3.   LCPatterns      ::= Pat "<-" Id "," Predicate ;
-ELCPatterns4.   LCPatterns      ::= Pat "<-" "[" [Literal] "]" ;
-ELCPatterns5.   LCPatterns      ::= Pat "<-" "[" [Literal] "]" "," LCPatterns ;
-ELCPatterns6.   LCPatterns      ::= Pat "<-" "[" [Literal] "]" "," Predicate ; --}
-separator nonempty Literal "," ;
-LCPredicate.    Predicate       ::= Exp ;
-LCPredicates.   Predicate       ::= Exp "," Predicate ;
+-- to an identifier  or a wild-card.
+ELCPatterns1.   LCPatterns      ::= BoundVar "<-" InputSet ;
+ELCPatterns2.   LCPatterns      ::= BoundVar "<-" InputSet "," LCPatterns ;
+ELCPatterns3.   LCPatterns      ::= BoundVar "<-" InputSet "when" Exp ;
+
+Awild.          BoundVar        ::= "_" ;
+AId.            BoundVar        ::= Id ;
+
+-- input set in list comprehensions
+LInputSet1.     InputSet        ::= Id ;
+LInputSet2.     InputSet        ::= "[" [Literal] "]" ;
+LInputSet3.     InputSet        ::= "[" EnumElem ".." EnumElem "]" ;
+
+-- condensed way of enumerated elements in the list comprehensions
+LEnumElem1.     EnumElem        ::= Integer ;
+LEnumElem2.     EnumElem        ::= Double ;
+LEnumElem3.     EnumElem        ::= Char ;
 
 -- Let bindings, this is requires an additional ';' at the very end of the binding.
 ELetBinding1.   LetBinding      ::= "let" [LetBinding1] "in" Exp ";" ;
@@ -162,8 +171,8 @@ TLFun.          Type            ::= "(" Type "-o" Type ")" ;
 
 separator Type "," ;
 
-STypeIdent.     TypeIdent        ::= TypeId ;
-LiTypeIdent.    TypeIdent        ::= Id ;
+STypeIdent.     TypeIdent       ::= TypeId ;
+LiTypeIdent.    TypeIdent       ::= Id ;
 
 -- Haskell-style comments for now
 comment "--" ;
