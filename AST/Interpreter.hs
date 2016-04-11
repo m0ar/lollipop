@@ -1,9 +1,9 @@
-module Interpreter where
+module AST.Interpreter where
 
 import Data.Maybe
 import Text.Parsec
-import Environment
-import DataTypes
+import AST.Environment
+import AST.DataTypes
 import Data.Map
 import qualified Data.Map as M
 

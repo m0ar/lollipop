@@ -4,8 +4,8 @@
 
 module Converter where
 
-import Interpreter
-import qualified DataTypes as D
+import AST.Interpreter
+import qualified AST.DataTypes as D
 import AbsGrammar
 import qualified AbsGrammar as A
 

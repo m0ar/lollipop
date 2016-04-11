@@ -4,10 +4,10 @@
 -- to run : runghc -iAST/:grammar/ Repl.hs
 
 import System.IO
-import Interpreter
+import AST.Interpreter
 import Converter hiding (main)
-import DataTypes
-import Environment
+import AST.DataTypes
+import AST.Environment
 import qualified AbsGrammar as A
 
 import LexGrammar

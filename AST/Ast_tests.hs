@@ -1,8 +1,8 @@
-module Ast_tests where
+module AST.Ast_tests where
 
-import Interpreter
-import Environment
-import DataTypes
+import AST.Interpreter
+import AST.Environment
+import AST.DataTypes
 import Test.QuickCheck
 
 main = do

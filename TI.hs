@@ -5,7 +5,7 @@ import Data.Maybe
 import Control.Monad.State
 import Control.Monad.Except
 import Data.Map(Map)
-import DataTypes
+import AST.DataTypes
 import qualified Text.PrettyPrint as PP
 
 data Type =
