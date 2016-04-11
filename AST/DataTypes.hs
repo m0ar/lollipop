@@ -106,4 +106,16 @@ instance Show Value where
         (VLit lit)   -> show lit
         (VIO v)      -> "IO!!!!"
         (VFun f)     -> "gotta function"
-        (VConstr cid vs) -> cid ++ " " ++ concat (Prelude.map show vs)
+        (VConstr cid vs) -> case cid of
+            "(,)"   -> "(" ++ (show (vs !! 0)) ++ ", " ++ (show (vs !! 1)) ++ ")"
+            "(,,)"  -> "(" ++ (show (vs !! 0)) ++ ", " ++ (show (vs !! 1)) ++ ", " ++ (show (vs !! 2)) ++ ")"
+            "Nil"   -> "[]"
+            "Cons"  -> case vs !! 1 of
+                (VConstr "Nil" [])  -> "[" ++ (show (vs !! 0)) ++ "]"
+                _                   -> "[" ++ (show (vs !! 0)) ++ ", " ++ (show (vs !! 1)) ++ "]"
+            _       -> cid ++ " " ++ concat (Prelude.map show vs)
+        
+        
+        
+        
+        
