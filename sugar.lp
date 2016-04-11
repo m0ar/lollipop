@@ -114,8 +114,13 @@ map f (x:xs) := (f x):(map f xs) ;
 map f []     := [] ;
 
 function foldr : atobtob -> b -> [a] -> b ;
-foldr f b [] := b ;
+foldr _ b []     := b ;
 foldr f b (x:xs) := f x (foldr f b xs) ;
+
+--  folds a list from the left
+function foldl : atobtob -> b -> [a] -> b ;
+foldl _ a []     := a ;
+foldl f a (x:xs) := foldl f (f a x) xs ;
 
 -- Checks if a list of Bools only
 -- contains Trues
