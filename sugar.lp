@@ -75,8 +75,19 @@ length (x:xs) := 1 + length xs ;
 
 function sumList : [Int] -> Int ;
 sumList []     := 0 ;
-sumList (x:[]) := x ;
 sumList (x:xs) := x + sumList xs ;
+
+function maximum : [a] -> a ;
+maximum (x:[]) := x ;
+maximum (x:xs)
+    := maximum xs when x < head xs
+    := maximum (x:(tail xs)) ;
+
+function minimum : [a] -> a ;
+minimum (x:[]) := x ;
+minimum (x:xs)
+    := minimum xs when x > head xs
+    := minimum (x:(tail xs)) ;
 
 function filter : atobool -> [a] -> [a] ;
 filter _ [] := [] ;
