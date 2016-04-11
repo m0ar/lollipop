@@ -90,8 +90,8 @@ cPattern p = case p of
     A.PEmpty              -> (D.PConstr "Nil" [])
 
 cLPat :: A.ListPat -> D.Pattern
-cLPat (PList1 p lp) = D.PConstr "Cons" [(cPattern p), (cLPat lp)]
-cLPat (PList p )    = D.PConstr "Cons" [(cPattern p), (D.PConstr "Nil" [])]
+cLPat (PList2 p lp) = D.PConstr "Cons" [(cPattern p), (cLPat lp)]
+cLPat (PList1 p )    = D.PConstr "Cons" [(cPattern p), (D.PConstr "Nil" [])]
 
 
 cType :: A.Type -> D.Exp
@@ -110,15 +110,15 @@ cLit (A.LitChar x)     = D.CLit x
 cLit (A.LitString x)   = D.SLit x
 
 cConst :: A.Cons -> D.Exp
-cConst (DConst (TypeId cid) cid' ids) = D.EConstr cid
-cConst (DConst1 (TypeId cid))         = D.EConstr cid
+cConst (DConst1 (TypeId cid) cid' ids) = D.EConstr cid
+cConst (DConst2 (TypeId cid))         = D.EConstr cid
 
 cExp :: A.Exp -> D.Exp
 cExp (A.EVar (A.Id name))   = (D.EVar name)
 cExp (A.ETuple t)           = cTuple t
 cExp (A.ELiteral lit)       = (D.ELit $ cLit lit)
 cExp (A.EConst c)            = case c of
-    (A.DConst1 (A.TypeId name)) -> (D.EConstr name)
+    (A.DConst2 (A.TypeId name)) -> (D.EConstr name)
 -- cExp (A.EListComp e lcps)
 cExp (A.EList ls)           = cList ls
 cExp A.EEmptyList           = D.EConstr "Nil"
@@ -135,12 +135,12 @@ cExp (A.EAdd e1 e2)         = (D.EBinOp D.Add (cExp e1) (cExp e2))
 cExp (A.ESub e1 e2)         = (D.EBinOp D.Add (cExp e1) (cExp (A.ENeg e2)))
 cExp (A.ELt e1 e2)          = (D.EBinOp D.Gt (cExp e2) (cExp e1))
 cExp (A.EGt e1 e2)          = (D.EBinOp D.Gt (cExp e1) (cExp e2))
-cExp (A.ELEQ e1 e2)         = (D.EBinOp D.Or (cExp (A.ELt e1 e2)) (cExp (A.EEQ e1 e2)))
-cExp (A.EGEQ e1 e2)         = (D.EBinOp D.Or (cExp (A.EGt e1 e2)) (cExp (A.EEQ e1 e2)))
-cExp (A.EEQ e1 e2)          = (D.EBinOp D.Eq (cExp e1) (cExp e2))
-cExp (A.ENEQ e1 e2)         = (D.EUnOp D.Not (D.EBinOp D.Eq (cExp e1) (cExp e2)))
-cExp (A.EAND e1 e2)         = D.EUnOp D.Not $ D.EBinOp D.Or (D.EUnOp D.Not (cExp e1)) (D.EUnOp D.Not (cExp e2))
-cExp (A.EOR e1 e2)          = (D.EBinOp D.Or (cExp e1) (cExp e2))
+cExp (A.ELEq e1 e2)         = (D.EBinOp D.Or (cExp (A.ELt e1 e2)) (cExp (A.EEq e1 e2)))
+cExp (A.EGEq e1 e2)         = (D.EBinOp D.Or (cExp (A.EGt e1 e2)) (cExp (A.EEq e1 e2)))
+cExp (A.EEq e1 e2)          = (D.EBinOp D.Eq (cExp e1) (cExp e2))
+cExp (A.ENEq e1 e2)         = (D.EUnOp D.Not (D.EBinOp D.Eq (cExp e1) (cExp e2)))
+cExp (A.EAnd e1 e2)         = D.EUnOp D.Not $ D.EBinOp D.Or (D.EUnOp D.Not (cExp e1)) (D.EUnOp D.Not (cExp e2))
+cExp (A.EOr e1 e2)          = (D.EBinOp D.Or (cExp e1) (cExp e2))
 cExp (A.EBind e1 e2)        = (D.EBinOp D.Bind (cExp e1) (cExp e2))
 cExp (A.Eseq e1 e2)         = (D.EBinOp D.Then (cExp e1) (cExp e2))
 cExp (A.ECase e cs)         = (D.ECase (cExp e) (cCase cs))
@@ -170,9 +170,6 @@ cTupleList :: [A.Exp] -> D.Exp
 cTupleList []     = D.EConstr "Nil"
 cTupleList ((ETuple t):ts) = D.EApp ((D.EApp (D.EConstr "Cons") (cTuple t))) (cTupleList ts)
 
--- [ETuple (Tuple2 (ELiteral (LitInt 1)) (ELiteral (LitInt 2))),
- -- ETuple (Tuple2 (ELiteral (LitInt 3)) (ELiteral (LitInt 4)))]
-
 cConstList :: [A.Exp] -> D.Exp
 cConstList []              = D.EConstr "Nil"
 cConstList ((EConst c):cs) = D.EApp ((D.EApp (D.EConstr "Cons") (cConst c))) (cConstList cs)
@@ -187,8 +184,8 @@ cCase (A.ECases1 p e cs) = cCase (A.ECases2 p e cs)
 cCase (A.ECases2 p e cs) = ((cPattern p),(cExp e)):(cCase cs)
 
 cTuple :: A.Tuple -> D.Exp
-cTuple (Tuple2 e1 e2)    = D.EApp (D.EApp (D.EVar "(,)") (cExp e1)) (cExp e2)
-cTuple (Tuple3 e1 e2 e3) = D.EApp (D.EApp (D.EApp (D.EVar "(,,)") (cExp e1)) (cExp e2)) (cExp e3)
+cTuple (Tuple1 e1 e2)    = D.EApp (D.EApp (D.EVar "(,)") (cExp e1)) (cExp e2)
+cTuple (Tuple2 e1 e2 e3) = D.EApp (D.EApp (D.EApp (D.EVar "(,,)") (cExp e1)) (cExp e2)) (cExp e3)
 
 {--cGuard :: A.Guards -> A.Exp
 cGuard (A.DGuards1 e1 e2 gs) = D.ECase (cExp e2) [((D.PConstr "True" []), (cExp e1)),
