@@ -1,3 +1,5 @@
+-- mathematical functions
+
 function power : Int -> Int -> Int ;
 power x 0 := 1 ;
 power x n := x * (power x (n-1)) ;
@@ -25,11 +27,17 @@ div x y
 function mod : Int -> Int -> Int ;
 mod x y := x - y * div x y ;
 
+
+
+-- logical functions
+
 function odd : Int -> Boolean ;
 odd x := mod x 2 == 1 ;
 
 function even : Int -> Boolean ;
 even x := mod x 2 == 0 ;
+
+
 
 -- functions over tuples
 
@@ -48,6 +56,8 @@ function min : (a,a) -> a ;
 min (x,y)
     := x when x < y
     := y ;
+
+
 
 -- functions over lists
 
@@ -106,3 +116,8 @@ map f []     := [] ;
 function foldr : atobtob -> b -> [a] -> b ;
 foldr f b [] := b ;
 foldr f b (x:xs) := f x (foldr f b xs) ;
+
+
+-- misc functions
+function id : a -> a ;
+id x := x ;
