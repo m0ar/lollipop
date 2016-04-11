@@ -103,7 +103,7 @@ eval env expr = case expr of
         EApp e1 e2               -> case (eval env e1) of
              VFun v1                -> v1 v2
                 where v2 = eval env e2
-             _                      -> error "NOT FUNCTION!!!!"
+             _                      -> VConstr "Undefined" []
         ELam var e               -> VFun f
             where f v = eval (addToEnv env var v) e
         EVar var                 -> (lookupInEnv env var)

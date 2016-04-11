@@ -44,7 +44,7 @@ repl file env = do
            Ok e -> case eval env (cExp e) of -- TODO: type check input
                VIO io -> putStrLn "running" >> io >> loop
                VFun _ -> putStrLn "function" >> loop
-               v      -> print v >> loop
+               v      -> putStr "Error: " >> print v >> loop
 
 
 buildEnv :: String -> IO Env

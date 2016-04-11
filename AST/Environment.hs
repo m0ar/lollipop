@@ -23,6 +23,6 @@ addManyToEnv env (v1:vars) (v2:vals) = addManyToEnv (addToEnv env v1 v2) vars va
 
 lookupInEnv :: Env -> Var -> Value
 lookupInEnv env var = case val of
-        Nothing -> error $ "variable: " ++ var ++ " not found in environment: \n" ++ show env
+        Nothing -> VConstr "Undefined" []
         Just v  -> v
     where val = M.lookup var env
