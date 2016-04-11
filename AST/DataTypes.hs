@@ -28,11 +28,7 @@ data Pattern = PConstr ConstrID [Pattern]
             | PWild
             | PVar Var
 
-data LCPattern = [(BoundVar, InputSet)]
-
-data BoundVar = String | Lit
-
-data InputSet = String | [Lit] | Lit Lit
+data LCPattern = (Var, Value)
 
 type Var = String
 
