@@ -117,18 +117,36 @@ function foldr : atobtob -> b -> [a] -> b ;
 foldr f b [] := b ;
 foldr f b (x:xs) := f x (foldr f b xs) ;
 
+-- Checks if a list of Bools only
+-- contains Trues
 function and : [Bool] -> Bool ;
 and [] := True ;
 and (x:xs)
     := and xs when x
     := False ;
 
+-- Checks if a list of Bools only any True
 function or : [Bool] -> Bool ;
 or [] := False ;
 or (x:xs)
     := True when x
     := or xs ;
 
+-- Check if any element of a list
+-- satisfies the predicate.
+function any : atobool -> [a] -> Bool ;
+any f [] := False ;
+any f (x:xs)
+    := True when f x
+    := any f xs ;
+
+-- Check if all element of a list
+-- satisfies the predicate.
+function all : atobool -> [a] -> Bool ;
+all f [] := True ;
+all f (x:xs)
+    := any f xs when f x
+    := False ;
 
 -- misc functions
 function id : a -> a ;
