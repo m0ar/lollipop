@@ -22,7 +22,7 @@ function putStrLn : Int ;
 putStrLn := (print "hej" >> print " da, ") >> print " mamma"  ;
 
 function testLam : Int -> Int ;
-testLam := (\y -> head y) (tail [1,2,3]) ;
+testLam := (\y -> 2+(head y)) (tail [1,2,3]) ;
 
 function sumFst : [(Int,Int)] -> Int ;
 sumFst (x:[]) := fst x ;
@@ -116,9 +116,8 @@ take n (x:xs) := case n of
     _ -> cons x (take (n-1) xs) ; ;
 take n [] := [] ; -- There is no way to do empty lists :(
 
-function map : atob -> [a] -> [b] ;
-map f (x:xs) := cons (f x) (map f xs) ;
-map f [] := [] ;
+function testMap : a ;
+testMap := map (print "x") [1,2,3] ;
 
 function naturals : [Int] ;
 naturals := cons 0 (map (\x -> x+1) naturals) ;
@@ -129,7 +128,7 @@ foldr f b (x:xs) := f x (foldr f b xs) ;
 
 -- Sum of first 100 naturals
 function main : Int ;
-main := foldr (\x -> \y -> (x+y)) 0 (take 100 naturals) ;
+main := foldr (\x -> \y -> (x+y)) 0 (take 5 [1,2,3,4,5,6,7,8]) ;
 
 function testPat : Int -> [Int] -> [Int] ;
 testPat := pat 0 dv 2 ;
