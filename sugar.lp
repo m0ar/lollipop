@@ -44,11 +44,6 @@ max (x,y)
     := x when x > y
     := y ;
 
-function max : (a,a) -> a ;
-max (x,y)
-    := x when x > y
-    := y ;
-
 function min : (a,a) -> a ;
 min (x,y)
     := x when x < y
@@ -82,6 +77,12 @@ function sumList : [Int] -> Int ;
 sumList []     := 0 ;
 sumList (x:[]) := x ;
 sumList (x:xs) := x + sumList xs ;
+
+function filter : atobool -> [a] -> [a] ;
+filter _ [] := [] ;
+filter f (x:xs)
+    := x:(filter f xs) when (f x)
+    := filter f xs ;
 
 function concat : [a] -> [a] -> [a] ;
 concat []     ys := ys ;
