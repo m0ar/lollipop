@@ -54,6 +54,9 @@ function concat : [a] -> [a] -> [a] ;
 concat []     ys := ys ;
 concat (x:xs) ys := cons x (concat xs ys) ;
 
+function map : atob -> [a] -> [b] ;
+map f (x:xs) := (f x):(map f xs) ;
+map f []     := [] ;
 
 function fib : Int -> Int ;
 fib 0 := 0 ;
