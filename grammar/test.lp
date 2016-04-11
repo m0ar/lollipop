@@ -86,8 +86,12 @@ function testListComp : [Int] ;
 testListComp := [ x*y | x <- [2,5,10], y <- [8,10,11]] ;
 
 -- Test for both input set(s) and predicates in list comprehensions
-function testListComp2 : [Bool] ;
-testListComp2 := [ x == y | x <- ['a','b','c'], y <- ['c','a','f'], x != 'b', y != 'f'] ;
+--function testListComp2 : [Bool] ;
+--testListComp2 := [ x == y | x <- ['a','b','c'], y <- ['c','a','f'] when x != 'b' && y != 'f'] ;
+
+-- Test for both input set(s) and predicates in list comprehensions
+function testListComp3 : [Bool] ;
+testListComp3 := [ x == y | x <- [2,5,10], y <- [8,10,11] when x != 2 && y != 8] ;
 
 -- Test of '_' in list comprehensions
 function length' : Int ;
