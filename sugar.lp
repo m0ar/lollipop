@@ -117,6 +117,18 @@ function foldr : atobtob -> b -> [a] -> b ;
 foldr f b [] := b ;
 foldr f b (x:xs) := f x (foldr f b xs) ;
 
+function and : [Bool] -> Bool ;
+and [] := True ;
+and (x:xs)
+    := and xs when x
+    := False ;
+
+function or : [Bool] -> Bool ;
+or [] := False ;
+or (x:xs)
+    := True when x
+    := or xs ;
+
 
 -- misc functions
 function id : a -> a ;
