@@ -39,7 +39,7 @@ E.g: Running some basic functions in sugar
     sugar> head [7,8,9]
     7
     sugar> map (\x -> x+2) [4,6,8]
-    [6,8,19]
+    [6,8,10]
 
 #### Disclaimer
 As for now the REPL is in a beta-phase and syntax-errors and unsuccessfully loaded programs can cause it to crash easily. If this happens, simply restart by writing    
