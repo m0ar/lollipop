@@ -4,8 +4,7 @@ module AST.DataTypes where
 type Program = [Declaration]
 
 
-data Declaration =
-         DFunc Var Vars Exp
+data Declaration = DFunc Var Vars Exp
        | DConstr ConstrID Value -- change Value to something else later
 
 
@@ -88,6 +87,7 @@ instance Show Exp where
         EConstr cid        -> show cid
         EUnOp op e         -> case op of
             Not -> "!" ++ show e
+            _   -> "Unary operator: '" ++ show op ++ "'"
         EBinOp op e1 e2    -> case op of
             Add  -> disp "+"
             Sub  -> disp "-"
@@ -99,6 +99,7 @@ instance Show Exp where
             Eq   -> disp "=="
             Or   -> disp "||"
             Pow  -> disp "^"
+            _    -> show e1 ++ " binary operator: '" ++ show op ++ "' " ++ show e2
             where 
                 disp op = show e1 ++ " " ++ op ++ " " ++ show e2 
         ELam v e           -> "\\" ++ v ++ " -> " ++ show e

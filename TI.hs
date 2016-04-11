@@ -128,11 +128,13 @@ ti _ (ELit l)           = case l of
     CLit _ -> return TChar
     SLit _ -> return TString
 ti env (EUnOp o e) = case o of
-    Not -> do 
+    Not -> do
         t1 <- ti env e 
         t2 <- ti env (EConstr "True")
         unify t1 t2
-ti env (EBinOp u e1 e2) = undefined -- TODO
+    _   -> throwError $ "Not a unary operator" -- Should this be here or in DataTypes?
+ti env (EBinOp u e1 e2) = case u of -- TODO
+    _   -> throwError $ "Not a binary operator" -- Should this be here or in DataTypes?
 ti env (ELam v e)         = do
     t0 <- newTyVar "a"
     let TypeEnv env' = remove v env
@@ -257,13 +259,13 @@ prParenType t = case t of
  -- TESTING --
 
 
-printTestExp :: Exp -> IO()
-printTestExp e = putStrLn $ testExp e
-
-testExp :: Exp -> String
-testExp e = case runTI (ti (TypeEnv M.empty) e) of
-        (Left error,_) -> show e ++ "\n-- ERROR: " ++ error
-        (Right t,_)    -> show e ++ " :: " ++ show t
+testExp :: Exp -> IO()
+testExp e = putStrLn $ testExpToString e
+    where
+        testExpToString :: Exp -> String
+        testExpToString e = case runTI (ti (TypeEnv M.empty) e) of
+                (Left error,_) -> show e ++ "\n-- ERROR: " ++ error ++ "\n"
+                (Right t,_)    -> show e ++ " :: " ++ show t ++ "\n"
 
 eZero   = ELit (ILit 0)
 eOne    = ELit (ILit 1)
@@ -338,9 +340,7 @@ te10 = EConstr "True"
 
 te11 = EUnOp Not $ EConstr "False"
 
-
-
---te11 = EApp (EVar "sum") list1
+--te12 = EApp (EVar "sum") list1
 --           where p1    = PConstr "Cons" ["x", "xs2"]
 --                 e1    = EBinOp Add (EVar "x")
 --                         (EApp (EVar "sum") (EVar "xs2"))
@@ -348,7 +348,9 @@ te11 = EUnOp Not $ EConstr "False"
 --                 ecase = ECase (EVar "xs") [(p1, e1), (p2, eZero)]
 --                 dSum  = DFunc "sum" ["xs"] ecase
 
-main = putStrLn $ 
-    "\n --- TESTING EXPRESSIONS --- \n\n" ++
-    concatMap ((++ "\n\n") . testExp)
-        [te1,te2,te3,te4,te5,te6,te7,te8,te9]
+
+main = do
+        putStrLn "\n --- TESTING EXPRESSIONS --- \n\n"
+        mapM_ testExp allTests
+    where
+        allTests = [te1,te2,te3,te4,te5,te6,te7,te8,te9,te10,te11]
