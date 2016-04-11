@@ -18,6 +18,7 @@ data Exp = EApp Exp Exp
        | EConstr ConstrID
        | ECase Exp [(Pattern, Exp)]
        | ELetIn Var Exp Exp  -- let var = exp in exp
+       | EListComp Exp [LCPattern] Exp
 
 data Op = Cons | Concat | Add | Sub | Mul | Div
         | Gt | Eq | Or | Not | Pow | Bind | Then
@@ -26,6 +27,12 @@ data Pattern = PConstr ConstrID [Pattern]
             | PLit Lit
             | PWild
             | PVar Var
+
+data LCPattern = [(BoundVar, InputSet)]
+
+data BoundVar = String | Lit
+
+data InputSet = String | [Lit] | Lit Lit
 
 type Var = String
 
