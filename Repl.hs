@@ -14,6 +14,7 @@ import LexGrammar
 import ParGrammar
 import qualified AbsGrammar as G
 import ErrM
+import Control.Exception
 
 import Data.Map
 import qualified Data.Map as M
@@ -36,7 +37,11 @@ repl file env = do
          ":q" -> return ()
          ":r" -> buildEnv file >>= repl file
          (':':'l':s) -> case words s of
-           [newfile] -> buildEnv newfile >>= repl newfile
+           [newfile] -> do
+              res <- try $ buildEnv newfile
+              case (res :: Either FileException Env) of
+                Right env -> repl newfile env
+                Left  err   -> repl "" env
          _ -> case pExp (myLexer i) of
            Bad s    -> do putStrLn "Syntax error:"
                           putStrLn s
@@ -52,14 +57,26 @@ buildEnv ""   = do
   putStrLn "No file loaded"
   return startEnv
 buildEnv file = do
-  fc   <- readFile (file++".lp")
-  sg   <- readFile "sugar.lp"
-  prog <- case pProgram (myLexer $ fc ++ " \n" ++ sg) of
-           Bad s    -> do putStrLn "Parse error!"
-                          error s
-           Ok  tree -> return tree
-  let ds = cProgram prog
-      -- TODO: type check ds
-      env = addDecsToEnv env ds
-  putStrLn $ "Successfully loaded "++file
-  return env
+  res <- try $ readFile (file ++ ".lp")
+  case (res :: Either IOError String) of
+    Right content -> do
+      fc <- readFile (file ++ ".lp")
+      sg <- readFile "sugar.lp"
+      prog <- case pProgram (myLexer $ fc ++ " \n" ++ sg) of
+               Bad s    -> do putStrLn "Parse error!"
+                              error s
+               Ok  tree -> return tree
+      let ds = cProgram prog
+          -- TODO: type check ds
+          env = addDecsToEnv env ds
+      putStrLn $ "Successfully loaded "++file
+      return env
+    Left  err     -> do
+      putStrLn "No such file, nothing loaded."
+      throw NoSuchFile
+
+data FileException = NoSuchFile
+  deriving Show
+instance Exception FileException
+
+
