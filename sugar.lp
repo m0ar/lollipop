@@ -6,6 +6,11 @@ function fac : a -> b ;
 fac 0 := 1 ;
 fac x := x * (fac (x-1)) ;
 
+function fib : Int -> Int ;
+fib 0 := 0 ;
+fib 1 := 1 ;
+fib n := fib (n-2) +
+         fib (n-1) ;
 
 function div : Int -> Int -> Int ;
 div _ 0 := Undefined ;
@@ -40,15 +45,21 @@ function tail : [a] -> [a] ;
 tail []     := Undefined ;
 tail (x:xs) := xs ;
 
-function sumList : [Int] -> Int ;
-sumList []     := 0 ;
-sumList (x:[]) := x ;
-sumList (x:xs) := x + sumList xs ;
-
 function last : [a] -> a ;
 last []     := Undefined ;
 last (x:[]) := x ;
 last (x:xs) := last xs ;
+
+function take : Int -> [a] -> [a] ;
+take n (x:xs) := case n of
+    0 -> [] ;
+    _ -> x:(take (n-1) xs) ;;
+take n [] := [] ;
+
+function sumList : [Int] -> Int ;
+sumList []     := 0 ;
+sumList (x:[]) := x ;
+sumList (x:xs) := x + sumList xs ;
 
 function concat : [a] -> [a] -> [a] ;
 concat []     ys := ys ;
@@ -58,8 +69,6 @@ function map : atob -> [a] -> [b] ;
 map f (x:xs) := (f x):(map f xs) ;
 map f []     := [] ;
 
-function fib : Int -> Int ;
-fib 0 := 0 ;
-fib 1 := 1 ;
-fib n := fib (n-2) +
-         fib (n-1) ;
+function foldr : atobtob -> b -> [a] -> b ;
+foldr f b [] := b ;
+foldr f b (x:xs) := f x (foldr f b xs) ;

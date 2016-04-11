@@ -113,12 +113,6 @@ function onePat : Int -> Int ;
 pat 2 := 11 ;
 pat _ := 0 ;
 
-function take : Int -> [a] -> [a] ;
-take n (x:xs) := case n of
-    0 -> Nil ;
-    _ -> cons x (take (n-1) xs) ; ;
-take n [] := [] ; -- There is no way to do empty lists :(
-
 function testMap : a ;
 testMap := map (print "x") [1,2,3] ;
 
