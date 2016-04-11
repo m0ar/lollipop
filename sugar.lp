@@ -56,6 +56,10 @@ take n (x:xs) := case n of
     _ -> x:(take (n-1) xs) ;;
 take n [] := [] ;
 
+function length : [Int] -> Int ;
+length []     := 0 ;
+length (x:xs) := 1 + length xs ;
+
 function sumList : [Int] -> Int ;
 sumList []     := 0 ;
 sumList (x:[]) := x ;
