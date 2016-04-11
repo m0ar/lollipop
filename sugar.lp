@@ -31,11 +31,30 @@ odd x := mod x 2 == 1 ;
 function even : Int -> Boolean ;
 even x := mod x 2 == 0 ;
 
+-- functions over tuples
+
 function fst : (a,b) -> a ;
 fst (x,y) := x ;
 
 function snd : (a,b) -> b ;
 snd (x,y) := y ;
+
+function max : (a,a) -> a ;
+max (x,y)
+    := x when x > y
+    := y ;
+
+function max : (a,a) -> a ;
+max (x,y)
+    := x when x > y
+    := y ;
+
+function min : (a,a) -> a ;
+min (x,y)
+    := x when x < y
+    := y ;
+
+-- functions over lists
 
 function head : [a] -> a ;
 head []     := Undefined ;
@@ -51,10 +70,9 @@ last (x:[]) := x ;
 last (x:xs) := last xs ;
 
 function take : Int -> [a] -> [a] ;
-take n (x:xs) := case n of
-    0 -> [] ;
-    _ -> x:(take (n-1) xs) ;;
-take n [] := [] ;
+take n []     := [] ;
+take 0 _      := [] ;
+take n (x:xs) := x:(take (n-1) xs) ;
 
 function length : [Int] -> Int ;
 length []     := 0 ;
