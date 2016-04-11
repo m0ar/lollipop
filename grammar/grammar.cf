@@ -139,11 +139,13 @@ Tuple2.         Tuple           ::= "(" Exp "," Exp "," Exp ")" ;
 
 -- Structure of list comprehensions input set(s) and predicates.
 -- The elements drawn from the input set are either bound
--- to an identifier, constructor, literal or a wild-card.
--- For now the input set is limited to a single identifier or integers.
-ELCPatterns1.   LCPatterns      ::= String "<-" InputSet ;
-ELCPatterns2.   LCPatterns      ::= String "<-" InputSet "," LCPatterns ;
-ELCPatterns3.   LCPatterns      ::= String "<-" InputSet "when" Exp ;
+-- to an identifier  or a wild-card.
+ELCPatterns1.   LCPatterns      ::= BoundVar "<-" InputSet ;
+ELCPatterns2.   LCPatterns      ::= BoundVar "<-" InputSet "," LCPatterns ;
+ELCPatterns3.   LCPatterns      ::= BoundVar "<-" InputSet "when" Exp ;
+
+Awild.          BoundVar        ::= "_" ;
+AId.            BoundVar        ::= Id ;
 
 -- input set in list comprehensions
 LInputSet1.     InputSet        ::= Id ;
