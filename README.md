@@ -42,8 +42,8 @@ E.g: Running some basic functions in sugar
     [6,8,10]
 
 #### Disclaimer
-As for now the REPL is in a beta-phase and syntax-errors and unsuccessfully loaded programs can cause it to crash easily. If this happens, simply restart by writing    
+As for now the REPL is in a beta-phase and syntax-errors and unsuccessfully loaded programs can cause it to crash. In this case, restart it using the same command again:
 
     runghc -iAST/:grammar/ Repl.hs
 
-In rare cases the REPL gets stuck in an endless evaluation loop. This can happen when trying to run functions that cannot be found in the variable-value-environment, i.e when you're calling a function that doesn't exist. If the REPL gets stuck in a loop, try killing the process using ctrl+c, or by killing the ghc-process.
+In rare cases the REPL gets stuck in an endless evaluation loop. If the REPL does this, try killing the process using ctrl+c, or by killing the ghc-process.
