@@ -2,7 +2,7 @@
 -- I wrote this little front end for the various
 -- parts of your program.
 -- to run : runghc -iAST/:grammar/ Repl.hs
-
+{-# LANGUAGE DeriveDataTypeable #-}
 import System.IO
 import AST.Interpreter
 import Converter hiding (main)
@@ -15,6 +15,7 @@ import ParGrammar
 import qualified AbsGrammar as G
 import ErrM
 import Control.Exception
+import Data.Typeable
 
 import Data.Map
 import qualified Data.Map as M
@@ -76,7 +77,7 @@ buildEnv file = do
       throw NoSuchFile
 
 data FileException = NoSuchFile
-  deriving Show
+  deriving (Show, Typeable)
 instance Exception FileException
 
 
