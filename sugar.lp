@@ -125,10 +125,9 @@ foldl f a (x:xs) := foldl f (f a x) xs ;
 -- Checks if a list of Bools only
 -- contains Trues
 function and : [Bool] -> Bool ;
-and [] := True ;
-and (x:xs)
-    := and xs when x
-    := False ;
+and []     := True ;
+and (x:xs) := x && and xs ;
+
 
 -- Checks if a list of Bools only any True
 function or : [Bool] -> Bool ;

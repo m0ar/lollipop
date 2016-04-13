@@ -1,5 +1,5 @@
-function testFoldl : Int ;
-testFoldl := foldl (\acc x -> acc + x) 0 xs ;
+-- function testFoldl : Int ;
+-- testFoldl := foldl (\acc x -> acc + x) 0 xs ;
 
 function addL : [Int] -> [Int] -> [Int] ;
 great x := x:[2,3,4] ;
@@ -134,10 +134,10 @@ function testPat : Int -> [Int] -> [Int] ;
 testPat := pat 0 dv 2 ;
 
 function lazy : Int ;
-lazy := oneFsc infy 5;
+lazy := oneFsc 5 infy;
 
 function oneFsc : Int ;
-oneFsc x y := y ;
+oneFsc x y := x ;
 
 function infy : Int ;
 infy := 1 + infy ;
