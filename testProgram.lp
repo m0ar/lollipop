@@ -1,5 +1,5 @@
--- function testFoldl : Int ;
--- testFoldl := foldl (\acc x -> acc + x) 0 xs ;
+function testFoldl : Int ;
+testFoldl xs := foldl (\acc x -> acc + x) 0 xs ;
 
 function addL : [Int] -> [Int] -> [Int] ;
 great x := x:[2,3,4] ;

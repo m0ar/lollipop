@@ -1,7 +1,7 @@
 -- To play around a bit with your interpreter
 -- I wrote this little front end for the various
 -- parts of your program.
--- to run : runghc -iAST/:grammar/ Repl.hs
+-- to run : runghc -iAST/:grammar/ loli.hs
 {-# LANGUAGE DeriveDataTypeable #-}
 import System.IO
 import Interpreter
