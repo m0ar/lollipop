@@ -138,6 +138,12 @@ function foldl : atobtob -> b -> [a] -> b ;
 foldl _ a []     := a ;
 foldl f a (x:xs) := foldl f (f a x) xs ;
 
+-- zips together two lists to a list of tuples
+function zip : [a] -> [b] -> [(a,b)] ;
+zip [] _          := [] ;
+zip _ []          := [] ;
+zip (x:xs) (y:ys) := (x,y):(zip xs ys) ;
+
 -- Checks if a list of Bools only
 -- contains Trues
 function and : [Bool] -> Bool ;
