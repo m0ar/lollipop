@@ -6,7 +6,7 @@ lollipop is a general purpose, functional programming language with support for 
 The main goal is to develop a proof-of-concept of linear types in a basic functional language. This is to enable easy access to the concept for developers that are interested in learning about linear types, in a practical environment.
 
 ### Running programs in lollipop
-The read-eval-print-loop, REPL (Repl.hs) is used to load and run programs written in lollipop (.lp).
+The read-eval-print-loop, loli (loli.hs) is used to load and run programs written in lollipop (.lp).
 
 #### Requirements
 The REPL is built in Haskell and therefore requires GHC to work. A recommendation is to install GHC's interactive environment, GHCi.
