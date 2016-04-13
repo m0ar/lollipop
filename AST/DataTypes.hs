@@ -46,6 +46,12 @@ data Lit = ILit Int
         | SLit String
     deriving Eq
 
+instance Eq Value where
+    (==) (VLit (ILit x)) (VLit (ILit y)) = x == y
+    (==) (VLit (DLit x)) (VLit (DLit y)) = x == y
+    (==) (VLit (SLit x)) (VLit (SLit y)) = x == y
+    (==) (VLit (CLit x)) (VLit (CLit y)) = x == y
+    (==) _                _              = False
 
 instance Num Lit where
     (+) (ILit x) (ILit y) = ILit (x+y)
