@@ -65,6 +65,11 @@ function head : [a] -> a ;
 head []     := Undefined ;
 head (x:xs) := x ;
 
+function init : [a] -> [a] ;
+init []     := Undefined ;
+init (x:[]) := [] ;
+init (x:xs) := x:(init xs) ;
+
 function tail : [a] -> [a] ;
 tail []     := Undefined ;
 tail (x:xs) := xs ;
@@ -79,6 +84,11 @@ take n []     := [] ;
 take 0 _      := [] ;
 take n (x:xs) := x:(take (n-1) xs) ;
 
+function drop : Int -> [a] -> [a] ;
+drop _ []     := [] ;
+drop 0 xs     := xs ;
+drop n (x:xs) := drop (n-1) xs ;
+
 function length : [a] -> Int ;
 length []     := 0 ;
 length (x:xs) := 1 + length xs ;
@@ -91,8 +101,7 @@ function elem : [a] -> a -> Bool ;
 reverse xs := any (\x y -> x==y) xs ;
 
 function sumList : [Int] -> Int ;
-sumList []     := 0 ;
-sumList (x:xs) := x + sumList xs ;
+sumList := foldr (\x y -> x+y) 0 ;
 
 function maximum : [a] -> a ;
 maximum (x:[]) := x ;
@@ -132,14 +141,12 @@ foldl f a (x:xs) := foldl f (f a x) xs ;
 -- Checks if a list of Bools only
 -- contains Trues
 function and : [Bool] -> Bool ;
-and []     := True ;
-and (x:xs) := x && and xs ;
+and xs := foldr (\x y -> x && y) True xs ;
 
 
 -- Checks if a list of Bools only any True
 function or : [Bool] -> Bool ;
-or []     := False ;
-or (x:xs) := x || or xs ;
+or xs := foldr (\x y -> x || y) False xs ;
 
 -- Check if any element of a list
 -- satisfies the predicate.
