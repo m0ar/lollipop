@@ -40,9 +40,11 @@ repl file env = do
          (':':'l':s) -> case words s of
            [newfile] -> do
               res <- try $ buildEnv newfile
-              case (res :: Either FileException Env) of
+              case (res :: Either LoliException Env) of
                 Right env -> repl newfile env
-                Left  err   -> repl "" env
+                Left  err -> case err of
+                  NoSuchFile  -> repl "" env 
+                  SyntaxError -> repl newfile env
          _ -> case pExp (myLexer i) of
            Bad s    -> do putStrLn "Syntax error:"
                           putStrLn s
@@ -65,7 +67,7 @@ buildEnv file = do
       sg <- readFile "sugar.lp"
       prog <- case pProgram (myLexer $ fc ++ " \n" ++ sg) of
                Bad s    -> do putStrLn "Parse error!"
-                              error s
+                              throw SyntaxError
                Ok  tree -> return tree
       let ds = cProgram prog
           -- TODO: type check ds
@@ -76,8 +78,8 @@ buildEnv file = do
       putStrLn "No such file, nothing loaded."
       throw NoSuchFile
 
-data FileException = NoSuchFile
+data LoliException = NoSuchFile | SyntaxError
   deriving (Show, Typeable)
-instance Exception FileException
+instance Exception LoliException
 
 
