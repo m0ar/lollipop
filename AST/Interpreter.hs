@@ -85,14 +85,7 @@ makeBinding (DFunc name vs e) env = (name, eval env (addLams vs e))
         where
             addLams [] e     = e
             addLams (v:vs) e = ELam v (addLams vs e)
-
-
-equals :: Value -> Value -> Bool
-equals (VLit (ILit x)) (VLit (ILit y)) = x == y
-equals (VLit (DLit x)) (VLit (DLit y)) = x == y
-equals (VLit (SLit x)) (VLit (SLit y)) = x == y
-equals (VLit (CLit x)) (VLit (CLit y)) = x == y
-equals _                _              = False
+            
 
 -- evaluation of an expression in an environment
 eval :: Env -> Exp -> Value
