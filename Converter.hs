@@ -146,7 +146,9 @@ cExp (A.Eseq e1 e2)         = (D.EBinOp D.Then (cExp e1) (cExp e2))
 cExp (A.ECase e cs)         = (D.ECase (cExp e) (cCase cs))
 cExp (A.EIf e1 e2 e3)       = (D.ECase (cExp e1) [((D.PConstr "True" []), (cExp e2)),
                                                   ((D.PConstr "False" []), (cExp e3))])
-cExp (A.EAbs (A.Id name) e) = (D.ELam name (cExp e))
+cExp (A.EAbs (A.Id n) ns e) = (D.ELam n (cList' ns e))
+    where cList' ((A.Id n):ns) e = (D.ELam n (cList' ns e))
+          cList' []            e = cExp e
 
 cLetIn :: A.LetBinding -> D.Exp
 cLetIn (ELetBinding1 ls e) = cLetIn' ls e
