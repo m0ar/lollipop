@@ -137,18 +137,12 @@ or (x:xs) := x || or xs ;
 -- Check if any element of a list
 -- satisfies the predicate.
 function any : atobool -> [a] -> Bool ;
-any f [] := False ;
-any f (x:xs)
-    := True when f x
-    := any f xs ;
+any f xs := or (map f xs) ;
 
 -- Check if all element of a list
 -- satisfies the predicate.
 function all : atobool -> [a] -> Bool ;
-all f [] := True ;
-all f (x:xs)
-    := any f xs when f x
-    := False ;
+all f xs := and (map f xs) ;
 
 -- misc functions
 function id : a -> a ;
