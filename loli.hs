@@ -37,6 +37,8 @@ repl file env = do
         "" -> loop
         ":q" -> return ()
         ":r" -> buildEnv file >>= repl file
+        (':':'t':' ':s) -> putStrLn (show (lookupInEnv env s))
+                               >> (repl file env)
         (':':'l':s) -> case words s of
             [newfile] -> do
             res <- try $ buildEnv newfile
@@ -81,5 +83,3 @@ buildEnv file = do
 data LoliException = NoSuchFile | SyntaxError
     deriving (Show, Typeable)
 instance Exception LoliException
-
-

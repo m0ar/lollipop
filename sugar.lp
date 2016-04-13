@@ -79,9 +79,16 @@ take n []     := [] ;
 take 0 _      := [] ;
 take n (x:xs) := x:(take (n-1) xs) ;
 
-function length : [Int] -> Int ;
+function length : [a] -> Int ;
 length []     := 0 ;
 length (x:xs) := 1 + length xs ;
+
+function reverse : [a] -> [a] ;
+reverse []     := [] ;
+reverse (x:xs) := reverse xs ++ [x] ;
+
+function elem : [a] -> a -> Bool ;
+reverse xs := any (\x y -> x==y) xs ;
 
 function sumList : [Int] -> Int ;
 sumList []     := 0 ;
