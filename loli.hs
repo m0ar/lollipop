@@ -23,33 +23,33 @@ import qualified Data.Map as M
 import System.Environment as E
 
 main = do
-  E.getArgs >>= \s -> case s of
-    [file] -> buildEnv file >>= repl file
-    []     -> repl "" startEnv
-    _      -> putStrLn "Invalid arguments"
+    E.getArgs >>= \s -> case s of
+        [file] -> buildEnv file >>= repl file
+        []     -> repl "" startEnv
+        _      -> putStrLn "Invalid arguments"
 
 repl :: String -> Env -> IO ()
 repl file env = do
-        let loop = repl file env
-        putStr (file ++ ">") >> hFlush stdout
-        i <- getLine
-        case i of
-         "" -> loop
-         ":q" -> return ()
-         ":r" -> buildEnv file >>= repl file
-         (':':'l':s) -> case words s of
-           [newfile] -> do
-              res <- try $ buildEnv newfile
-              case (res :: Either LoliException Env) of
+    let loop = repl file env
+    putStr (file ++ ">") >> hFlush stdout
+    i <- getLine
+    case i of
+        "" -> loop
+        ":q" -> return ()
+        ":r" -> buildEnv file >>= repl file
+        (':':'l':s) -> case words s of
+            [newfile] -> do
+            res <- try $ buildEnv newfile
+            case (res :: Either LoliException Env) of
                 Right env -> repl newfile env
                 Left  err -> case err of
-                  NoSuchFile  -> repl "" env 
-                  SyntaxError -> repl newfile env
-         _ -> case pExp (myLexer i) of
-           Bad s    -> do putStrLn "Syntax error:"
-                          putStrLn s
-                          loop
-           Ok e -> case eval env (cExp e) of -- TODO: type check input
+                    NoSuchFile  -> repl "" env
+                    SyntaxError -> repl newfile env
+        _ -> case pExp (myLexer i) of
+            Bad s -> do putStrLn "Syntax error:"
+                        putStrLn s
+                        loop
+            Ok e -> case eval env (cExp e) of -- TODO: type check input
                VIO io -> putStrLn "running" >> io >> loop
                VFun _ -> putStrLn "function" >> loop
                v      -> print v >> loop
@@ -57,29 +57,29 @@ repl file env = do
 
 buildEnv :: String -> IO Env
 buildEnv ""   = do
-  putStrLn "No file loaded"
-  return startEnv
+    putStrLn "No file loaded"
+    return startEnv
 buildEnv file = do
-  res <- try $ readFile (file ++ ".lp")
-  case (res :: Either IOError String) of
-    Right content -> do
-      fc <- readFile (file ++ ".lp")
-      sg <- readFile "sugar.lp"
-      prog <- case pProgram (myLexer $ fc ++ " \n" ++ sg) of
-               Bad s    -> do putStrLn "Parse error!"
+    res <- try $ readFile (file ++ ".lp")
+    case (res :: Either IOError String) of
+        Right content -> do
+            fc <- readFile (file ++ ".lp")
+            sg <- readFile "sugar.lp"
+            prog <- case pProgram (myLexer $ fc ++ " \n" ++ sg) of
+                Bad s   -> do putStrLn "Parse error!"
                               throw SyntaxError
-               Ok  tree -> return tree
-      let ds = cProgram prog
-          -- TODO: type check ds
-          env = addDecsToEnv env ds
-      putStrLn $ "Successfully loaded "++file
-      return env
-    Left  err     -> do
-      putStrLn "No such file, nothing loaded."
-      throw NoSuchFile
+                Ok tree -> return tree
+            let ds = cProgram prog
+                -- TODO: type check ds
+                env = addDecsToEnv env ds
+            putStrLn $ "Successfully loaded "++file
+            return env
+        Left  err     -> do
+            putStrLn "No such file, nothing loaded."
+            throw NoSuchFile
 
 data LoliException = NoSuchFile | SyntaxError
-  deriving (Show, Typeable)
+    deriving (Show, Typeable)
 instance Exception LoliException
 
 
