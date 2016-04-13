@@ -131,10 +131,8 @@ and (x:xs) := x && and xs ;
 
 -- Checks if a list of Bools only any True
 function or : [Bool] -> Bool ;
-or [] := False ;
-or (x:xs)
-    := True when x
-    := or xs ;
+or []     := False ;
+or (x:xs) := x || or xs ;
 
 -- Check if any element of a list
 -- satisfies the predicate.
