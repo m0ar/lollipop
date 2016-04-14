@@ -12,6 +12,7 @@ import qualified AbsGrammar as A
 
 import LexGrammar
 import ParGrammar
+import LayoutGrammar
 import qualified AbsGrammar as G
 import ErrM
 import Control.Exception
@@ -21,6 +22,8 @@ import Data.Map
 import qualified Data.Map as M
 
 import System.Environment as E
+
+myLLexer = resolveLayout True . myLexer
 
 main = do
     E.getArgs >>= \s -> case s of
@@ -67,8 +70,10 @@ buildEnv file = do
         Right content -> do
             fc <- readFile (file ++ ".lp")
             sg <- readFile "sugar.lp"
-            prog <- case pProgram (myLexer $ fc ++ " \n" ++ sg) of
-                Bad s   -> do putStrLn "Parse error!"
+            prog <- let ts = (myLLexer $ fc ++ " \n" ++ sg) in case pProgram ts of
+                Bad s   -> do putStr "Parse error: "
+                              putStrLn s
+                              putStrLn $ show ts
                               throw SyntaxError
                 Ok tree -> return tree
             let ds = cProgram prog

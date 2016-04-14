@@ -10,6 +10,7 @@ DImport.        Import          ::= "import" Id ;
 DFunc.          Declaration     ::= "function" Id ":" TypeDecls ";" [Def] ;
 DData.          Declaration     ::= "datatype" TypeIdent [Id] ":=" DataTypes Deriving ;
 DSyn.           Declaration     ::= "type" TypeIdent [Id] ":=" TypeSyn Deriving ;
+layout toplevel ;
 
 -- The structure of type declarations for functions.
 STypeDecl.      TypeDecls       ::= Type ;
@@ -177,3 +178,4 @@ LiTypeIdent.    TypeIdent       ::= Id ;
 -- Haskell-style comments for now
 comment "--" ;
 comment "{-" "-}" ;
+layout toplevel ;
