@@ -15,8 +15,8 @@ data Type =
     | TChar
     | TString
     | TBool
-    | TList Type
     | TFun Type Type
+    | TApp Type Type
     | TConstr String
     deriving (Eq, Ord)
 
@@ -36,9 +36,10 @@ instance Types Type where
     ftv TBool               = S.empty
     ftv (TFun t1 t2)        = ftv t1 `S.union` ftv t2
     ftv (TConstr _)         = S.empty
-    ftv (TList t)           = ftv t
+    ftv (TApp t1 t2)        = ftv t1 `S.union` ftv t2
     apply s (TVar n)        = fromMaybe (TVar n) (M.lookup n s)
     apply s (TFun t1 t2)    = TFun (apply s t1) (apply s t2)
+    apply s (TApp t1 t2)    = TApp (apply s t1) (apply s t2)
     apply _ t               = t
 
 instance Types Scheme where
@@ -82,12 +83,14 @@ refresh t = do
   s <- gets tiSubst 
   return (apply s t)
 
+debugTI :: TI a
+debugTI = do 
+    s <- gets tiSubst
+    error $ show s
 
 unify :: Type -> Type -> TI Type
 unify t1 t2 = do
-  t1' <- refresh t1 -- Maybe not all of these refreshes are needed (but better safe than sorry). 
-  t2' <- refresh t2
-  go t1' t2' >>= refresh
+  go t1 t2
   where
     go (TFun l1 r1) (TFun l2 r2) = do
         m1 <- go l1 l2
@@ -100,7 +103,11 @@ unify t1 t2 = do
     go TChar TChar              = return TChar
     go TString TString          = return TString
     go TBool TBool              = return TBool
-    go (TList a) (TList b)      = unify a b
+    go (TConstr a) (TConstr b) | a == b = return $ TConstr a
+    go (TApp l1 r1) (TApp l2 r2)= do
+        m1 <- go l1 l2
+        m2 <- go r1 r2
+        return $ TApp m1 m2
     go e1 e2                    = throwError $ "types do not unify: " ++ show e1 ++
                                         " vs. " ++ show e2
 
@@ -110,13 +117,20 @@ unifyAll (t:ts) = unifyAll ts >>= unify t -- Does a lot of needless refreshing..
 
 
 varBind :: Var -> Type -> TI Type
-varBind u t | t == TVar u        =  return t
-            | u `S.member` ftv t =  throwError $ "occur check fails: " ++ u ++
-                                         " vs. " ++ show t
-            | otherwise          =  do 
-                    let newSubst = M.singleton u t
-                    modify (\s -> s{tiSubst = composeSubst newSubst (tiSubst s) } )
-                    return t
+varBind u t = do
+    u' <- refresh $ TVar u
+    case u' of
+        TVar u'' -> refresh t >>= varBind' u''
+        _        -> unify u' t
+    where
+        varBind' :: Var -> Type -> TI Type
+        varBind' u t | t == TVar u        =  return t
+                     | u `S.member` ftv t =  throwError $ "occur check fails: " ++ u ++
+                                                 " vs. " ++ show t
+                     | otherwise          =  do 
+                            let newSubst = M.singleton u t
+                            modify (\s -> s{tiSubst = composeSubst newSubst (tiSubst s) } )
+                            return t
 
 ti ::  TypeEnv -> Exp -> TI Type
 ti (TypeEnv env) (EVar v) = case M.lookup v env of
@@ -141,10 +155,13 @@ ti env (ELam v e)         = do
         env'' = TypeEnv (env' `M.union` M.singleton v (Scheme [] t0))
     t1 <- ti env'' e
     return (TFun t0 t1)
-ti env (EConstr id) = case id of
-    "False" -> return TBool
-    "True"  -> return TBool
-    _ -> return (TConstr id)
+ti env (EConstr id) = lookupType env id
+    --"False" -> return TBool
+    --"True"  -> return TBool
+    --"Cons"  -> instantiate $ Scheme ["a"] (TFun (TVar "a") (TFun (TApp (TConstr "[]") (TVar "a")) 
+    --                                                             (TApp (TConstr "[]") (TVar "a"))))
+    
+    --_ -> return (TConstr id)
 ti env (ECase e0 pes)     = do
     t0 <- ti env e0
     let go (p, e) = do
@@ -159,11 +176,6 @@ ti env (EApp e1 e2)       = do
     t1 <- ti env e1
     t2 <- ti env e2
     a  <- newTyVar "a"
---    case e1 of
---        EConstr "Cons" -> return t2
---        _              -> case e2 of
---            EConstr "Nil" -> return t1
---            _             -> unify (TFun t2 a) t1
     unify (TFun t2 a) t1
     return a
 ti env (ELetIn v e1 e2)   = do
@@ -172,6 +184,21 @@ ti env (ELetIn v e1 e2)   = do
         t'           = generalize env t1
         env''        = TypeEnv (M.insert v t' env')
     ti env'' e2
+
+infer :: TypeEnv -> Exp -> TI Type
+infer env ex = do
+    a <- newTyVar "a"
+    let env' = declarePoly "Cons" (TFun a 
+            (TFun (TApp (TConstr "[]") a) 
+            (TApp (TConstr "[]") a)))
+            env
+    let env'' = declarePoly "Nil" (TApp (TConstr "[]") a) env'
+    ti env'' ex >>= refresh
+
+testTI = fst $ runTI $ do
+    let t = TFun (TVar "b") (TApp (TConstr "[]") (TVar "b")) 
+    unify (TFun TInt (TVar "a")) t
+    debugTI
 
 -- Returns the free expression variables in patterns
 freeVarsP :: Pattern -> [Var]
@@ -191,11 +218,6 @@ patToExp :: Pattern -> Exp
 patToExp (PConstr v vs) = foldl EApp (EConstr v) (map patToExp vs)
 patToExp (PVar v)       = EVar v
 patToExp (PLit x)       = ELit x
-
---infer e
---    t <- ti startEnv e
---    refresh t
-
 
 
 newtype TypeEnv = TypeEnv (M.Map String Scheme)
@@ -234,8 +256,6 @@ declareMono :: String -> Type -> TypeEnv -> TypeEnv
 declareMono v t = add v (Scheme [] t)
 
 
-
-
 instance Show Type where
     showsPrec _ x = shows (prType x)
 
@@ -246,13 +266,14 @@ prType TDouble    = PP.text "Double"
 prType TChar      = PP.text "Char"
 prType TString    = PP.text "String"
 prType TBool      = PP.text "Bool"
-prType (TConstr s)= PP.text ("Constructor " ++ s)
+prType (TConstr s)= PP.text s
 prType (TFun t s) = prParenType t PP.<+> PP.text "->" PP.<+> prType s
+prType (TApp t s) = prParenType t PP.<+> prType s
 
 prParenType :: Type -> PP.Doc
 prParenType t = case t of
-                    TFun _ _  -> PP.parens (prType t)
-                    _         -> prType t
+    TFun _ _  -> PP.parens (prType t)
+    _         -> prType t
 
 
 
@@ -263,7 +284,7 @@ testExp :: Exp -> IO()
 testExp e = putStrLn $ testExpToString e
     where
         testExpToString :: Exp -> String
-        testExpToString e = case runTI (ti (TypeEnv M.empty) e) of
+        testExpToString e = case runTI (infer (TypeEnv M.empty) e) of
                 (Left error,_) -> show e ++ "\n-- ERROR: " ++ error ++ "\n"
                 (Right t,_)    -> show e ++ " :: " ++ show t ++ "\n"
 
@@ -280,6 +301,8 @@ eNine   = ELit (ILit 9)
 x       = EVar "x"
 y       = EVar "x"
 z       = EVar "x"
+
+list0 = EApp (EConstr "Cons") eOne
 
 -- Cons 5 Nil -> [5]
 list1 = EApp (EApp (EConstr "Cons") eFive) (EConstr "Nil")
@@ -298,7 +321,7 @@ list3 = EApp
 -- Cons 5 (Cons 2 (Cons 3 (Cons 1))) -> [5,2,3,1]
 list4 = EApp
             (EApp (EConstr "Cons") eFive)
-            (EApp (EApp (EConstr "Cons") eTwo)
+            (EApp (EApp (EConstr "Cons") (ELit (CLit 'k')))
             (EApp (EApp (EConstr "Cons") eThree)
             (EApp (EApp (EConstr "Cons") eOne) (EConstr "Nil"))))
 
