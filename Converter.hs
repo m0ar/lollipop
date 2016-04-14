@@ -6,7 +6,7 @@ module Converter where
 
 import AST.Interpreter
 import qualified AST.DataTypes as D
-import AbsGrammar
+import TI
 import qualified AbsGrammar as A
 
 main :: IO ()
@@ -19,7 +19,7 @@ cProgram (A.PLast d)      = ((cDeclaration d):[])
 
 -- converts any declaration to a case
 cDeclaration :: A.Declaration -> D.Declaration
-cDeclaration (A.DFunc (A.Id name) _ defs)
+cDeclaration (A.DFunc (A.Id name) tDecls defs)
                 | not sameNbrAs -- definitons has different number of arguments
                     = error $ "Defintions for function " ++ name ++ " have different number of arguments"
                 | nbrAs == 0 && length defs > 1 -- if there is no input arguments, but several defs
@@ -34,10 +34,26 @@ cDeclaration (A.DFunc (A.Id name) _ defs)
            sameNbrAs = all (== nbrAs) (map countAs defs) -- all defs should have same number of arguments
            defs' = allDef defs
 
+tDeclToTypes :: A.TypeDecls -> Type
+tDeclToTypes (A.STypeDecl t)        = aTypeToType t
+tDeclToTypes (A.MTypeDecl t rest)   = TFun (aTypeToType t) (tDeclToTypes rest)
+tDeclToTypes (A.MLiTypeDecl t rest) = undefined -- TODO
+
+aTypeToType :: A.Type -> Type
+aTypeToType (A.TTypeId tId) = TVar $ identToString tId
+aTypeToType (A.TList t)       = TApp (TConstr "[]") (aTypeToType t)
+aTypeToType (A.TTuple [t:ts]) = undefined -- TODO
+aTypeToType (A.TFun t1 t2)    = TFun (aTypeToType t1) (aTypeToType t2)
+aTypeToType (A.TLFun t1 t2)   = undefined --TODO
+
+identToString :: A.TypeIdent -> String
+identToString (A.STypeIdent s)  = s
+identToString (A.LiTypeIdent s) = s
+
 -- extracts the expression from a def
 defToExp :: A.Def -> D.Exp
 defToExp (A.DDef _ _ e)      = cExp e
-defToExp (DGuardsDef _ _ gs) = cExp $ cGuard gs
+defToExp (A.DGuardsDef _ _ gs) = cExp $ cGuard gs
 -- converts a number of definitions to case-tree
 -- first matches the first argument to firt input variable then creates following
 -- case-trees
@@ -60,7 +76,7 @@ allDef (d:ds) = case d of
 -- translates guards into equal case-expressions
 cGuard :: A.Guards -> A.Exp
 cGuard (A.DGuards1 e1 e2 gs) = cGuard (A.DGuards2 e1 e2 gs)
-cGuard (A.DGuards2 e1 e2 gs) = A.ECase e2 (A.ECases2 (A.PConstrEmp (TypeId "True")) e1 (cGuard' gs))
+cGuard (A.DGuards2 e1 e2 gs) = A.ECase e2 (A.ECases2 (A.PConstrEmp (A.TypeId "True")) e1 (cGuard' gs))
     where
         cGuard' (A.DGuards2 _ _ _) = (A.ECases2 A.PWild (cGuard gs) A.ECases3)
         cGuard' (A.DExpGuard e)        = (A.ECases2 A.PWild e A.ECases3)
@@ -84,14 +100,14 @@ cPattern p = case p of
     A.PWild               -> D.PWild
     (A.PId (A.Id name))   -> (D.PVar name)
     (A.PLit l)            -> (D.PLit (cLit l))
-    (A.PConstrEmp (TypeId name)) -> (D.PConstr name [])
+    (A.PConstrEmp (A.TypeId name)) -> (D.PConstr name [])
     (A.PCons p1 p2)       -> D.PConstr "Cons" [(cPattern p1), (cPattern p2)]
-    (A.PConsConstr (TypeId name) p1 ps p2) -> D.PConstr "Cons" [(D.PConstr name (map cPattern (p1:ps))), (cPattern p2)]
+    (A.PConsConstr (A.TypeId name) p1 ps p2) -> D.PConstr "Cons" [(D.PConstr name (map cPattern (p1:ps))), (cPattern p2)]
     A.PEmpty              -> (D.PConstr "Nil" [])
 
 cLPat :: A.ListPat -> D.Pattern
-cLPat (PList2 p lp) = D.PConstr "Cons" [(cPattern p), (cLPat lp)]
-cLPat (PList1 p )    = D.PConstr "Cons" [(cPattern p), (D.PConstr "Nil" [])]
+cLPat (A.PList2 p lp) = D.PConstr "Cons" [(cPattern p), (cLPat lp)]
+cLPat (A.PList1 p )    = D.PConstr "Cons" [(cPattern p), (D.PConstr "Nil" [])]
 
 
 cType :: A.Type -> D.Exp
@@ -110,8 +126,8 @@ cLit (A.LitChar x)     = D.CLit x
 cLit (A.LitString x)   = D.SLit x
 
 cConst :: A.Cons -> D.Exp
-cConst (DConst1 (TypeId cid) cid' ids) = D.EConstr cid
-cConst (DConst2 (TypeId cid))         = D.EConstr cid
+cConst (A.DConst1 (A.TypeId cid) cid' ids) = D.EConstr cid
+cConst (A.DConst2 (A.TypeId cid))         = D.EConstr cid
 
 cExp :: A.Exp -> D.Exp
 cExp (A.EVar (A.Id name))   = (D.EVar name)
@@ -149,18 +165,18 @@ cExp (A.EIf e1 e2 e3)       = (D.ECase (cExp e1) [((D.PConstr "True" []), (cExp 
 cExp (A.EAbs (A.Id name) e) = (D.ELam name (cExp e))
 
 cLetIn :: A.LetBinding -> D.Exp
-cLetIn (ELetBinding1 ls e) = cLetIn' ls e
+cLetIn (A.ELetBinding1 ls e) = cLetIn' ls e
     where
-        cLetIn' ((ELetBinding2 (Id name) e1):[]) e = D.ELetIn name (cExp e1) (cExp e)
-        cLetIn' ((ELetBinding2 (Id name) e1):ls) e = D.ELetIn name (cExp e1) (cLetIn' ls e)
+        cLetIn' ((A.ELetBinding2 (A.Id name) e1):[]) e = D.ELetIn name (cExp e1) (cExp e)
+        cLetIn' ((A.ELetBinding2 (A.Id name) e1):ls) e = D.ELetIn name (cExp e1) (cLetIn' ls e)
 
 
 cList :: [A.Exp] -> D.Exp
 cList ls = case (head ls) of
-    ELiteral _ -> cLitList ls
-    ETuple _   -> cTupleList ls
-    EConst _   -> cConstList ls
-    EList _    -> cListList ls
+    A.ELiteral _ -> cLitList ls
+    A.ETuple _   -> cTupleList ls
+    A.EConst _   -> cConstList ls
+    A.EList _    -> cListList ls
 
 cListList :: [A.Exp] -> D.Exp
 cListList []           = D.EConstr "Nil"
@@ -168,15 +184,15 @@ cListList (l:ls) = D.EApp ((D.EApp (D.EConstr "Cons") (cExp l))) (cListList ls)
 
 cTupleList :: [A.Exp] -> D.Exp
 cTupleList []     = D.EConstr "Nil"
-cTupleList ((ETuple t):ts) = D.EApp ((D.EApp (D.EConstr "Cons") (cTuple t))) (cTupleList ts)
+cTupleList ((A.ETuple t):ts) = D.EApp ((D.EApp (D.EConstr "Cons") (cTuple t))) (cTupleList ts)
 
 cConstList :: [A.Exp] -> D.Exp
 cConstList []              = D.EConstr "Nil"
-cConstList ((EConst c):cs) = D.EApp ((D.EApp (D.EConstr "Cons") (cConst c))) (cConstList cs)
+cConstList ((A.EConst c):cs) = D.EApp ((D.EApp (D.EConstr "Cons") (cConst c))) (cConstList cs)
 
 cLitList :: [A.Exp] -> D.Exp
 cLitList []                = D.EConstr "Nil"
-cLitList ((ELiteral l):ls) = D.EApp ((D.EApp (D.EConstr "Cons") (D.ELit $ cLit l))) (cLitList ls)
+cLitList ((A.ELiteral l):ls) = D.EApp ((D.EApp (D.EConstr "Cons") (D.ELit $ cLit l))) (cLitList ls)
 
 cCase :: A.Cases -> [(D.Pattern, D.Exp)]
 cCase A.ECases3          = []
@@ -184,8 +200,8 @@ cCase (A.ECases1 p e cs) = cCase (A.ECases2 p e cs)
 cCase (A.ECases2 p e cs) = ((cPattern p),(cExp e)):(cCase cs)
 
 cTuple :: A.Tuple -> D.Exp
-cTuple (Tuple1 e1 e2)    = D.EApp (D.EApp (D.EVar "(,)") (cExp e1)) (cExp e2)
-cTuple (Tuple2 e1 e2 e3) = D.EApp (D.EApp (D.EApp (D.EVar "(,,)") (cExp e1)) (cExp e2)) (cExp e3)
+cTuple (A.Tuple1 e1 e2)    = D.EApp (D.EApp (D.EVar "(,)") (cExp e1)) (cExp e2)
+cTuple (A.Tuple2 e1 e2 e3) = D.EApp (D.EApp (D.EApp (D.EVar "(,,)") (cExp e1)) (cExp e2)) (cExp e3)
 
 {--cGuard :: A.Guards -> A.Exp
 cGuard (A.DGuards1 e1 e2 gs) = D.ECase (cExp e2) [((D.PConstr "True" []), (cExp e1)),
