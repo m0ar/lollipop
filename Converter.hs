@@ -62,9 +62,9 @@ cGuard :: A.Guards -> A.Exp
 cGuard (A.DGuards1 e1 e2 gs) = cGuard (A.DGuards2 e1 e2 gs)
 cGuard (A.DGuards2 e1 e2 gs) = A.ECase e2 (A.ECases2 (A.PConstrEmp (TypeId "True")) e1 (cGuard' gs))
     where
-        cGuard' (A.DGuards2 _ _ _) = (A.ECases2 A.PWild (cGuard gs) A.ECases3)
-        cGuard' (A.DExpGuard e)        = (A.ECases2 A.PWild e A.ECases3)
-cGuard (A.DExpGuard e)       = A.ECase e ((A.ECases2 (A.PWild)) e (A.ECases3))
+        cGuard' (A.DGuards2 _ _ _) = (A.ECases3 A.PWild (cGuard gs))
+        cGuard' (A.DExpGuard e)        = (A.ECases3 A.PWild e)
+cGuard (A.DExpGuard e)       = A.ECase e ((A.ECases3 (A.PWild)) e)
                             -- last one is "otherwise"-case
 
 -- list of generated variables to introduce in declaration
@@ -181,7 +181,7 @@ cLitList []                = D.EConstr "Nil"
 cLitList ((ELiteral l):ls) = D.EApp ((D.EApp (D.EConstr "Cons") (D.ELit $ cLit l))) (cLitList ls)
 
 cCase :: A.Cases -> [(D.Pattern, D.Exp)]
-cCase A.ECases3          = []
+cCase (A.ECases3 p e)    = [((cPattern p),(cExp e))]
 cCase (A.ECases1 p e cs) = cCase (A.ECases2 p e cs)
 cCase (A.ECases2 p e cs) = ((cPattern p),(cExp e)):(cCase cs)
 
