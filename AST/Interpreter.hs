@@ -7,7 +7,7 @@ import DataTypes
 import Data.Map
 import qualified Data.Map as M
 
--- call interpret med io
+-- call interpret with io
 interpret :: Program -> IO ()
 interpret ds = do
             let v = interpret' ds
@@ -19,7 +19,6 @@ interpret ds = do
                         lookupInEnv e "main"
 
 -- addDecsToEnv is a helper function to interpret
-
 -- Adds declarations to the environment
 addDecsToEnv :: Env -> [Declaration] -> Env
 addDecsToEnv env []     = startEnv
@@ -27,6 +26,16 @@ addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
     where
         e' = addDecsToEnv env ds
 
+-- makeBinding is a helper function to addDecsToEnv
+-- Makes bindings from declarations to environment
+makeBinding :: Declaration -> Env -> (Var, Value)
+makeBinding (DConstr id val) env  = (id, val)
+makeBinding (DFunc name vs e) env = (name, eval env (addLams vs e))
+        where
+            addLams [] e     = e
+            addLams (v:vs) e = ELam v (addLams vs e)
+
+-- startEnv creates the basic environment               
 startEnv :: Env
 startEnv = printF $ readLnF $ addF $ mulF $ bindF $ powF
                   $ thenF $ true $ false $ tuple $ truple
@@ -77,16 +86,7 @@ vConstrToBool (VConstr "True" []) = True
 vConstrToBool (VConstr "False" []) = False
 
 
--- makeBinding is a helper function to addDecsToEnv
--- Makes bindings from declarations to environment
-makeBinding :: Declaration -> Env -> (Var, Value)
-makeBinding (DConstr id val) env  = (id, val)
-makeBinding (DFunc name vs e) env = (name, eval env (addLams vs e))
-        where
-            addLams [] e     = e
-            addLams (v:vs) e = ELam v (addLams vs e)
-            
-
+          
 -- evaluation of an expression in an environment
 eval :: Env -> Exp -> Value
 eval env expr = case expr of

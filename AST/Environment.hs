@@ -22,7 +22,6 @@ addManyToEnv env   _        []       = error "variables and values not same leng
 addManyToEnv env (v1:vars) (v2:vals) = addManyToEnv (addToEnv env v1 v2) vars vals
 
 lookupInEnv :: Env -> Var -> Value
-lookupInEnv env var = case val of
+lookupInEnv env var = case M.lookup var env of
         Nothing -> VConstr "Undefined" []
         Just v  -> v
-    where val = M.lookup var env
