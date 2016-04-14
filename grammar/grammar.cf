@@ -101,7 +101,6 @@ EConst.         Exp11           ::= Cons ;
 EListComp.      Exp11           ::= "[" Exp "|" LCPatterns "]" ;
 EList.          Exp11           ::= "[" [Exp] "]" ;
 EEmptyList.     Exp11           ::= "[]" ;
-ELet.           Exp11           ::= LetBinding ;
 EApp.           Exp10           ::= Exp10 Exp11 ;
 ELogicalNeg.    Exp9            ::= "not" Exp10 ;
 ENeg.           Exp9            ::= "-" Exp10 ;
@@ -120,6 +119,7 @@ EEq.            Exp4            ::= Exp4 "==" Exp5 ;
 ENEq.           Exp4            ::= Exp4 "!=" Exp5 ;
 EAnd.           Exp3            ::= Exp3 "&&" Exp4 ;
 EOr.            Exp2            ::= Exp2 "||" Exp3 ;
+ELet.           Exp1           ::= "let" Id ":=" Exp2 "in" Exp ;
 EBind.          Exp1            ::= Exp2 ">>=" Exp1 ;
 Eseq.           Exp1            ::= Exp2 ">>" Exp1 ;
 ECase.          Exp1            ::= "case" Exp "of" "{" Cases "}" ;
@@ -158,9 +158,9 @@ LEnumElem2.     EnumElem        ::= Double ;
 LEnumElem3.     EnumElem        ::= Char ;
 
 -- Let bindings, this is requires an additional ';' at the very end of the binding.
-ELetBinding1.   LetBinding      ::= "let" [LetBinding1] "in" Exp ";" ;
-ELetBinding2.   LetBinding1     ::= Id ":=" Exp ;
-terminator nonempty LetBinding1 ";" ;
+-- ELetBinding1.   LetBinding      ::= "let" "{" LetBinding1 "}" "in" Exp ";" ;
+-- ELetBinding2.   LetBinding1     ::= Id ":=" Exp ;
+--separator nonempty LetBinding1 ";" ;
 
 -- Types, either regular or linear
 TTypeId.        Type            ::= TypeIdent ;
@@ -177,7 +177,5 @@ LiTypeIdent.    TypeIdent       ::= Id ;
 -- Haskell-style comments for now
 comment "--" ;
 comment "{-" "-}" ;
---layout "let" ;
---layout stop "in" ;
 layout toplevel ;
 layout "of" ;

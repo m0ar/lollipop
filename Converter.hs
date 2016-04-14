@@ -122,7 +122,7 @@ cExp (A.EConst c)            = case c of
 -- cExp (A.EListComp e lcps)
 cExp (A.EList ls)           = cList ls
 cExp A.EEmptyList           = D.EConstr "Nil"
-cExp (A.ELet lb)            = cLetIn lb
+cExp (A.ELet (Id n) e1 e2)  = (D.ELetIn n (cExp e1) (cExp e2))
 cExp (A.EApp e1 e2)         = (D.EApp (cExp e1) (cExp e2))
 cExp (A.ELogicalNeg e)      = (D.EUnOp D.Not (cExp e))
 cExp (A.ENeg e)             = (D.EBinOp D.Mul (cExp e) (D.ELit (D.ILit (-1))))
@@ -150,12 +150,13 @@ cExp (A.EAbs (A.Id n) ns e) = (D.ELam n (cList' ns e))
     where cList' ((A.Id n):ns) e = (D.ELam n (cList' ns e))
           cList' []            e = cExp e
 
-cLetIn :: A.LetBinding -> D.Exp
+{-- cLetIn :: A.LetBinding -> D.Exp
 cLetIn (ELetBinding1 ls e) = cLetIn' ls e
     where
         cLetIn' ((ELetBinding2 (Id name) e1):[]) e = D.ELetIn name (cExp e1) (cExp e)
-        cLetIn' ((ELetBinding2 (Id name) e1):ls) e = D.ELetIn name (cExp e1) (cLetIn' ls e)
-
+        cLetIn' ((ELetBinding2 (Id name) e1):ls) e = error "Expected one argument in let"
+        --cLetIn' ((ELetBinding2 (Id name) e1):ls) e = D.ELetIn name (cExp e1) (cLetIn' ls e)
+--}
 
 cList :: [A.Exp] -> D.Exp
 cList ls = case (head ls) of

@@ -35,7 +35,7 @@ makeBinding (DFunc name vs e) env = (name, eval env (addLams vs e))
             addLams [] e     = e
             addLams (v:vs) e = ELam v (addLams vs e)
 
--- startEnv creates the basic environment               
+-- startEnv creates the basic environment
 startEnv :: Env
 startEnv = printF $ readLnF $ addF $ mulF $ bindF $ powF
                   $ thenF $ true $ false $ tuple $ truple
@@ -56,12 +56,12 @@ startEnv = printF $ readLnF $ addF $ mulF $ bindF $ powF
             bindF   = M.insert "#bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> run $ a2 s  -- a1 >>= \s -> a2 s
             thenF   = M.insert "#then" $ VFun $ \(VIO a1) -> VFun $ \(VIO a2) -> VIO $ a1 >> a2
             undef   = M.insert "Undefined" $ vConstructor "Undefined" 0 id
-            true    = M.insert "True" $ vConstructor "True" 0 id
-            false   = M.insert "False" $ vConstructor "False" 0 id
+            true    = M.insert "True" $ vConstructor "True" 0 id -- move to sugar
+            false   = M.insert "False" $ vConstructor "False" 0 id  -- move to sugar
             tuple   = M.insert "(,)" $ vConstructor "(,)" 2 id
             truple  = M.insert "(,,)" $ vConstructor "(,,)" 3 id
             nil     = M.insert "Nil" $ vConstructor "Nil" 0 id
-            cons    = M.insert "Cons" $ vConstructor "Cons" 2 id
+            cons    = M.insert "Cons" $ vConstructor "Cons" 2 id -- change to using #cons
 
 vConstructor :: ConstrID -> Int -> ([Value] -> [Value]) -> Value
 vConstructor cid n k
@@ -86,7 +86,7 @@ vConstrToBool (VConstr "True" []) = True
 vConstrToBool (VConstr "False" []) = False
 
 
-          
+
 -- evaluation of an expression in an environment
 eval :: Env -> Exp -> Value
 eval env expr = case expr of
