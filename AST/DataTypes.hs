@@ -132,12 +132,12 @@ instance Show Value where
             "(,)"   -> "(" ++ (show (vs !! 0)) ++ ", " ++ (show (vs !! 1)) ++ ")"
             "(,,)"  -> "(" ++ (show (vs !! 0)) ++ ", " ++ (show (vs !! 1)) ++ ", " ++ (show (vs !! 2)) ++ ")"
             "Nil"   -> "[]"
-            "Cons"  -> "[" ++ (DataTypes.showList vs) ++ "]"
+            "Cons"  -> "[" ++ (AST.DataTypes.showList vs) ++ "]"
             _       -> cid ++ " " ++ concat (Prelude.map show vs)
            
 showList :: [Value] -> String
 showList [v, (VConstr "Nil"  [])] = show v
-showList [v, (VConstr "Cons" vs)] = (show v) ++ ", " ++ DataTypes.showList vs
+showList [v, (VConstr "Cons" vs)] = (show v) ++ ", " ++ AST.DataTypes.showList vs
         
         
         
