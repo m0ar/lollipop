@@ -35,36 +35,40 @@ cDeclaration (A.DFunc (A.Id name) tDecls defs)
            defs' = allDef defs
 
 tDeclToTypes :: A.TypeDecls -> Type
-tDeclToTypes (A.STypeDecl t)        = aTypeToType t
-tDeclToTypes (A.MTypeDecl t rest)   = TFun (aTypeToType t) (tDeclToTypes rest)
-tDeclToTypes (A.MLiTypeDecl t rest) = undefined -- TODO
+tDeclToTypes (A.STypeDecl t)         = aTypeToType t
+tDeclToTypes (A.MTypeDecl t rest)    = TFun (aTypeToType t) (tDeclToTypes rest)
+tDeclToTypes (A.MLiTypeDecl t rest)  = undefined -- TODO
 
 aTypeToType :: A.Type -> Type
-aTypeToType (A.TTypeId tId) = TVar $ identToString tId
-aTypeToType (A.TList t)       = TApp (TConstr "[]") (aTypeToType t)
-aTypeToType (A.TTuple [t:ts]) = undefined -- TODO
-aTypeToType (A.TFun t1 t2)    = TFun (aTypeToType t1) (aTypeToType t2)
-aTypeToType (A.TLFun t1 t2)   = undefined --TODO
+aTypeToType (A.TTypeId tId)         = TVar $ identToString tId
+aTypeToType (A.TList (t:ts))        = TApp (TConstr "[]") (aTypeToType (A.TList ts))
+aTypeToType (A.TTuple [t1,t2])      = TApp (TApp (TVar "(,)") (aTypeToType t1)) (aTypeToType t2) -- TODO Is this correct?
+aTypeToType (A.TTuple [t1,t2,t3])   = TApp (TApp (TApp (TVar "(,,)") (aTypeToType t1)) (aTypeToType t2)) (aTypeToType t3) -- TODO Is this correct?
+aTypeToType (A.TFun t1 t2)          = TFun (aTypeToType t1) (aTypeToType t2)
+aTypeToType (A.TLFun t1 t2)         = undefined --TODO
 
 identToString :: A.TypeIdent -> String
-identToString (A.STypeIdent s)  = s
-identToString (A.LiTypeIdent s) = s
+identToString (A.STypeIdent s)   = show s
+identToString (A.LiTypeIdent s)  = show s
 
 -- extracts the expression from a def
 defToExp :: A.Def -> D.Exp
-defToExp (A.DDef _ _ e)      = cExp e
-defToExp (A.DGuardsDef _ _ gs) = cExp $ cGuard gs
+defToExp (A.DDef _ _ e)         = cExp e
+defToExp (A.DGuardsDef _ _ gs)  = cExp $ cGuard gs
 -- converts a number of definitions to case-tree
 -- first matches the first argument to firt input variable then creates following
 -- case-trees
 defsToCase :: [D.Var] -> [D.Var] -> [A.Def] -> D.Exp
-defsToCase  _    (v:[]) ((A.DDef _ (a:[]) e):[])   = D.ECase (D.EVar v) [((argToPat a), (cExp e))]
-defsToCase vsOrg (v:[]) ((A.DDef _ (a:[]) e):ds)   = D.ECase (D.EVar v)
-                                                      [ ((argToPat a), (cExp e)),
-                                                        (D.PWild, (defsToCase vsOrg vsOrg ds))]
-defsToCase vsOrg (v:vs) ((A.DDef did (a:as) e):ds) = D.ECase (D.EVar v)
-                                                      [ ((argToPat a), (defsToCase vsOrg vs ((A.DDef did as e):ds))),
-                                                        (D.PWild, (defsToCase vsOrg vsOrg ds))]
+defsToCase  _    (v:[]) ((A.DDef _ (a:[]) e):[])
+    = D.ECase (D.EVar v) [((argToPat a), (cExp e))]
+defsToCase vsOrg (v:[]) ((A.DDef _ (a:[]) e):ds)
+    = D.ECase (D.EVar v)
+      [ ((argToPat a), (cExp e)),
+        (D.PWild, (defsToCase vsOrg vsOrg ds))]
+defsToCase vsOrg (v:vs) ((A.DDef did (a:as) e):ds) =
+    D.ECase (D.EVar v)
+      [ ((argToPat a), (defsToCase vsOrg vs ((A.DDef did as e):ds))),
+        (D.PWild, (defsToCase vsOrg vsOrg ds))]
 
 -- translates all definitions into DDef-definitions
 allDef :: [A.Def] -> [A.Def]
@@ -76,7 +80,8 @@ allDef (d:ds) = case d of
 -- translates guards into equal case-expressions
 cGuard :: A.Guards -> A.Exp
 cGuard (A.DGuards1 e1 e2 gs) = cGuard (A.DGuards2 e1 e2 gs)
-cGuard (A.DGuards2 e1 e2 gs) = A.ECase e2 (A.ECases2 (A.PConstrEmp (A.TypeId "True")) e1 (cGuard' gs))
+cGuard (A.DGuards2 e1 e2 gs) =
+    A.ECase e2 (A.ECases2 (A.PConstrEmp (A.TypeId "True")) e1 (cGuard' gs))
     where
         cGuard' (A.DGuards2 _ _ _) = (A.ECases2 A.PWild (cGuard gs) A.ECases3)
         cGuard' (A.DExpGuard e)        = (A.ECases2 A.PWild e A.ECases3)
@@ -117,7 +122,7 @@ cType (A.TTypeId t) = case t of -- TODO check this part
 -- cType (TPoly ti)   = what is poly?
 cType (A.TList ts)  = cList ts
     where cList []     = D.EConstr "Nil"
-          cList (t:ts) = D.EApp (D.EApp (D.EConstr "Cons") (cType t)) (cList ts)
+          cList (a:as) = D.EApp (D.EApp (D.EConstr "Cons") (cType a)) (cList as)
 
 cLit :: A.Literal -> D.Lit
 cLit (A.LitInt x)      = D.ILit $ fromInteger x

@@ -165,7 +165,7 @@ terminator nonempty LetBinding1 ";" ;
 
 -- Types, either regular or linear
 TTypeId.        Type            ::= TypeIdent ;
-TList.          Type            ::= "[" Type "]" ;
+TList.          Type            ::= "[" [Type] "]" ;
 TTuple.         Type            ::= "(" [Type] ")" ;
 TFun.           Type            ::= "(" Type "->" Type ")";
 TLFun.          Type            ::= "(" Type "-o" Type ")" ;
