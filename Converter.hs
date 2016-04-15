@@ -13,12 +13,14 @@ import qualified AbsGrammar as A
 main :: IO ()
 main = putStrLn "welcome to the converter"
 
+-- Recursively converts the program to internal syntax by 
+-- repeatedly applying cDeclaration to each declaration
 cProgram :: A.Program -> D.Program
 cProgram (A.PFuncs d p)   = ((cDeclaration d):(cProgram p))
 cProgram (A.PLast d)      = ((cDeclaration d):[])
 -- cProgram (PImports i p)
 
--- converts any declaration to a case
+-- Converts any declaration to a case
 cDeclaration :: A.Declaration -> D.Declaration
 cDeclaration (A.DFunc (A.Id name) tDecls defs)
                 | not sameNbrAs -- definitons has different number of arguments
@@ -64,19 +66,23 @@ typeToVal t = case t of
         TypeApp t1 t2                       -> undefined
 
 
+-- Converts type indentifiers to actual strings
 identToString :: A.TypeIdent -> String
 identToString (A.STypeIdent s)  = extractTId s
 identToString (A.LiTypeIdent s) = extractId s
 
-extractTId :: A.TypeIdent -> String
-extractTId (A.TypeIdent (A.TypeId s)) = s
+-- Extracts the string from a TypeId / Id
+extractTId :: A.TypeId -> String
+extractTId (A.TypeId s) = s
 extractId :: A.Id -> String
 extractId (A.Id s)      = s
 
--- extracts the expression from a def
+
+-- Extracts the expression from a def
 defToExp :: A.Def -> D.Exp
 defToExp (A.DDef _ _ e)         = cExp e
 defToExp (A.DGuardsDef _ _ gs)  = cExp $ cGuard gs
+
 -- converts a number of definitions to case-tree
 -- first matches the first argument to firt input variable then
 -- creates following case-trees
@@ -100,6 +106,7 @@ allDef (d:ds) = case d of
     (A.DDef _ _ _)         -> d:(allDef ds)
     (A.DGuardsDef did as gs) -> (A.DDef did as (cGuard gs)):(allDef ds)
 
+
 -- translates guards into equal case-expressions
 cGuard :: A.Guards -> A.Exp
 cGuard (A.DGuards1 e1 e2 gs) = cGuard (A.DGuards2 e1 e2 gs)
@@ -111,19 +118,19 @@ cGuard (A.DGuards2 e1 e2 gs) =
 cGuard (A.DExpGuard e)       = A.ECase e ((A.ECases3 (A.PWild)) e)
                             -- last one is "otherwise"-case
 
+
 -- list of generated variables to introduce in declaration
 variables :: [D.Var]
 variables = map (("#x"++).show) [1..]
+
 
 -- converts args to pat in DataTypes.hs
 -- where Pat = PLit Lit | PWild | PVar Var
 argToPat :: A.Arg -> D.Pattern
 argToPat (A.DArg p) = cPattern p
 
-typeIdentName :: A.TypeIdent -> String
-typeIdentName (STypeIdent (TypeId name)) = name
-typeIdentName (LiTypeIdent (Id name))    = name
 
+-- Converts a pattern
 cPattern :: A.Pattern -> D.Pattern
 cPattern p = case p of
     A.PTuplePat p1 p2          -> D.PConstr "(,)" $ Prelude.map cPattern [p1,p2]
@@ -138,21 +145,28 @@ cPattern p = case p of
     -- (A.PConsConstr (TypeId name) p1 ps p2) -> D.PConstr "Cons" [(D.PConstr name (map cPattern (p1:ps))), (cPattern p2)]
     A.PEmpty                   -> D.PConstr "Nil" []
 
+
+-- Converts a list pattern
 cLPat :: A.ListPat -> D.Pattern
 cLPat (A.PList2 p lp) = D.PConstr "Cons" [(cPattern p), (cLPat lp)]
 cLPat (A.PList1 p )    = D.PConstr "Cons" [(cPattern p), (D.PConstr "Nil" [])]
 
 
+-- Converts a literal
 cLit :: A.Literal -> D.Lit
 cLit (A.LitInt x)      = D.ILit $ fromInteger x
 cLit (A.LitDouble x)   = D.DLit x
 cLit (A.LitChar x)     = D.CLit x
 cLit (A.LitString x)   = D.SLit x
 
+
+-- Converts a constructor
 cConst :: A.Cons -> D.Exp
 cConst (A.DConst1 (A.TypeId cid) cid' ids) = D.EConstr cid
 cConst (A.DConst2 (A.TypeId cid))         = D.EConstr cid
 
+
+-- Converts an expression
 cExp :: A.Exp -> D.Exp
 cExp (A.EVar (A.Id name))   = (D.EVar name)
 cExp (A.ETuple t)           = cTuple t
@@ -190,14 +204,8 @@ cExp (A.EAbs (A.Id n) ns e) = (D.ELam n (cList' ns e))
     where cList' ((A.Id n):ns) e = (D.ELam n (cList' ns e))
           cList' []            e = cExp e
 
-{-- cLetIn :: A.LetBinding -> D.Exp
-cLetIn (ELetBinding1 ls e) = cLetIn' ls e
-    where
-        cLetIn' ((A.ELetBinding2 (Id name) e1):[]) e = D.ELetIn name (cExp e1) (cExp e)
-        cLetIn' ((A.ELetBinding2 (Id name) e1):ls) e = error "Expected one argument in let"
-        --cLetIn' ((A.ELetBinding2 (Id name) e1):ls) e = D.ELetIn name (cExp e1) (cLetIn' ls e)
---}
 
+-- Converts a list of expressions
 cList :: [A.Exp] -> D.Exp
 cList ls = case (head ls) of
     ELiteral _ -> cLitList ls
@@ -206,18 +214,25 @@ cList ls = case (head ls) of
     EConst _   -> cConstList ls
     EList _    -> cListList ls
 
+-- Converts a list of lists
 cListList :: [A.Exp] -> D.Exp
 cListList []     = D.EConstr "Nil"
 cListList (l:ls) = D.EApp ((D.EApp (D.EConstr "Cons") (cExp l))) (cListList ls)
 
+
+-- Converts a list of tuples
 cTupleList :: [A.Exp] -> D.Exp
 cTupleList []     = D.EConstr "Nil"
 cTupleList ((A.ETuple t):ts) = D.EApp ((D.EApp (D.EConstr "Cons") (cTuple t))) (cTupleList ts)
 
+
+-- Converts a list of constructors
 cConstList :: [A.Exp] -> D.Exp
 cConstList []              = D.EConstr "Nil"
 cConstList ((A.EConst c):cs) = D.EApp ((D.EApp (D.EConstr "Cons") (cConst c))) (cConstList cs)
 
+
+-- Converts a list of literals
 cLitList :: [A.Exp] -> D.Exp
 cLitList []     = D.EConstr "Nil"
 cLitList (l:ls) = let l' = case l of
@@ -226,11 +241,14 @@ cLitList (l:ls) = let l' = case l of
                             ELiteral l                    -> l
                     in D.EApp ((D.EApp (D.EConstr "Cons") (D.ELit $ cLit l'))) (cLitList ls)
 
+
+-- Converts a case expression
 cCase :: A.Cases -> [(D.Pattern, D.Exp)]
 cCase (A.ECases3 p e)    = [((cPattern p),(cExp e))]
 cCase (A.ECases1 p e cs) = cCase (A.ECases2 p e cs)
 cCase (A.ECases2 p e cs) = ((cPattern p),(cExp e)):(cCase cs)
 
+-- Converts a tuple
 cTuple :: A.Tuple -> D.Exp
 cTuple (A.Tuple1 e1 e2)    = D.EApp (D.EApp (D.EVar "(,)") (cExp e1)) (cExp e2)
 cTuple (A.Tuple2 e1 e2 e3) = D.EApp (D.EApp (D.EApp (D.EVar "(,,)") (cExp e1)) (cExp e2)) (cExp e3)
