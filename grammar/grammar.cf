@@ -121,7 +121,7 @@ EAnd.           Exp3            ::= Exp3 "&&" Exp4 ;
 EOr.            Exp2            ::= Exp2 "||" Exp3 ;
 ELet.           Exp1           ::= "let" Id ":=" Exp2 "in" Exp ;
 EBind.          Exp1            ::= Exp2 ">>=" Exp1 ;
-Eseq.           Exp1            ::= Exp2 ">>" Exp1 ;
+ESeq.           Exp1            ::= Exp2 ">>" Exp1 ;
 ECase.          Exp1            ::= "case" Exp "of" "{" Cases "}" ;
 EIf.            Exp1            ::= "if" Exp2 "then" Exp2 "else" Exp ;
 EAbs.           Exp1            ::= "\\" Id [Id] "->" Exp ;
