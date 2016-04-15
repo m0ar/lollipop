@@ -22,15 +22,23 @@ interpret ds = do
 -- Adds declarations to the environment
 addDecsToEnv :: Env -> [Declaration] -> Env
 addDecsToEnv env []     = startEnv
-addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
+addDecsToEnv env (d:ds) = insertAll e' (makeBinding d env)
+--addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
     where
         e' = addDecsToEnv env ds
 
+insertAll :: Env -> [(Var,Value)] -> Env
+insertAll e []     = e
+insertAll e ((var,val):vs) = insertAll (addToEnv e var val) vs
+
 -- makeBinding is a helper function to addDecsToEnv
 -- Makes bindings from declarations to environment
-makeBinding :: Declaration -> Env -> (Var, Value)
-makeBinding (DConstr id val) env  = (id, val)
-makeBinding (DFunc name vs e) env = (name, eval env (addLams vs e))
+makeBinding :: Declaration -> Env -> [(Var, Value)]
+makeBinding (DConstr id val@(VConstr s vs)) env  = (id, val):(bindDataTypes vs)
+        where
+            bindDataTypes []                      = []
+            bindDataTypes (v@(VConstr name _):vs) = (name,v):(bindDataTypes vs)
+makeBinding (DFunc name vs e) env = [(name, eval env (addLams vs e))]
         where
             addLams [] e     = e
             addLams (v:vs) e = ELam v (addLams vs e)

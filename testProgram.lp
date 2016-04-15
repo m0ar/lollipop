@@ -1,4 +1,10 @@
-datatype Person a Int := (Kjell Int) | Jon
+datatype Gender := Man | Woman
+
+function testGen : Gender -> IO
+testGen x := case x of
+    Woman -> print "She's a lady"
+    Man   -> print "Now, that's a man"
+    _     -> print "Something else"
 
 function testFoldl : Int
 testFoldl xs := foldl (\acc x -> acc + x) 0 xs

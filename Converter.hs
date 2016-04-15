@@ -33,12 +33,12 @@ cDeclaration (A.DFunc (A.Id name) _ defs)
            countAs (A.DGuardsDef _ as _) = length as -- counts number of arguments of a definition
            sameNbrAs = all (== nbrAs) (map countAs defs) -- all defs should have same number of arguments
            defs' = allDef defs
-cDeclaration (DData (STypeIdent (TypeId s)) fTs dPs) = D.DConstr s (D.VConstr "" (map dPatToVal dPs))
+cDeclaration (DData (STypeIdent (TypeId s)) fTs dPs) = D.DConstr s (D.VConstr s (map dPatToVal dPs))
 
 dPatToVal :: A.DPatterns -> D.Value
 dPatToVal (DDTypes3 id) =
     case id of
-        (STypeIdent  (TypeId s)) -> (D.VConstr s [])
+        (STypeIdent  (TypeId s)) -> (D.VConstr s []) -- TODO lägg till s som en typ i miljön
         (LiTypeIdent (Id s))     -> (D.VConstr s [])
 dPatToVal (DDTypes4 id ft fts) =
     case id of
