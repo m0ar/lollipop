@@ -8,7 +8,8 @@ coercions Program 1 ;
 -- A declaration of function definitions, imports or algebraic data types
 DImport.        Import          ::= "import" Id ;
 DFunc.          Declaration     ::= "function" Id ":" TypeDecls ";" [Def] ;
-DData.          Declaration     ::= "datatype" TypeIdent [Id] ":=" DataTypes Deriving ;
+DData.          Declaration     ::= "datatype" TypeIdent [FieldType] ":=" [DPatterns] ";" ;
+separator nonempty DPatterns "|" ;
 DSyn.           Declaration     ::= "type" TypeIdent [Id] ":=" TypeSyn Deriving ;
 layout toplevel ;
 
@@ -41,14 +42,13 @@ DTSyn2.         TypeSyn         ::= Type TypeSyn ;
 DTSyn3.         TypeSyn         ::= "(" Type Id [Id] ")" TypeSyn ;
 
 -- The structure of algebraic data types
-DDTypes1.       DataTypes       ::= DPatterns ;
-DDTypes2.       DataTypes       ::= DPatterns "|" DataTypes ;
+DDTypes3.       DPatterns       ::= TypeIdent ;
+DDTypes4.       DPatterns       ::= "(" TypeIdent FieldType [FieldType] ")" ;
+separator FieldType "" ;
 
--- The structure of algebraic data types
-DDTypes3.       DPatterns       ::= TypeIdent DPatterns ;
-DDTypes4.       DPatterns       ::= "(" TypeIdent Id [Id] ")" DPatterns ;
-DDTypes5.       DPatterns       ::= ;
-
+-- Type synonyms for id and type for use in datatypes
+FieldType1.     FieldType       ::= Id ;
+FieldType2.     FieldType       ::= TypeId ;
 
 -- Deriving structure, DerArg can be any TypeClass,
 -- predefined or custom-made
