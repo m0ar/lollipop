@@ -33,7 +33,21 @@ cDeclaration (A.DFunc (A.Id name) _ defs)
            countAs (A.DGuardsDef _ as _) = length as -- counts number of arguments of a definition
            sameNbrAs = all (== nbrAs) (map countAs defs) -- all defs should have same number of arguments
            defs' = allDef defs
-cDeclaration (DData (STypeIdent (TypeId s)) ftypes dPatterns) = undefined
+cDeclaration (DData (STypeIdent (TypeId s)) fTs dPs) = D.DConstr s (D.VConstr "" (map dPatToVal dPs))
+
+dPatToVal :: A.DPatterns -> D.Value
+dPatToVal (DDTypes3 id) =
+    case id of
+        (STypeIdent  (TypeId s)) -> (D.VConstr s [])
+        (LiTypeIdent (Id s))     -> (D.VConstr s [])
+dPatToVal (DDTypes4 id ft fts) =
+    case id of
+        (STypeIdent  (TypeId s)) -> (D.VConstr s (map fieldTypeToVal (ft:fts)))
+        (LiTypeIdent (Id s))     -> (D.VConstr s (map fieldTypeToVal (ft:fts)))
+
+fieldTypeToVal :: A.FieldType -> D.Value
+fieldTypeToVal (FieldType1 (Id s))     = (D.VConstr s [])
+fieldTypeToVal (FieldType2 (TypeId s)) = (D.VConstr s [])
 
 -- extracts the expression from a def
 defToExp :: A.Def -> D.Exp
@@ -143,7 +157,7 @@ cExp (A.ENEq e1 e2)         = (D.EUnOp D.Not (D.EBinOp D.Eq (cExp e1) (cExp e2))
 cExp (A.EAnd e1 e2)         = D.EUnOp D.Not $ D.EBinOp D.Or (D.EUnOp D.Not (cExp e1)) (D.EUnOp D.Not (cExp e2))
 cExp (A.EOr e1 e2)          = (D.EBinOp D.Or (cExp e1) (cExp e2))
 cExp (A.EBind e1 e2)        = (D.EBinOp D.Bind (cExp e1) (cExp e2))
-cExp (A.ESeq e1 e2)         = (D.EBinOp D.Then (cExp e1) (cExp e2))
+cExp (A.Eseq e1 e2)         = (D.EBinOp D.Then (cExp e1) (cExp e2))
 cExp (A.ECase e cs)         = (D.ECase (cExp e) (cCase cs))
 cExp (A.EIf e1 e2 e3)       = (D.ECase (cExp e1) [((D.PConstr "True" []), (cExp e2)),
                                                   ((D.PConstr "False" []), (cExp e3))])
