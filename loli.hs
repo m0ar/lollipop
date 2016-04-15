@@ -6,10 +6,10 @@
 module Loli where
 
 import System.IO
-import AST.Interpreter
+import Interpreter
 import Converter hiding (main)
-import AST.DataTypes
-import AST.Environment
+import DataTypes
+import Environment
 import qualified AbsGrammar as A
 
 import LexGrammar
@@ -77,6 +77,7 @@ buildEnv file = do
                 -- TODO: type check ds
                 env = addDecsToEnv env ds
             putStrLn $ "Successfully loaded " ++ file
+
             return env
         Left  err     -> do
             putStrLn "No such file, nothing loaded."

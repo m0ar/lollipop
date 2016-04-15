@@ -1,5 +1,4 @@
 module TI where
-
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Maybe
@@ -400,9 +399,10 @@ te11 = EUnOp Not $ EConstr "False"
 --                 ecase = ECase (EVar "xs") [(p1, e1), (p2, eZero)]
 --                 dSum  = DFunc "sum" ["xs"] ecase
 
-
+{-
 main = do
         putStrLn "\n --- TESTING EXPRESSIONS --- \n\n"
         mapM_ testExp allTests
     where
         allTests = [te1,te2,te3,te4,te5,te6,te7,te8,te9,te10,te11]
+-}

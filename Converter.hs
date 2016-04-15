@@ -63,6 +63,16 @@ typeToVal t = case t of
         LiTypeDecl t1 t2                    -> undefined
         TypeApp t1 t2                       -> undefined
 
+
+identToString :: A.TypeIdent -> String
+identToString (A.STypeIdent s)  = extractTId s
+identToString (A.LiTypeIdent s) = extractId s
+
+extractTId :: A.TypeIdent -> String
+extractTId (A.TypeIdent (A.TypeId s)) = s
+extractId :: A.Id -> String
+extractId (A.Id s)      = s
+
 -- extracts the expression from a def
 defToExp :: A.Def -> D.Exp
 defToExp (A.DDef _ _ e)         = cExp e
@@ -132,16 +142,6 @@ cLPat :: A.ListPat -> D.Pattern
 cLPat (A.PList2 p lp) = D.PConstr "Cons" [(cPattern p), (cLPat lp)]
 cLPat (A.PList1 p )    = D.PConstr "Cons" [(cPattern p), (D.PConstr "Nil" [])]
 
-
-cType :: A.Type -> D.Value
-cType (A.TypeIds t) = case t of -- TODO check this part
-    (A.STypeIdent (A.TypeId name)) -> (D.VConstr name [])
-    (A.LiTypeIdent (A.Id name))    -> (D.VConstr name [])
--- cType (TPoly ti)   = what is poly?
-cType (A.TypeList ts)  = cList ts
-    where cList []     = D.VConstr "Nil" []
-          --cList (t:ts) = D.EApp (D.EApp (D.EConstr "Cons") (cType t)) (cList ts)
-          cList ts = I.vConstructor "Cons" 2 id
 
 cLit :: A.Literal -> D.Lit
 cLit (A.LitInt x)      = D.ILit $ fromInteger x
