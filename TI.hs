@@ -1,3 +1,4 @@
+module TI where
 
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -141,7 +142,7 @@ ti _ (ELit l)           = case l of
     DLit _ -> return TDouble
     CLit _ -> return TChar
     SLit _ -> return TString
-ti env (EUnOp o e) = case o of
+ti env (EUnOp o e) = case o of  -- TODO
     Not -> do
         t1 <- ti env e 
         t2 <- ti env (EConstr "True")
@@ -156,12 +157,6 @@ ti env (ELam v e)         = do
     t1 <- ti env'' e
     return (TFun t0 t1)
 ti env (EConstr id) = lookupType env id
-    --"False" -> return TBool
-    --"True"  -> return TBool
-    --"Cons"  -> instantiate $ Scheme ["a"] (TFun (TVar "a") (TFun (TApp (TConstr "[]") (TVar "a")) 
-    --                                                             (TApp (TConstr "[]") (TVar "a"))))
-    
-    --_ -> return (TConstr id)
 ti env (ECase e0 pes)     = do
     t0 <- ti env e0
     let go (p, e) = do
@@ -188,6 +183,7 @@ ti env (ELetIn v e1 e2)   = do
 infer :: TypeEnv -> Exp -> TI Type
 infer env ex = do
     a <- newTyVar "a"
+    -- Manually adding declarations to the environment
     let env' = declarePoly "Cons" (TFun a 
             (TFun (TApp (TConstr "[]") a) 
             (TApp (TConstr "[]") a)))
@@ -288,6 +284,7 @@ testExp e = putStrLn $ testExpToString e
                 (Left error,_) -> show e ++ "\n-- ERROR: " ++ error ++ "\n"
                 (Right t,_)    -> show e ++ " :: " ++ show t ++ "\n"
 
+
 eZero   = ELit (ILit 0)
 eOne    = ELit (ILit 1)
 eTwo    = ELit (ILit 2)
@@ -302,32 +299,64 @@ x       = EVar "x"
 y       = EVar "x"
 z       = EVar "x"
 
-list0 = EApp (EConstr "Cons") eOne
+list0 = EApp
+            (EConstr "Cons")
+            eOne
 
 -- Cons 5 Nil -> [5]
-list1 = EApp (EApp (EConstr "Cons") eFive) (EConstr "Nil")
+list1 = EApp
+            (EApp
+                (EConstr "Cons")
+                eFive)
+            (EConstr "Nil")
 
 -- Cons 5 (Cons 2 Nil) -> [5,2]
 list2 = EApp
-            (EApp (EConstr "Cons") eFive)
-            (EApp (EApp (EConstr "Cons") eTwo) (EConstr "Nil"))
+            (EApp
+                (EConstr "Cons")
+                eFive)
+            (EApp
+                (EApp
+                    (EConstr "Cons")
+                    eTwo)
+                (EConstr "Nil"))
 
 -- Cons 5 (Cons 2 (Cons 3 Nil)) -> [5,2,3]
 list3 = EApp
-            (EApp (EConstr "Cons") eFive)
-            (EApp (EApp (EConstr "Cons") eTwo)
-            (EApp (EApp (EConstr "Cons") eThree) (EConstr "Nil")))
+            (EApp
+                (EConstr "Cons")
+                eFive)
+            (EApp
+                (EApp
+                    (EConstr "Cons")
+                    eTwo)
+                (EApp
+                    (EApp
+                        (EConstr "Cons")
+                        eThree)
+                    (EConstr "Nil")))
 
 -- Cons 5 (Cons 2 (Cons 3 (Cons 1))) -> [5,2,3,1]
 list4 = EApp
-            (EApp (EConstr "Cons") eFive)
-            (EApp (EApp (EConstr "Cons") (ELit (CLit 'k')))
-            (EApp (EApp (EConstr "Cons") eThree)
-            (EApp (EApp (EConstr "Cons") eOne) (EConstr "Nil"))))
+            (EApp
+                (EConstr "Cons")
+                eFive)
+            (EApp
+                (EApp
+                    (EConstr "Cons")
+                    (ELit (CLit 'k')))
+                (EApp
+                    (EApp
+                        (EConstr "Cons")
+                        eThree)
+                    (EApp
+                        (EApp
+                            (EConstr "Cons")
+                            eOne)
+                        (EConstr "Nil"))))
 
 -- test expressions
 te1  = ELit $ ILit 3
-
 
 te2  = ELetIn "id" (ELam "x" (EVar "x"))
        (EVar "id")
