@@ -33,6 +33,7 @@ cDeclaration (A.DFunc (A.Id name) _ defs)
            countAs (A.DGuardsDef _ as _) = length as -- counts number of arguments of a definition
            sameNbrAs = all (== nbrAs) (map countAs defs) -- all defs should have same number of arguments
            defs' = allDef defs
+cDeclaration (DData (STypeIdent (TypeId s)) ftypes dPatterns) = undefined
 
 -- extracts the expression from a def
 defToExp :: A.Def -> D.Exp
