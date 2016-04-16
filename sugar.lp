@@ -143,7 +143,7 @@ zip (x:xs) (y:ys) := (x,y):(zip xs ys)
 -- Checks if a list of Bools only
 -- contains Trues
 function and : [Bool] -> Bool
-and xs := foldr (\x y -> x && y) True xs
+and := foldr (\x y -> x && y) True
 
 
 -- Checks if a list of Bools only any True

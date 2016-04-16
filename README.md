@@ -6,21 +6,21 @@ lollipop is a general purpose, functional programming language with support for 
 The main goal is to develop a proof-of-concept of linear types in a basic functional language. This is to enable easy access to the concept for developers that are interested in learning about linear types, in a practical environment.
 
 ### Running programs in lollipop
-The read-eval-print-loop, loli (loli.hs) is used to load and run programs written in lollipop (.lp).
+The lollipop interpreter, loli, (loli.hs) is used to load and run programs written in lollipop (.lp).
 
 #### Requirements
-The REPL is built in Haskell and therefore requires GHC to work. A recommendation is to install GHC's interactive environment, GHCi.
+The lollipop interpreter is built in Haskell and therefore requires the Glasgow Haskell Compiler, GHC to run.
 
-#### Running the REPL
-To run the read-eval-print-loop, fire up a terminal, move to the lollipop root directory and execute
+#### Running the lollipop interpreter
+To run the lollipop interpreter, fire up a terminal, move to the lollipop root directory and execute
 
-    runghc -iAST/:grammar/ Repl.hs
+    runghc -iAST/:grammar/ loli.hs
 
-The loading of the REPL will take some time and when the it's done you'll see:
+It will take some time loading the interpreter, but when it's done the terminal will prompt:
 
     >
 
-From here you can load programs (ending with .lp) by using `:l`, reloading programs using `:r` and leaving the REPL by `:q`.
+From here you can load lollipop programs (ending with .lp) by using `:l`, reloading programs using `:r` and leaving the interpreter by `:q`.
 
 E.g: Loading of the program sugar (filename sugar.lp):
 
@@ -42,8 +42,8 @@ E.g: Running some basic functions in sugar
     [6,8,10]
 
 #### Disclaimer
-As for now the REPL is in a beta-phase and syntax-errors and unsuccessfully loaded programs can cause it to crash. In this case, restart it using the same command again:
+As for now the lollipop interpreter is in a beta-phase and syntax-errors and unsuccessfully loaded programs can cause it to crash. In this case, restart it using the same command again:
 
-    runghc -iAST/:grammar/ Repl.hs
+    runghc -iAST/:grammar/ loli.hs
 
-In rare cases the REPL gets stuck in an endless evaluation loop. If the REPL does this, try killing the process using ctrl+c, or by killing the ghc-process.
+In rare cases the interpreter gets stuck in an evaluation loop. If the interpreter does this, try ending the process using ctrl+c, or by killing the ghc-process.

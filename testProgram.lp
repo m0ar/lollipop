@@ -1,13 +1,14 @@
-datatype Gender := Man | Woman
+datatype Gender := Man | Woman | Frog
 
 function testGen : Gender -> IO
 testGen x := case x of
     Woman -> print "She's a lady"
     Man   -> print "Now, that's a man"
+    Frog  -> print "A big frog"
     _     -> print "Something else"
 
 function testFoldl : Int
-testFoldl xs := foldl (\acc x -> acc + x) 0 xs
+testFoldl := foldl (\acc x -> acc + x) 0
 
 function addL : [Int] -> [Int] -> [Int]
 great x := x:[2,3,4]
