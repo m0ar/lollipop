@@ -12,6 +12,16 @@ fib 1 := 1
 fib n := fib (n-2) +
          fib (n-1)
 
+function abs : Int -> Int
+abs x
+    := -x when x < 0
+    := x
+
+function sign : Int -> Int
+sign x
+    := -1 when x < 0
+    := 1
+         
 function div : Int -> Int -> Int
 div _ 0 := Undefined
 div 0 _ := 0
