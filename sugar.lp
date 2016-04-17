@@ -140,12 +140,20 @@ zip [] _          := []
 zip _ []          := []
 zip (x:xs) (y:ys) := (x,y):(zip xs ys)
 
--- inverse of zip
+-- unzips a list of tuples to a tuple of lists
 unzip : [(a,b)] -> ([a], [b])
 unzip []          := ([], [])
-unzip ((x,y):xys) := ((x:(fst (unzip' xys))), 
-                      (y:(snd (unzip' xys))))
+unzip ((x,y):xys) := ((x:(fst (unzip xys))), 
+                      (y:(snd (unzip xys))))
 
+-- applies the function on the corresponding elements
+-- in the input lists and returns the list of the 
+-- values returned by the function
+zipWith : (a -> b -> c) -> [a] -> [b] -> [c]
+zipWith _ [] _          := []
+zipWith _ _ []          := []
+zipWith f (x:xs) (y:ys) := (f x y):(zipWith f xs ys)
+                      
 -- Checks if a list of Bools only
 -- contains Trues
 function and : [Bool] -> Bool
