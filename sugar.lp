@@ -80,6 +80,12 @@ take n []     := []
 take 0 _      := []
 take n (x:xs) := x:(take (n-1) xs)
 
+function takeWhile : (a -> Bool) -> [a] -> [a]
+takeWhile _ [] := []
+takeWhile f (x:xs)
+    := (x:(takeWhile f xs)) when f x
+    := []
+
 function drop : Int -> [a] -> [a]
 drop _ []     := []
 drop 0 xs     := xs
@@ -94,7 +100,7 @@ reverse []     := []
 reverse (x:xs) := reverse xs ++ [x]
 
 function elem : [a] -> a -> Bool
-reverse xs := any (\x y -> x==y) xs
+elem xs := any (\x y -> x==y) xs
 
 function sumList : [Int] -> Int
 sumList := foldr (\x y -> x+y) 0
@@ -141,7 +147,7 @@ zip _ []          := []
 zip (x:xs) (y:ys) := (x,y):(zip xs ys)
 
 -- unzips a list of tuples to a tuple of lists
-unzip : [(a,b)] -> ([a], [b])
+function unzip : [(a,b)] -> ([a], [b])
 unzip []          := ([], [])
 unzip ((x,y):xys) := ((x:(fst (unzip xys))), 
                       (y:(snd (unzip xys))))
@@ -149,7 +155,7 @@ unzip ((x,y):xys) := ((x:(fst (unzip xys))),
 -- applies the function on the corresponding elements
 -- in the input lists and returns the list of the 
 -- values returned by the function
-zipWith : (a -> b -> c) -> [a] -> [b] -> [c]
+function zipWith : (a -> b -> c) -> [a] -> [b] -> [c]
 zipWith _ [] _          := []
 zipWith _ _ []          := []
 zipWith f (x:xs) (y:ys) := (f x y):(zipWith f xs ys)
