@@ -25,7 +25,11 @@ div x y
 function mod : Int -> Int -> Int
 mod x y := x - y * div x y
 
+function succ : Int -> Int
+succ x := x + 1
 
+function pred : Int -> Int
+pred x := x - 1
 
 -- logical functions
 
