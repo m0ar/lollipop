@@ -9,7 +9,7 @@ main = do
     t1 <- testHello
     t2 <- testLetIn
     t3 <- testLazyLetIn
-    t4 <- testEConstr
+    -- t4 <- testEConstr
     --t5 <- testCase
     --t6 <- testSumList list4
     --t7 <- testSumList2
@@ -23,8 +23,8 @@ main = do
     return (t1
            ,t2
            ,t3
-           ,t4
-          -- ,t5
+           -- ,t4
+           -- ,t5
            --,t6
            --,t7
            ,t8
