@@ -41,6 +41,12 @@ succ x := x + 1
 function pred : Int -> Int
 pred x := x - 1
 
+-- gcd calculates the greatest common divisor 
+-- of the two arguments
+function gcd : Int -> Int -> Int
+gcd x 0 := abs x
+gcd x y := gcd y (mod x y)
+
 -- logical functions
 
 function odd : Int -> Boolean
