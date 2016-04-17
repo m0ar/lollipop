@@ -47,6 +47,13 @@ function gcd : Int -> Int -> Int
 gcd x 0 := abs x
 gcd x y := gcd y (mod x y)
 
+-- lcm calculates the least common multiple
+-- of the two arguments
+function lcm : Int -> Int -> Int
+lcm 0 0 := 0
+lcm x y := div (abs (x*y)) (gcd x y)
+
+
 -- logical functions
 
 function odd : Int -> Boolean
