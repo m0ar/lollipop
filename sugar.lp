@@ -140,11 +140,16 @@ zip [] _          := []
 zip _ []          := []
 zip (x:xs) (y:ys) := (x,y):(zip xs ys)
 
+-- inverse of zip
+unzip : [(a,b)] -> ([a], [b])
+unzip []          := ([], [])
+unzip ((x,y):xys) := ((x:(fst (unzip' xys))), 
+                      (y:(snd (unzip' xys))))
+
 -- Checks if a list of Bools only
 -- contains Trues
 function and : [Bool] -> Bool
 and := foldr (\x y -> x && y) True
-
 
 -- Checks if a list of Bools only any True
 function or : [Bool] -> Bool
