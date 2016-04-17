@@ -91,6 +91,12 @@ drop _ []     := []
 drop 0 xs     := xs
 drop n (x:xs) := drop (n-1) xs
 
+function dropWhile : (a -> Bool) -> [a] -> [a]
+dropWhile _ [] := []
+dropWhile f (x:xs)
+    := takeWhile f xs when f x
+    := (x:xs)
+
 function length : [a] -> Int
 length []     := 0
 length (x:xs) := 1 + length xs
