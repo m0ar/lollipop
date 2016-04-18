@@ -9,6 +9,8 @@ function getCake : Cake -> a
 getCake (Sweet x) := x
 getCake _         := Undefined
 
+datatype Boolean := True | False
+
 -- unary operators
 
 function fac : a -> b
@@ -115,7 +117,7 @@ take n []     := []
 take 0 _      := []
 take n (x:xs) := x:(take (n-1) xs)
 
-function takeWhile : (a -> Bool) -> [a] -> [a]
+function takeWhile : (a -> Boolean) -> [a] -> [a]
 takeWhile _ [] := []
 takeWhile f (x:xs)
     := (x:(takeWhile f xs)) when f x
@@ -126,7 +128,7 @@ drop _ []     := []
 drop 0 xs     := xs
 drop n (x:xs) := drop (n-1) xs
 
-function dropWhile : (a -> Bool) -> [a] -> [a]
+function dropWhile : (a -> Boolean) -> [a] -> [a]
 dropWhile _ [] := []
 dropWhile f (x:xs)
     := takeWhile f xs when f x
@@ -140,7 +142,7 @@ function reverse : [a] -> [a]
 reverse []     := []
 reverse (x:xs) := reverse xs ++ [x]
 
-function elem : [a] -> a -> Bool
+function elem : [a] -> a -> Boolean
 elem xs := any (\x y -> x==y) xs
 
 function sumList : [Int] -> Int
@@ -158,7 +160,7 @@ minimum (x:xs)
     := minimum xs when x > head xs
     := minimum (x:(tail xs))
 
-function filter : atobool -> [a] -> [a]
+function filter : atoBoolean -> [a] -> [a]
 filter _ [] := []
 filter f (x:xs)
     := x:(filter f xs) when (f x)
@@ -201,23 +203,23 @@ zipWith _ [] _          := []
 zipWith _ _ []          := []
 zipWith f (x:xs) (y:ys) := (f x y):(zipWith f xs ys)
 
--- Checks if a list of Bools only
+-- Checks if a list of Booleans only
 -- contains Trues
-function and : [Bool] -> Bool
+function and : [Boolean] -> Boolean
 and := foldr (\x y -> x && y) True
 
--- Checks if a list of Bools only any True
-function or : [Bool] -> Bool
+-- Checks if a list of Booleans only any True
+function or : [Boolean] -> Boolean
 or xs := foldr (\x y -> x || y) False xs
 
 -- Check if any element of a list
 -- satisfies the predicate.
-function any : atobool -> [a] -> Bool
+function any : atoBoolean -> [a] -> Boolean
 any f xs := or (map f xs)
 
 -- Check if all element of a list
 -- satisfies the predicate.
-function all : atobool -> [a] -> Bool
+function all : atoBoolean -> [a] -> Boolean
 all f xs := and (map f xs)
 
 -- misc functions
