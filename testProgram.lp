@@ -1,11 +1,17 @@
-datatype Gender := Man | Woman | Frog
+datatype Gender := (Man a a) | (Woman Int) | (Frog Int)
+
+function minz : Int
+minz (Man 2 4) := print "1st"
+minz (Man _ _) := print "2nd"
+
 
 function testGen : Gender -> IO
-testGen x := case x of
-    Woman -> print "She's a lady"
-    Man   -> print "Now, that's a man"
-    Frog  -> print "A big frog"
-    _     -> print "Something else"
+testGen Man := print "hello"
+-- testGen x := case x of
+    -- (Woman a) -> print "She's a lady"
+    -- (Man a)   -> print "Now, that's a man"
+    -- (Frog a)  -> print "A big frog"
+    -- _         -> print "Something else"
 
 function testFoldl : Int
 testFoldl := foldl (\acc x -> acc + x) 0

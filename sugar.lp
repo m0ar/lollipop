@@ -21,7 +21,7 @@ function sign : Int -> Int
 sign x
     := -1 when x < 0
     := 1
-         
+
 function div : Int -> Int -> Int
 div _ 0 := Undefined
 div 0 _ := 0
@@ -41,7 +41,7 @@ succ x := x + 1
 function pred : Int -> Int
 pred x := x - 1
 
--- gcd calculates the greatest common divisor 
+-- gcd calculates the greatest common divisor
 -- of the two arguments
 function gcd : Int -> Int -> Int
 gcd x 0 := abs x
@@ -182,17 +182,17 @@ zip (x:xs) (y:ys) := (x,y):(zip xs ys)
 -- unzips a list of tuples to a tuple of lists
 function unzip : [(a,b)] -> ([a], [b])
 unzip []          := ([], [])
-unzip ((x,y):xys) := ((x:(fst (unzip xys))), 
+unzip ((x,y):xys) := ((x:(fst (unzip xys))),
                       (y:(snd (unzip xys))))
 
 -- applies the function on the corresponding elements
--- in the input lists and returns the list of the 
+-- in the input lists and returns the list of the
 -- values returned by the function
-function zipWith : (a -> b -> c) -> [a] -> [b] -> [c]
+function zipWith : atobtoc -> [a] -> [b] -> [c]
 zipWith _ [] _          := []
 zipWith _ _ []          := []
 zipWith f (x:xs) (y:ys) := (f x y):(zipWith f xs ys)
-                      
+
 -- Checks if a list of Bools only
 -- contains Trues
 function and : [Bool] -> Bool

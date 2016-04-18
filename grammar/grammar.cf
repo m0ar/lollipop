@@ -64,10 +64,12 @@ PEmpty.         Pattern1        ::= "[]" ;
 PListPat.       Pattern1        ::= "[" ListPat "]" ;
 PTuplePat.      Pattern1        ::= "(" Pattern "," Pattern ")" ;
 PTruplePat.     Pattern1        ::= "(" Pattern "," Pattern "," Pattern ")" ;
+PDataConstr.    Pattern1        ::= "(" TypeIdent Pattern1 [Pattern1] ")" ;
 PCons.          Pattern         ::= Pattern1 ":" Pattern ;
-PConsConstr.    Pattern         ::= "(" TypeId Pattern [Pattern] ")" ":" Pattern ;
+-- PConsConstr.    Pattern         ::= "(" TypeId Pattern [Pattern] ")" ":" Pattern ;
 --_.              Pattern2        ::= "(" Pattern ")" ; This is still broken
-coercions Pattern 2 ;
+coercions Pattern 1 ;
+separator Pattern1 "" ;
 
 -- This is needed since the list definition below is space-separated
 -- for use in constructors

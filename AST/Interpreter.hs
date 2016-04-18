@@ -34,10 +34,11 @@ insertAll e ((var,val):vs) = insertAll (addToEnv e var val) vs
 -- makeBinding is a helper function to addDecsToEnv
 -- Makes bindings from declarations to environment
 makeBinding :: Declaration -> Env -> [(Var, Value)]
-makeBinding (DConstr id val@(VConstr s vs)) env  = (id, val):(bindDataTypes vs)
+makeBinding (DConstr name val@(VConstr s vs)) env  = (name, val):(bindDataTypes vs)
     where
-        bindDataTypes []                      = []
-        bindDataTypes (v@(VConstr name _):vs) = (name,v):(bindDataTypes vs)
+        bindDataTypes []                         = []
+        bindDataTypes ((VConstr name' vals):vs') = (name',v):(bindDataTypes vs')
+            where v = vConstructor name' (length vals) id
 makeBinding (DFunc name vs e) env = [(name, eval env (addLams vs e))]
     where
         addLams [] e     = e
@@ -49,7 +50,7 @@ startEnv = printF $ readLnF $ addF $ mulF $ bindF $ powF
                   $ thenF $ true $ false $ tuple $ truple
                   $ nil $ cons $ undef $ gtF $ divF
                   $ eqF $ notF $ orF $ consF $ concatF $ M.empty
-    where   
+    where
         printF  = M.insert "print" $ VFun $ \(VString s) -> VIO $ print s >> return (VConstr "()" []) -- TODO remove VString
         readLnF = M.insert "readLine" $ VIO $ fmap VString readLn
         concatF = M.insert "#concat" $ VFun $ \v1 -> VFun $ \v2 -> vConcat v1 v2
