@@ -47,9 +47,7 @@ repl file env = do
             res <- try $ buildEnv newfile
             case (res :: Either LoliException Env) of
                 Right env -> repl newfile env
-                Left  err -> case err of
-                    NoSuchFile  -> repl "" env
-                    SyntaxError -> repl newfile env
+                Left  err -> repl "" env
         _ -> case pExp (myLexer i) of
             Bad s -> do putStrLn "Syntax error:"
                         putStrLn s
