@@ -97,17 +97,17 @@ typeIdentName (LiTypeIdent (Id name))    = name
 
 cPattern :: A.Pattern -> D.Pattern
 cPattern p = case p of
-    A.PTuplePat p1 p2       -> D.PConstr "(,)" (Prelude.map argToPat $ Prelude.map (\p -> A.DArg p) [p1,p2])
-    A.PTruplePat p1 p2 p3   -> D.PConstr "(,,)" (Prelude.map argToPat $ Prelude.map (\p -> A.DArg p) [p1,p2,p3])
-    A.PListPat lp           -> cLPat lp
-    A.PWild                 -> D.PWild
-    (A.PId (A.Id name))     -> (D.PVar name)
-    (A.PLit l)              -> (D.PLit (cLit l))
-    (A.PConstrEmp (TypeId name)) -> (D.PConstr name [])
-    (A.PCons p1 p2)         -> D.PConstr "Cons" [(cPattern p1), (cPattern p2)]
-    (A.PDataConstr ts p ps) -> D.PConstr (typeIdentName ts) (map cPattern (p:ps))
+    A.PTuplePat p1 p2          -> D.PConstr "(,)" $ Prelude.map cPattern [p1,p2]
+    A.PTruplePat p1 p2 p3      -> D.PConstr "(,,)" $ Prelude.map cPattern [p1,p2,p3]
+    A.PListPat lp              -> cLPat lp
+    A.PWild                    -> D.PWild
+    A.PId (A.Id name)          -> D.PVar name
+    A.PLit l                   -> D.PLit (cLit l)
+    A.PConstrEmp (TypeId name) -> D.PConstr name []
+    A.PCons p1 p2              -> D.PConstr "Cons" [(cPattern p1), (cPattern p2)]
+    A.PDataConstr ts p ps      -> D.PConstr (typeIdentName ts) (map cPattern (p:ps))
     -- (A.PConsConstr (TypeId name) p1 ps p2) -> D.PConstr "Cons" [(D.PConstr name (map cPattern (p1:ps))), (cPattern p2)]
-    A.PEmpty                -> (D.PConstr "Nil" [])
+    A.PEmpty                   -> D.PConstr "Nil" []
 
 cLPat :: A.ListPat -> D.Pattern
 cLPat (PList2 p lp) = D.PConstr "Cons" [(cPattern p), (cLPat lp)]
