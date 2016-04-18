@@ -71,9 +71,7 @@ buildEnv file = do
             fc <- readFile (file ++ ".lp")
             sg <- readFile "sugar.lp"
             prog <- let ts = (myLLexer $ fc ++ " \n" ++ sg) in case pProgram ts of
-                Bad s   -> do putStr "Parse error: "
-                              putStrLn s
-                              putStrLn $ show ts
+                Bad s   -> do putStrLn s
                               throw SyntaxError
                 Ok tree -> return tree
             let ds = cProgram prog
