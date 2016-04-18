@@ -176,12 +176,13 @@ cLetIn (ELetBinding1 ls e) = cLetIn' ls e
 cList :: [A.Exp] -> D.Exp
 cList ls = case (head ls) of
     ELiteral _ -> cLitList ls
+    ENeg _     -> cLitList ls
     ETuple _   -> cTupleList ls
     EConst _   -> cConstList ls
     EList _    -> cListList ls
 
 cListList :: [A.Exp] -> D.Exp
-cListList []           = D.EConstr "Nil"
+cListList []     = D.EConstr "Nil"
 cListList (l:ls) = D.EApp ((D.EApp (D.EConstr "Cons") (cExp l))) (cListList ls)
 
 cTupleList :: [A.Exp] -> D.Exp
@@ -193,9 +194,12 @@ cConstList []              = D.EConstr "Nil"
 cConstList ((EConst c):cs) = D.EApp ((D.EApp (D.EConstr "Cons") (cConst c))) (cConstList cs)
 
 cLitList :: [A.Exp] -> D.Exp
-cLitList []                = D.EConstr "Nil"
-cLitList ((ELiteral l):ls) = D.EApp ((D.EApp (D.EConstr "Cons") (D.ELit $ cLit l))) (cLitList ls)
-
+cLitList []     = D.EConstr "Nil"
+cLitList (l:ls) = let l' = case l of
+                            ENeg (ELiteral (LitInt l))    -> LitInt    $ -1*l
+                            ENeg (ELiteral (LitDouble l)) -> LitDouble $ -1*l
+                            ELiteral l                    -> l
+                    in D.EApp ((D.EApp (D.EConstr "Cons") (D.ELit $ cLit l'))) (cLitList ls)
 cCase :: A.Cases -> [(D.Pattern, D.Exp)]
 cCase (A.ECases3 p e)    = [((cPattern p),(cExp e))]
 cCase (A.ECases1 p e cs) = cCase (A.ECases2 p e cs)
