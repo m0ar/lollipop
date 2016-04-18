@@ -6,8 +6,8 @@ datatype Cake a := (Sweet a) | Lie
 -- the cake is a lie
 
 function getCake : Cake -> a
-fromJust (Sweet x) := x
-fromJust _         := Undefined
+getCake (Sweet x) := x
+getCake _         := Undefined
 
 -- unary operators
 
