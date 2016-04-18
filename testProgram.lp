@@ -1,8 +1,9 @@
 datatype Gender := (Man a a) | (Woman Int) | (Frog Int)
 
-function minz : Int
-minz (Man 2 4) := print "1st"
-minz (Man _ _) := print "2nd"
+function minz : IO
+minz (Man 2 4)   := print "1st"
+minz (Man _ _)   := print "2nd"
+minz (Jesus _ _) := print "2nd"
 
 
 function testGen : Gender -> IO

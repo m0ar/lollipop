@@ -1,6 +1,15 @@
-function power : Int -> Int -> Int
-power x 0 := 1
-power x n := x * (power x (n-1))
+-- DataTypes
+
+-- Works like Haskells Maybe
+datatype Cake a := (Sweet a) | Lie
+-- either the cake is a Sweet or
+-- the cake is a lie
+
+function getCake : Cake -> a
+fromJust (Sweet x) := x
+fromJust _         := Undefined
+
+-- unary operators
 
 function fac : a -> b
 fac 0 := 1
@@ -56,12 +65,11 @@ lcm x y := div (abs (x*y)) (gcd x y)
 
 -- logical functions
 
-function odd : Int -> Boolean
-odd x := mod x 2 == 1
+function isOdd : Int -> Boolean
+isOdd x := mod x 2 == 1
 
-function even : Int -> Boolean
-even x := mod x 2 == 0
-
+function isEven : Int -> Boolean
+isEven x := mod x 2 == 0
 
 
 -- functions over tuples
