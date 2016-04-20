@@ -1,9 +1,13 @@
 datatype Gender := (Man a a) | (Woman Int) | (Frog Int)
 
+datatype D a := C (Cake a)
+
 function minz : IO
-minz (Man 2 4)   := print "1st"
-minz (Man _ _)   := print "2nd"
-minz (Jesus _ _) := print "2nd"
+minz (C x) := case x of
+    (Sweet y) -> print "sweet y"
+    Lie       -> print "LIE"
+    _         -> print "NADA"
+minz _     := print "gick inge bra"
 
 
 function testGen : Gender -> IO

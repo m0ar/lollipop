@@ -36,10 +36,10 @@ cDeclaration (A.DFunc (A.Id name) _ defs)
 cDeclaration (DData (STypeIdent (TypeId s)) fTs dPs) = D.DConstr s (D.VConstr s (map dPatToVal dPs))
 
 dPatToVal :: A.DPatterns -> D.Value
-dPatToVal (DDTypes3 id) =
+dPatToVal (DDTypes3 id fts) =
     case id of
-        (STypeIdent  (TypeId s)) -> (D.VConstr s []) -- TODO lägg till s som en typ i miljön
-        (LiTypeIdent (Id s))     -> (D.VConstr s [])
+        (STypeIdent  (TypeId s)) -> (D.VConstr s (map fieldTypeToVal fts)) -- TODO lägg till s som en typ i miljön
+        (LiTypeIdent (Id s))     -> (D.VConstr s (map fieldTypeToVal fts))
 dPatToVal (DDTypes4 id ft fts) =
     case id of
         (STypeIdent  (TypeId s)) -> (D.VConstr s (map fieldTypeToVal (ft:fts)))
@@ -48,6 +48,7 @@ dPatToVal (DDTypes4 id ft fts) =
 fieldTypeToVal :: A.FieldType -> D.Value
 fieldTypeToVal (FieldType1 (Id s))     = (D.VConstr s [])
 fieldTypeToVal (FieldType2 (TypeId s)) = (D.VConstr s [])
+fieldTypeToVal f@(FieldType3 t1 t2)    = (D.VConstr "" [fieldTypeToVal f])
 
 -- extracts the expression from a def
 defToExp :: A.Def -> D.Exp
@@ -115,11 +116,11 @@ cLPat (PList1 p )    = D.PConstr "Cons" [(cPattern p), (D.PConstr "Nil" [])]
 
 
 cType :: A.Type -> D.Exp
-cType (A.TTypeId t) = case t of -- TODO check this part
+cType (A.TypeIds t) = case t of -- TODO check this part
     (A.STypeIdent (A.TypeId name)) -> (D.EVar name)
     (A.LiTypeIdent (A.Id name))    -> (D.EVar name)
 -- cType (TPoly ti)   = what is poly?
-cType (A.TList ts)  = cList ts
+cType (A.TypeList ts)  = cList ts
     where cList []     = D.EConstr "Nil"
           cList (t:ts) = D.EApp (D.EApp (D.EConstr "Cons") (cType t)) (cList ts)
 
