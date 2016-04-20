@@ -97,3 +97,5 @@ zipWith f (x:xs) (y:ys) := f x y : zipWith' f xs ys ;
 
 --type A := [(String,Int)] ;
 --type B := ([String] -> Int) -> Bool ;
+
+datatype D a := C (Maybe a)
