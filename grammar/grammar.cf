@@ -10,13 +10,18 @@ DImport.        Import          ::= "import" Id ;
 DFunc.          Declaration     ::= "function" Id ":" TypeDecls ";" [Def] ;
 DData.          Declaration     ::= "datatype" TypeIdent [FieldType] ":=" [DPatterns] ";" ;
 separator nonempty DPatterns "|" ;
-DSyn.           Declaration     ::= "type" TypeIdent [Id] ":=" TypeSyn Deriving ;
+DSyn.           Declaration     ::= "type" TypeIdent [Id] ":=" TypeDecls Deriving ;
 layout toplevel ;
 
 -- The structure of type declarations for functions.
 STypeDecl.      TypeDecls       ::= Type ;
-MTypeDecl.      TypeDecls       ::= Type "->" TypeDecls ;
-MLiTypeDecl.    TypeDecls       ::= Type "-o" TypeDecls ;
+MTypeDecl.      TypeDecls       ::= Type Arrow TypeDecls ;
+CMTypeDecl.     TypeDecls       ::= "(" Type Arrow TypeDecls ")" TypeDecls2 ;
+ETypeDecl.      TypeDecls2      ::= ;
+CTypeDecl.      TypeDecls2      ::= Arrow TypeDecls ;
+
+RegArrow.       Arrow           ::= "->" ;
+LiArrow.        Arrow           ::= "-o" ;
 
 -- Function definition
 DDef.           Def             ::= Id [Arg] ":=" Exp ;
@@ -29,17 +34,11 @@ separator Arg "" ;
 DConst1.        Cons            ::= "(" TypeId Id [Id] ")" ;
 DConst2.        Cons            ::= TypeId ;
 
-
 -- Structure of guards in function definitions
 DGuards1.       Guards          ::= ":=" Exp "when" Exp Guards1 ;
 DGuards2.       Guards1         ::= ":=" Exp "when" Exp Guards1 ;
 DExpGuard.      Guards1         ::= ":=" Exp ;
 DEmptyGuard.    Guards1         ::= ;
-
---Type synonyms
-DTSyn1.         TypeSyn         ::= ;
-DTSyn2.         TypeSyn         ::= Type TypeSyn ;
-DTSyn3.         TypeSyn         ::= "(" Type Id [Id] ")" TypeSyn ;
 
 -- The structure of algebraic data types
 DDTypes3.       DPatterns       ::= TypeIdent ;
@@ -121,7 +120,7 @@ EEq.            Exp4            ::= Exp4 "==" Exp5 ;
 ENEq.           Exp4            ::= Exp4 "!=" Exp5 ;
 EAnd.           Exp3            ::= Exp3 "&&" Exp4 ;
 EOr.            Exp2            ::= Exp2 "||" Exp3 ;
-ELet.           Exp1           ::= "let" Id ":=" Exp2 "in" Exp ;
+ELet.           Exp1            ::= "let" Id ":=" Exp2 "in" Exp ;
 EBind.          Exp1            ::= Exp2 ">>=" Exp1 ;
 ESeq.           Exp1            ::= Exp2 ">>" Exp1 ;
 ECase.          Exp1            ::= "case" Exp "of" "{" Cases "}" ;
@@ -159,17 +158,10 @@ LEnumElem1.     EnumElem        ::= Integer ;
 LEnumElem2.     EnumElem        ::= Double ;
 LEnumElem3.     EnumElem        ::= Char ;
 
--- Let bindings, this is requires an additional ';' at the very end of the binding.
--- ELetBinding1.   LetBinding      ::= "let" "{" LetBinding1 "}" "in" Exp ";" ;
--- ELetBinding2.   LetBinding1     ::= Id ":=" Exp ;
---separator nonempty LetBinding1 ";" ;
-
 -- Types, either regular or linear
 TTypeId.        Type            ::= TypeIdent ;
 TList.          Type            ::= "[" [Type] "]" ;
 TTuple.         Type            ::= "(" [Type] ")" ;
-TFun.           Type            ::= "(" Type "->" Type ")";
-TLFun.          Type            ::= "(" Type "-o" Type ")" ;
 
 separator Type "," ;
 

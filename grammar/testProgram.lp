@@ -35,8 +35,8 @@ tail (x:xs) := xs ;
 
 function last : [Int] -> Int ;
 last y := case y of
-    (x:[]) -> x ;
-    (x:xs) -> last xs ;;
+    (x:[]) -> x
+    (x:xs) -> last xs
 
 function lst : [Int] ;
 lst := [True,False,True] ;
@@ -76,15 +76,24 @@ useDbl x := 4 + dbl x ;
 
 function dbl : Int -> Int ;
 dbl x := case x of
-    1 -> 2 ;
-    x -> 2 * x ;;
+    1 -> 2
+    x -> 2 * x
 
 function ca : Int -> Int -> Int -> Int ;
 ca 3 x 2 := case x of
-    2 -> 2 + x ;
-    _ -> 10 ;;
-ca _ 0 0 := 0 ;
+    2 -> 2 + x
+    _ -> 10
+ca _ 0 0 := 0
 
 function onePat : Int -> Int ;
 pat 2 := 11 ;
 pat _ := 0 ;
+
+--example from learnyouahaskell
+function zipWith : (a -> b -> c) -> [a] -> [b] -> [c] ;
+zipWith _ []     _      := [] ;
+zipWith _ _      []     := [] ;
+zipWith f (x:xs) (y:ys) := f x y : zipWith' f xs ys ;
+
+--type A := [(String,Int)] ;
+--type B := ([String] -> Int) -> Bool ;
