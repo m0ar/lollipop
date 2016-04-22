@@ -8,8 +8,8 @@ coercions Program 1 ;
 -- A declaration of function definitions, imports or algebraic data types
 DImport.        Import          ::= "import" Id ;
 DFunc.          Declaration     ::= "function" Id ":" Type ";" [Def] ;
-DData.          Declaration     ::= "datatype" TypeIdent [FieldType] ":=" [DPatterns] ";" ;
-separator nonempty DPatterns "|" ;
+DData.          Declaration     ::= "datatype" TypeIdent [Id] ":=" [Constr] ";" ;
+separator nonempty Constr "|" ;
 DSyn.           Declaration     ::= "type" TypeIdent [Id] ":=" Type Deriving ;
 layout toplevel ;
 
@@ -30,15 +30,14 @@ DGuards2.       Guards1         ::= ":=" Exp "when" Exp Guards1 ;
 DExpGuard.      Guards1         ::= ":=" Exp ;
 DEmptyGuard.    Guards1         ::= ;
 
--- The structure of algebraic data types
-DDTypes3.       DPatterns       ::= TypeIdent [FieldType] ;
-DDTypes4.       DPatterns       ::= "(" TypeIdent FieldType [FieldType] ")" ;
-separator FieldType "" ;
+-- constructors for datatypes
+DConstr.       Constr          ::= TypeIdent [TypeParamater] ;
 
--- Type synonyms for id and type for use in datatypes
-FieldType1.     FieldType       ::= Id ;
-FieldType2.     FieldType       ::= TypeId ;
-FieldType3.     FieldType       ::= "(" Type Type1 ")" ;
+-- type paramaters for constructors of datatypes
+TParamater1.    TypeParamater   ::= TypeIdent ;
+TParamater2.    TypeParamater   ::= "(" Type ")" ;
+TParamater3.    TypeParamater   ::= "[" Type "]" ;
+separator TypeParamater "" ;
 
 -- Deriving structure, DerArg can be any TypeClass,
 -- predefined or custom-made
@@ -150,13 +149,14 @@ LEnumElem2.     EnumElem        ::= Double ;
 LEnumElem3.     EnumElem        ::= Char ;
 
 -- Types, either regular or linear
-TypeIds.        Type1           ::= TypeIdent ;
-TypeTuple.      Type1           ::= "(" [Type] ")" ;
-TypeList.       Type1           ::= "[" [Type] "]" ;
-TypeVoid.       Type1           ::= "()" ;
-TypeStart.      Type            ::= Type1 ;
-TypeDecl.       Type            ::= Type1 "->" Type ;
-LiTypeDecl.     Type            ::= Type1 "-o" Type ;
+TypeIds.        Type2           ::= TypeIdent ;
+TypeTuple.      Type2           ::= "(" Type "," [Type] ")" ;
+TypeList.       Type2           ::= "[" [Type] "]" ;
+TypeVoid.       Type2           ::= "()" ;
+TypeDecl.       Type1           ::= Type2 "->" Type1 ;
+LiTypeDecl.     Type1           ::= Type2 "-o" Type1 ;
+TypeApp.        Type            ::= Type Type1 ;
+coercions Type 2 ;
 separator nonempty Type "," ;
 
 STypeIdent.     TypeIdent       ::= TypeId ;

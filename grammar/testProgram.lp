@@ -99,3 +99,11 @@ zipWith f (x:xs) (y:ys) := f x y : zipWith' f xs ys ;
 --type B := ([String] -> Int) -> Bool ;
 
 datatype D a := C (Maybe a)
+
+datatype D a := C (Maybe a) 
+datatype Value :=
+        VIO (IO Value) -- void IO
+        | VString String -- TODO Remove
+        | VLit Lit
+        | VConstr ConstrID [Value] -- list of values to be used as parameters
+        | VFun (Value -> Value)
