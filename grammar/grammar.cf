@@ -31,13 +31,11 @@ DExpGuard.      Guards1         ::= ":=" Exp ;
 DEmptyGuard.    Guards1         ::= ;
 
 -- constructors for datatypes
-DConstr.       Constr          ::= TypeIdent [TypeParamater] ;
+DConstr.        Constr          ::= TypeIdent [TypeParameter] ;
 
--- type paramaters for constructors of datatypes
-TParamater1.    TypeParamater   ::= TypeIdent ;
-TParamater2.    TypeParamater   ::= "(" Type ")" ;
-TParamater3.    TypeParamater   ::= "[" Type "]" ;
-separator TypeParamater "" ;
+-- type paramater for constructors of datatypes
+TParamater.     TypeParameter   ::= Type2 ;
+separator TypeParameter "" ;
 
 -- Deriving structure, DerArg can be any TypeClass,
 -- predefined or custom-made
