@@ -1,10 +1,9 @@
-module Loli where
-
 -- To play around a bit with your interpreter
 -- I wrote this little front end for the various
 -- parts of your program.
 -- to run : runghc -iAST/:grammar/ loli.hs
 {-# LANGUAGE DeriveDataTypeable #-}
+module Loli where
 
 import System.IO
 import AST.Interpreter
