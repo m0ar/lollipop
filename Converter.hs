@@ -4,7 +4,7 @@
 
 module Converter where
 
-import AST.Interpreter
+import qualified AST.Interpreter as I
 import qualified AST.DataTypes as D
 import TI
 import AbsGrammar
@@ -133,14 +133,15 @@ cLPat (A.PList2 p lp) = D.PConstr "Cons" [(cPattern p), (cLPat lp)]
 cLPat (A.PList1 p )    = D.PConstr "Cons" [(cPattern p), (D.PConstr "Nil" [])]
 
 
-cType :: A.Type -> D.Exp
+cType :: A.Type -> D.Value
 cType (A.TypeIds t) = case t of -- TODO check this part
-    (A.STypeIdent (A.TypeId name)) -> (D.EVar name)
-    (A.LiTypeIdent (A.Id name))    -> (D.EVar name)
+    (A.STypeIdent (A.TypeId name)) -> (D.VConstr name [])
+    (A.LiTypeIdent (A.Id name))    -> (D.VConstr name [])
 -- cType (TPoly ti)   = what is poly?
 cType (A.TypeList ts)  = cList ts
-    where cList []     = D.EConstr "Nil"
-          cList (t:ts) = D.EApp (D.EApp (D.EConstr "Cons") (cType t)) (cList ts)
+    where cList []     = D.VConstr "Nil" []
+          --cList (t:ts) = D.EApp (D.EApp (D.EConstr "Cons") (cType t)) (cList ts)
+          cList ts = I.vConstructor "Cons" 2 id
 
 cLit :: A.Literal -> D.Lit
 cLit (A.LitInt x)      = D.ILit $ fromInteger x
