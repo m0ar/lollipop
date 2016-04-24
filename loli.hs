@@ -1,13 +1,16 @@
+module Loli where
+
 -- To play around a bit with your interpreter
 -- I wrote this little front end for the various
 -- parts of your program.
 -- to run : runghc -iAST/:grammar/ loli.hs
 {-# LANGUAGE DeriveDataTypeable #-}
+
 import System.IO
-import Interpreter
+import AST.Interpreter
 import Converter hiding (main)
-import DataTypes
-import Environment
+import AST.DataTypes
+import AST.Environment
 import qualified AbsGrammar as A
 
 import LexGrammar
@@ -49,8 +52,7 @@ repl file env = do
                 Right env -> repl newfile env
                 Left  err -> repl "" env
         _ -> case pExp (myLexer i) of
-            Bad s -> do putStrLn "Syntax error:"
-                        putStrLn s
+            Bad s -> do putStrLn s
                         loop
             Ok e -> case eval env (cExp e) of -- TODO: type check input
                VIO io -> putStrLn "running" >> io >> loop
@@ -75,7 +77,7 @@ buildEnv file = do
             let ds = cProgram prog
                 -- TODO: type check ds
                 env = addDecsToEnv env ds
-            putStrLn $ "Successfully loaded "++file
+            putStrLn $ "Successfully loaded " ++ file
             return env
         Left  err     -> do
             putStrLn "No such file, nothing loaded."

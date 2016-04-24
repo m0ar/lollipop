@@ -1,8 +1,8 @@
-module Environment where
+module AST.Environment where
 
 import Data.Map
 import qualified Data.Map as M
-import DataTypes
+import AST.DataTypes
 
 type Env = Map Var Value
 

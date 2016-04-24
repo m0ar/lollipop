@@ -31,7 +31,8 @@ DExpGuard.      Guards1         ::= ":=" Exp ;
 DEmptyGuard.    Guards1         ::= ;
 
 -- constructors for datatypes
-DConstr.        Constr          ::= TypeIdent [TypeParameter] ;
+DConstr1.        Constr          ::= TypeIdent [TypeParameter] ;
+DConstr2.        Constr          ::= "(" TypeIdent TypeParameter [TypeParameter] ")" ;
 
 -- type paramater for constructors of datatypes
 TParamater.     TypeParameter   ::= Type2 ;

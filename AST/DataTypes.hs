@@ -1,4 +1,4 @@
-module DataTypes where
+module AST.DataTypes where
 
 
 type Program = [Declaration]
@@ -92,18 +92,35 @@ instance Show Declaration where
 -- Show functions --
 instance Show Exp where
     show e = case e of
-        EApp e1 e2         -> ""
+        EApp e1 e2         -> show e1 ++ " " ++ show e2
         EVar s             -> s
         ELit l             -> show l
         EConstr cid        -> show cid
+        EUnOp op e         -> case op of
+            Not -> "!" ++ show e
+            _   -> "Unary operator: '" ++ show op ++ "'"
         EBinOp op e1 e2    -> case op of
-            Add -> (show e1) ++ " + " ++ (show e2)
-        ELam v e           -> "(\'" ++ v ++ " -> " ++ (show e)
-        ECase e ps         -> "case " ++ (show e) ++ " of \n" ++ (concatMap show ps)
+            Add  -> disp "+"
+            Sub  -> disp "-"
+            Mul  -> disp "*"
+            Div  -> disp "/"
+            Bind -> disp "<-"
+            Then -> disp ">>"
+            Gt   -> disp ">"
+            Eq   -> disp "=="
+            Or   -> disp "||"
+            Pow  -> disp "^"
+            _    -> show e1 ++ " binary operator: '" ++ show op ++ "' " ++ show e2
+            where
+                disp op = show e1 ++ " " ++ op ++ " " ++ show e2
+        ELam v e           -> "\\" ++ v ++ " -> " ++ show e
+        ECase e ps         -> "case " ++ show e ++ " of \n" ++ (concatMap show ps)
+        ELetIn v e1 e2     -> "let " ++ v ++ " = " ++ show e1 ++ " in \n   " ++ show e2
 
 instance Show Pattern where
     show p = case p of
         PConstr cid vs -> cid ++ " "  ++ (concatMap show vs) ++ " = "
+        PLit l         -> show l
         PWild          -> "_ -> "
         PVar v    -> v ++ " -> "
 
@@ -116,9 +133,9 @@ instance Show Value where
             "(,)"   -> "(" ++ (show (vs !! 0)) ++ ", " ++ (show (vs !! 1)) ++ ")"
             "(,,)"  -> "(" ++ (show (vs !! 0)) ++ ", " ++ (show (vs !! 1)) ++ ", " ++ (show (vs !! 2)) ++ ")"
             "Nil"   -> "[]"
-            "Cons"  -> "[" ++ (DataTypes.showList vs) ++ "]"
+            "Cons"  -> "[" ++ (AST.DataTypes.showList vs) ++ "]"
             _       -> cid ++ " " ++ concat (Prelude.map show vs)
-
+           
 showList :: [Value] -> String
 showList [v, (VConstr "Nil"  [])] = show v
-showList [v, (VConstr "Cons" vs)] = (show v) ++ ", " ++ DataTypes.showList vs
+showList [v, (VConstr "Cons" vs)] = (show v) ++ ", " ++ AST.DataTypes.showList vs

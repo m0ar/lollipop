@@ -4,8 +4,9 @@
 
 module Converter where
 
-import Interpreter
-import qualified DataTypes as D
+import AST.Interpreter
+import qualified AST.DataTypes as D
+import TI
 import AbsGrammar
 import qualified AbsGrammar as A
 
@@ -19,7 +20,7 @@ cProgram (A.PLast d)      = ((cDeclaration d):[])
 
 -- converts any declaration to a case
 cDeclaration :: A.Declaration -> D.Declaration
-cDeclaration (A.DFunc (A.Id name) _ defs)
+cDeclaration (A.DFunc (A.Id name) tDecls defs)
                 | not sameNbrAs -- definitons has different number of arguments
                     = error $ "Defintions for function " ++ name ++ " have different number of arguments"
                 | nbrAs == 0 && length defs > 1 -- if there is no input arguments, but several defs
@@ -35,36 +36,52 @@ cDeclaration (A.DFunc (A.Id name) _ defs)
            defs' = allDef defs
 cDeclaration (DData (STypeIdent (TypeId s)) fTs dPs) = D.DConstr s (D.VConstr s (map dPatToVal dPs))
 
-dPatToVal :: A.DPatterns -> D.Value
-dPatToVal (DDTypes3 id fts) =
+dPatToVal :: A.Constr -> D.Value
+dPatToVal (DConstr1 id fts) =
     case id of
         (STypeIdent  (TypeId s)) -> (D.VConstr s (map fieldTypeToVal fts)) -- TODO lägg till s som en typ i miljön
         (LiTypeIdent (Id s))     -> (D.VConstr s (map fieldTypeToVal fts))
-dPatToVal (DDTypes4 id ft fts) =
+dPatToVal (DConstr2 id ft fts) =
     case id of
         (STypeIdent  (TypeId s)) -> (D.VConstr s (map fieldTypeToVal (ft:fts)))
         (LiTypeIdent (Id s))     -> (D.VConstr s (map fieldTypeToVal (ft:fts)))
 
-fieldTypeToVal :: A.FieldType -> D.Value
-fieldTypeToVal (FieldType1 (Id s))     = (D.VConstr s [])
-fieldTypeToVal (FieldType2 (TypeId s)) = (D.VConstr s [])
-fieldTypeToVal f@(FieldType3 t1 t2)    = (D.VConstr "" [fieldTypeToVal f])
+
+fieldTypeToVal :: A.TypeParameter -> D.Value
+fieldTypeToVal (A.TParamater t) = typeToVal t
+
+typeToVal :: A.Type -> D.Value -- TODO ,
+typeToVal t = case t of
+        TypeIds (STypeIdent (TypeId t1))    -> D.VConstr t1 []
+        TypeIds (LiTypeIdent (Id t1))       -> undefined -- TODO
+        TypeTuple t1 t2                     -> case length t2 of
+           1 -> D.VConstr "(,)"  [typeToVal $ t1, (typeToVal $ head t2)]
+           2 -> D.VConstr "(,,)" [typeToVal t1, (typeToVal $ head t2), (typeToVal $ head $ drop 1 $ t2)]
+        TypeList [t1]                       -> undefined
+        TypeVoid                            -> undefined
+        TypeDecl t1 t2                      -> undefined
+        LiTypeDecl t1 t2                    -> undefined
+        TypeApp t1 t2                       -> undefined
 
 -- extracts the expression from a def
 defToExp :: A.Def -> D.Exp
-defToExp (A.DDef _ _ e)      = cExp e
-defToExp (DGuardsDef _ _ gs) = cExp $ cGuard gs
+defToExp (A.DDef _ _ e)         = cExp e
+defToExp (A.DGuardsDef _ _ gs)  = cExp $ cGuard gs
 -- converts a number of definitions to case-tree
--- first matches the first argument to firt input variable then creates following
--- case-trees
+-- first matches the first argument to firt input variable then
+-- creates following case-trees
+
 defsToCase :: [D.Var] -> [D.Var] -> [A.Def] -> D.Exp
-defsToCase  _    (v:[]) ((A.DDef _ (a:[]) e):[])   = D.ECase (D.EVar v) [((argToPat a), (cExp e))]
-defsToCase vsOrg (v:[]) ((A.DDef _ (a:[]) e):ds)   = D.ECase (D.EVar v)
-                                                      [ ((argToPat a), (cExp e)),
-                                                        (D.PWild, (defsToCase vsOrg vsOrg ds))]
-defsToCase vsOrg (v:vs) ((A.DDef did (a:as) e):ds) = D.ECase (D.EVar v)
-                                                      [ ((argToPat a), (defsToCase vsOrg vs ((A.DDef did as e):ds))),
-                                                        (D.PWild, (defsToCase vsOrg vsOrg ds))]
+defsToCase  _    (v:[]) ((A.DDef _ (a:[]) e):[])
+    = D.ECase (D.EVar v) [((argToPat a), (cExp e))]
+defsToCase vsOrg (v:[]) ((A.DDef _ (a:[]) e):ds)
+    = D.ECase (D.EVar v)
+      [ ((argToPat a), (cExp e)),
+        (D.PWild, (defsToCase vsOrg vsOrg ds))]
+defsToCase vsOrg (v:vs) ((A.DDef did (a:as) e):ds) =
+    D.ECase (D.EVar v)
+      [ ((argToPat a), (defsToCase vsOrg vs ((A.DDef did as e):ds))),
+        (D.PWild, (defsToCase vsOrg vsOrg ds))]
 
 -- translates all definitions into DDef-definitions
 allDef :: [A.Def] -> [A.Def]
@@ -76,7 +93,8 @@ allDef (d:ds) = case d of
 -- translates guards into equal case-expressions
 cGuard :: A.Guards -> A.Exp
 cGuard (A.DGuards1 e1 e2 gs) = cGuard (A.DGuards2 e1 e2 gs)
-cGuard (A.DGuards2 e1 e2 gs) = A.ECase e2 (A.ECases2 (A.PConstrEmp (TypeId "True")) e1 (cGuard' gs))
+cGuard (A.DGuards2 e1 e2 gs) =
+    A.ECase e2 (A.ECases2 (A.PConstrEmp (A.TypeId "True")) e1 (cGuard' gs))
     where
         cGuard' (A.DGuards2 _ _ _) = (A.ECases3 A.PWild (cGuard gs))
         cGuard' (A.DExpGuard e)        = (A.ECases3 A.PWild e)
@@ -111,8 +129,8 @@ cPattern p = case p of
     A.PEmpty                   -> D.PConstr "Nil" []
 
 cLPat :: A.ListPat -> D.Pattern
-cLPat (PList2 p lp) = D.PConstr "Cons" [(cPattern p), (cLPat lp)]
-cLPat (PList1 p )    = D.PConstr "Cons" [(cPattern p), (D.PConstr "Nil" [])]
+cLPat (A.PList2 p lp) = D.PConstr "Cons" [(cPattern p), (cLPat lp)]
+cLPat (A.PList1 p )    = D.PConstr "Cons" [(cPattern p), (D.PConstr "Nil" [])]
 
 
 cType :: A.Type -> D.Exp
@@ -131,8 +149,8 @@ cLit (A.LitChar x)     = D.CLit x
 cLit (A.LitString x)   = D.SLit x
 
 cConst :: A.Cons -> D.Exp
-cConst (DConst1 (TypeId cid) cid' ids) = D.EConstr cid
-cConst (DConst2 (TypeId cid))         = D.EConstr cid
+cConst (A.DConst1 (A.TypeId cid) cid' ids) = D.EConstr cid
+cConst (A.DConst2 (A.TypeId cid))         = D.EConstr cid
 
 cExp :: A.Exp -> D.Exp
 cExp (A.EVar (A.Id name))   = (D.EVar name)
@@ -174,9 +192,9 @@ cExp (A.EAbs (A.Id n) ns e) = (D.ELam n (cList' ns e))
 {-- cLetIn :: A.LetBinding -> D.Exp
 cLetIn (ELetBinding1 ls e) = cLetIn' ls e
     where
-        cLetIn' ((ELetBinding2 (Id name) e1):[]) e = D.ELetIn name (cExp e1) (cExp e)
-        cLetIn' ((ELetBinding2 (Id name) e1):ls) e = error "Expected one argument in let"
-        --cLetIn' ((ELetBinding2 (Id name) e1):ls) e = D.ELetIn name (cExp e1) (cLetIn' ls e)
+        cLetIn' ((A.ELetBinding2 (Id name) e1):[]) e = D.ELetIn name (cExp e1) (cExp e)
+        cLetIn' ((A.ELetBinding2 (Id name) e1):ls) e = error "Expected one argument in let"
+        --cLetIn' ((A.ELetBinding2 (Id name) e1):ls) e = D.ELetIn name (cExp e1) (cLetIn' ls e)
 --}
 
 cList :: [A.Exp] -> D.Exp
@@ -193,11 +211,11 @@ cListList (l:ls) = D.EApp ((D.EApp (D.EConstr "Cons") (cExp l))) (cListList ls)
 
 cTupleList :: [A.Exp] -> D.Exp
 cTupleList []     = D.EConstr "Nil"
-cTupleList ((ETuple t):ts) = D.EApp ((D.EApp (D.EConstr "Cons") (cTuple t))) (cTupleList ts)
+cTupleList ((A.ETuple t):ts) = D.EApp ((D.EApp (D.EConstr "Cons") (cTuple t))) (cTupleList ts)
 
 cConstList :: [A.Exp] -> D.Exp
 cConstList []              = D.EConstr "Nil"
-cConstList ((EConst c):cs) = D.EApp ((D.EApp (D.EConstr "Cons") (cConst c))) (cConstList cs)
+cConstList ((A.EConst c):cs) = D.EApp ((D.EApp (D.EConstr "Cons") (cConst c))) (cConstList cs)
 
 cLitList :: [A.Exp] -> D.Exp
 cLitList []     = D.EConstr "Nil"
@@ -213,8 +231,8 @@ cCase (A.ECases1 p e cs) = cCase (A.ECases2 p e cs)
 cCase (A.ECases2 p e cs) = ((cPattern p),(cExp e)):(cCase cs)
 
 cTuple :: A.Tuple -> D.Exp
-cTuple (Tuple1 e1 e2)    = D.EApp (D.EApp (D.EVar "(,)") (cExp e1)) (cExp e2)
-cTuple (Tuple2 e1 e2 e3) = D.EApp (D.EApp (D.EApp (D.EVar "(,,)") (cExp e1)) (cExp e2)) (cExp e3)
+cTuple (A.Tuple1 e1 e2)    = D.EApp (D.EApp (D.EVar "(,)") (cExp e1)) (cExp e2)
+cTuple (A.Tuple2 e1 e2 e3) = D.EApp (D.EApp (D.EApp (D.EVar "(,,)") (cExp e1)) (cExp e2)) (cExp e3)
 
 {--cGuard :: A.Guards -> A.Exp
 cGuard (A.DGuards1 e1 e2 gs) = D.ECase (cExp e2) [((D.PConstr "True" []), (cExp e1)),
