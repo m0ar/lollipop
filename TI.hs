@@ -10,11 +10,6 @@ import qualified Text.PrettyPrint as PP
 
 data Type =
     TVar Var
-    | TInt
-    | TDouble
-    | TChar
-    | TString
-    | TBool
     | TFun Type Type
     | TApp Type Type
     | TConstr String
@@ -29,11 +24,6 @@ class Types a where
 
 instance Types Type where
     ftv (TVar n)            = S.singleton n
-    ftv TInt                = S.empty
-    ftv TDouble             = S.empty
-    ftv TChar               = S.empty
-    ftv TString             = S.empty
-    ftv TBool               = S.empty
     ftv (TFun t1 t2)        = ftv t1 `S.union` ftv t2
     ftv (TConstr _)         = S.empty
     ftv (TApp t1 t2)        = ftv t1 `S.union` ftv t2
@@ -98,11 +88,6 @@ unify t1 t2 = do
         return $ TFun m1 m2
     go (TVar u) t               = varBind u t
     go t (TVar u)               = varBind u t
-    go TInt TInt                = return TInt
-    go TDouble TDouble          = return TDouble
-    go TChar TChar              = return TChar
-    go TString TString          = return TString
-    go TBool TBool              = return TBool
     go (TConstr a) (TConstr b) | a == b = return $ TConstr a
     go (TApp l1 r1) (TApp l2 r2)= do
         m1 <- go l1 l2
@@ -137,10 +122,10 @@ ti (TypeEnv env) (EVar v) = case M.lookup v env of
         Nothing -> throwError $ "unbound variable: " ++ v
         Just v' -> instantiate v'
 ti _ (ELit l)           = case l of
-    ILit _ -> return TInt
-    DLit _ -> return TDouble
-    CLit _ -> return TChar
-    SLit _ -> return TString
+    ILit _ -> return $ TConstr "Int"
+    DLit _ -> return $ TConstr "Double"
+    CLit _ -> return $ TConstr "Char"
+    SLit _ -> return $ TApp (TConstr "[]") (TConstr "Char")
 ti env (EUnOp o e) = case o of  -- TODO
     Not -> do
         t1 <- ti env e 
@@ -192,7 +177,7 @@ infer env ex = do
 
 testTI = fst $ runTI $ do
     let t = TFun (TVar "b") (TApp (TConstr "[]") (TVar "b")) 
-    unify (TFun TInt (TVar "a")) t
+    unify (TFun (TConstr "Int") (TVar "a")) t
     debugTI
 
 -- Returns the free expression variables in patterns
@@ -256,11 +241,6 @@ instance Show Type where
 
 prType :: Type -> PP.Doc
 prType (TVar n)   = PP.text n
-prType TInt       = PP.text "Int"
-prType TDouble    = PP.text "Double"
-prType TChar      = PP.text "Char"
-prType TString    = PP.text "String"
-prType TBool      = PP.text "Bool"
 prType (TConstr s)= PP.text s
 prType (TFun t s) = prParenType t PP.<+> PP.text "->" PP.<+> prType s
 prType (TApp t s) = prParenType t PP.<+> prType s
