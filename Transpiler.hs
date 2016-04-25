@@ -16,7 +16,7 @@ tExp (L.EUnOp op e)      = undefined
 tExp (L.EBinOp op e1 e2) = undefined
 tExp (L.ELam v e)        = undefined
 tExp (L.EConstr cid)     = undefined
-tExp (L.ECase e pes)     = undefined
+tExp (L.ECase e pes)     = Case (tExp e) (map patExpToAlt pes)
 tExp (L.ELetIn v e1 e2)  = Let (IPBinds [(tIPBind ("",0,0) v e1)]) (tExp e2)
 tExp (L.EListComp e1 vvs e2) = undefined
 
@@ -33,3 +33,8 @@ tIPBind :: (String, Int, Int) -> L.Var -> L.Exp -> H.IPBind
 tIPBind (src, line, column) v e = IPBind (SrcLoc src line column)
                                          (IPDup v)
                                          (tExp e)
+
+-- Creates a Haskell Alt from a lollipop Pattern and Exp
+-- for use in Case-expressions
+patExpToAlt :: (L.Pattern, L.Exp) -> H.Alt
+patExpToAlt (p, e) = undefined
