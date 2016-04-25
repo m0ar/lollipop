@@ -1,0 +1,2 @@
+-- transpiles lollipop data structures into
+-- corresponding Haskell data structures
