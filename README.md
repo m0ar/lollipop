@@ -9,7 +9,15 @@ The main goal is to develop a proof-of-concept of linear types in a basic functi
 The lollipop interpreter, loli, (loli.hs) is used to load and run programs written in lollipop (.lp).
 
 #### Requirements
+
+##### interpreter
 The lollipop interpreter is built in Haskell and therefore requires the Glasgow Haskell Compiler, GHC to run.
+
+##### Transpiler
+The transpiler is built using Language.Haskell.Exts.Syntax and therefore you need to install this using cabal:
+
+    cabal install haskell-src-exts
+
 
 #### Running the lollipop interpreter
 To run the lollipop interpreter, fire up a terminal, move to the lollipop root directory and execute
