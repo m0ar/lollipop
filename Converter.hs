@@ -48,7 +48,7 @@ dPatToVal (DConstr2 id ft fts) =
 
 
 fieldTypeToVal :: A.TypeParameter -> D.Value
-fieldTypeToVal (A.TParamater t) = typeToVal t
+fieldTypeToVal (A.TParameter t) = typeToVal t
 
 typeToVal :: A.Type -> D.Value -- TODO ,
 typeToVal t = case t of
