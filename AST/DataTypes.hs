@@ -34,7 +34,6 @@ type Var = String
 type Vars = [Var]
 
 data Value = VIO (IO Value) -- void IO
-        | VString String -- TODO Remove
         | VLit Lit
         | VConstr ConstrID [Value] -- list of values to be used as parameters
         | VFun (Value -> Value)
@@ -135,7 +134,7 @@ instance Show Value where
             "Nil"   -> "[]"
             "Cons"  -> "[" ++ (AST.DataTypes.showList vs) ++ "]"
             _       -> cid ++ " " ++ concat (Prelude.map show vs)
-           
+
 showList :: [Value] -> String
 showList [v, (VConstr "Nil"  [])] = show v
 showList [v, (VConstr "Cons" vs)] = (show v) ++ ", " ++ AST.DataTypes.showList vs

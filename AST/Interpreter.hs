@@ -51,8 +51,8 @@ startEnv = printF $ readLnF $ addF $ mulF $ bindF $ powF
                   $ nil $ cons $ undef $ gtF $ divF
                   $ eqF $ notF $ orF $ consF $ concatF $ M.empty
     where
-        printF  = M.insert "print" $ VFun $ \(VString s) -> VIO $ print s >> return (VConstr "()" []) -- TODO remove VString
-        readLnF = M.insert "readLine" $ VIO $ fmap VString readLn
+        printF  = M.insert "print" $ VFun $ \(VLit (SLit cs)) -> VIO $ vPrint cs
+        readLnF = M.insert "readLine" $ VIO $ fmap (VLit . SLit) readLn
         concatF = M.insert "#concat" $ VFun $ \v1 -> VFun $ \v2 -> vConcat v1 v2
         consF   = M.insert "#cons" $ VFun $ \v -> VFun $ \(VConstr cid vs) -> (VConstr "Cons" [v, (VConstr cid vs)])
         addF    = M.insert "#add" $ VFun $ \(VLit x) -> VFun $ \(VLit y) -> VLit $ x+y
@@ -72,6 +72,11 @@ startEnv = printF $ readLnF $ addF $ mulF $ bindF $ powF
         truple  = M.insert "(,,)" $ vConstructor "(,,)" 3 id
         nil     = M.insert "Nil" $ vConstructor "Nil" 0 id
         cons    = M.insert "Cons" $ vConstructor "Cons" 2 id -- change to using #cons
+
+vPrint :: [Char] -> IO Value
+vPrint []     = return $ VConstr "()" []
+vPrint (c:[]) = putChar c >> putChar '\n' >> vPrint []
+vPrint (c:cs) = putChar c >> vPrint cs
 
 vConstructor :: ConstrID -> Int -> ([Value] -> [Value]) -> Value
 vConstructor cid n k
@@ -109,7 +114,6 @@ eval env expr = case expr of
          _       -> VConstr "Undefined" []
     ELam var e               -> VFun $ \v -> eval (addToEnv env var v) e
     EVar var                 -> lookupInEnv env var
-    ELit (SLit s)            -> VString s -- TODO remove
     ELit lit                 -> VLit lit
     EUnOp op e               -> f $ eval env e
         where (VFun f) = lookupInEnv env (show op)
