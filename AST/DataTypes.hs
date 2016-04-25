@@ -148,3 +148,12 @@ instance Show Value where
 showList :: [Value] -> String
 showList [v, (VConstr "Nil"  [])] = show v
 showList [v, (VConstr "Cons" vs)] = (show v) ++ ", " ++ AST.DataTypes.showList vs
+
+
+-- Types 
+data Type =
+    TVar Var
+    | TFun Type Type
+    | TApp Type Type
+    | TConstr String
+    deriving (Eq, Ord)

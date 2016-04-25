@@ -8,13 +8,6 @@ import Data.Map(Map)
 import AST.DataTypes
 import qualified Text.PrettyPrint as PP
 
-data Type =
-    TVar Var
-    | TFun Type Type
-    | TApp Type Type
-    | TConstr String
-    deriving (Eq, Ord)
-
 data Scheme = Scheme [Var] Type
 
 class Types a where
