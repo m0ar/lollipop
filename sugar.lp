@@ -1,4 +1,6 @@
+-- ------------------------------------------
 -- DataTypes
+-- ------------------------------------------
 
 -- Works like Haskells Maybe
 datatype Cake a := (Sweet a) | Lie
@@ -11,7 +13,15 @@ getCake _         := Undefined
 
 datatype Boolean := True | False
 
--- unary operators
+-- ------------------------------------------
+
+-- misc functions
+function id : a -> a
+id x := x
+
+-- ------------------------------------------
+-- Mathematical functions
+-- ------------------------------------------
 
 function fac : a -> b
 fac 0 := 1
@@ -64,8 +74,9 @@ function lcm : Int -> Int -> Int
 lcm 0 0 := 0
 lcm x y := div (abs (x*y)) (gcd x y)
 
-
--- logical functions
+-- ------------------------------------------
+-- Logical functions
+-- ------------------------------------------
 
 function isOdd : Int -> Boolean
 isOdd x := mod x 2 == 1
@@ -73,8 +84,28 @@ isOdd x := mod x 2 == 1
 function isEven : Int -> Boolean
 isEven x := mod x 2 == 0
 
+-- Checks if a list of Booleans only
+-- contains Trues
+function and : [Boolean] -> Boolean
+and := foldr (\x y -> x && y) True
 
--- functions over tuples
+-- Checks if a list of Booleans only any True
+function or : [Boolean] -> Boolean
+or xs := foldr (\x y -> x || y) False xs
+
+-- Check if any element of a list
+-- satisfies the predicate.
+function any : atoBoolean -> [a] -> Boolean
+any f xs := or (map f xs)
+
+-- Check if all element of a list
+-- satisfies the predicate.
+function all : atoBoolean -> [a] -> Boolean
+all f xs := and (map f xs)
+
+-- ------------------------------------------
+-- Functions over tuples
+-- ------------------------------------------
 
 function fst : (a,b) -> a
 fst (x,y) := x
@@ -92,7 +123,9 @@ min (x,y)
     := x when x < y
     := y
 
--- functions over lists
+-- ------------------------------------------
+-- Functions over lists
+-- ------------------------------------------
 
 function head : [a] -> a
 head []     := Undefined
@@ -202,26 +235,3 @@ function zipWith : atobtoc -> [a] -> [b] -> [c]
 zipWith _ [] _          := []
 zipWith _ _ []          := []
 zipWith f (x:xs) (y:ys) := (f x y):(zipWith f xs ys)
-
--- Checks if a list of Booleans only
--- contains Trues
-function and : [Boolean] -> Boolean
-and := foldr (\x y -> x && y) True
-
--- Checks if a list of Booleans only any True
-function or : [Boolean] -> Boolean
-or xs := foldr (\x y -> x || y) False xs
-
--- Check if any element of a list
--- satisfies the predicate.
-function any : atoBoolean -> [a] -> Boolean
-any f xs := or (map f xs)
-
--- Check if all element of a list
--- satisfies the predicate.
-function all : atoBoolean -> [a] -> Boolean
-all f xs := and (map f xs)
-
--- misc functions
-function id : a -> a
-id x := x
