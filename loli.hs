@@ -54,9 +54,9 @@ repl file env = do
             Bad s -> do putStrLn s
                         loop
             Ok e -> case eval env (cExp e) of -- TODO: type check input
-               VIO io -> putStrLn "running" >> io >> loop
-               VFun _ -> putStrLn "function" >> loop
-               v      -> print v >> loop
+               (VIO io, _) -> putStrLn "running" >> io >> loop
+               ((VFun _), _)   -> putStrLn "function" >> loop
+               (v, _)      -> print v >> loop
 
 
 buildEnv :: String -> IO Env
@@ -81,7 +81,3 @@ buildEnv file = do
         Left  err     -> do
             putStrLn "No such file, nothing loaded."
             throw NoSuchFile
-
-data LoliException = NoSuchFile | SyntaxError
-    deriving (Show, Typeable)
-instance Exception LoliException
