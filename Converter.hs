@@ -52,14 +52,14 @@ dPatToVal (DConstr2 id ft fts) =
 fieldTypeToVal :: A.TypeParameter -> D.Value
 fieldTypeToVal (A.TParameter t) = typeToVal t
 
-typeToVal :: A.Type -> D.Value -- TODO ,
+typeToVal :: A.Type -> D.Value -- TODO
 typeToVal t = case t of
         TypeIds (STypeIdent (TypeId t1))    -> D.VConstr t1 []
         TypeIds (LiTypeIdent (Id t1))       -> undefined -- TODO
         TypeTuple t1 t2                     -> case length t2 of
            1 -> D.VConstr "(,)"  [typeToVal $ t1, (typeToVal $ head t2)]
            2 -> D.VConstr "(,,)" [typeToVal t1, (typeToVal $ head t2), (typeToVal $ head $ drop 1 $ t2)]
-        TypeList [t1]                       -> undefined
+        -- TypeList, this is now a TConstr "[]", fix accordingly
         TypeVoid                            -> undefined
         TypeDecl t1 t2                      -> undefined
         LiTypeDecl t1 t2                    -> undefined
@@ -90,40 +90,6 @@ extractId :: A.Id -> String
 extractId (A.Id s)      = s
 
 
-<<<<<<< 8a26911eb5b65f1322b4cf8ae75fff1bbf2fb1a6
-=======
-
-{-
-Fix after grammar changes
-dPatToVal :: A.Cons -> D.Value
-dPatToVal (A.DConstr1 id fts) =
-    case id of
-        (A.STypeIdent  (A.TypeId s)) -> (D.VConstr s (map fieldTypeToVal fts)) -- TODO lägg till s som en typ i miljön
-        (A.LiTypeIdent (A.Id s))     -> (D.VConstr s (map fieldTypeToVal fts))
-dPatToVal (A.DConstr2 id ft fts) =
-    case id of
-        (A.STypeIdent  (A.TypeId s)) -> (D.VConstr s (map fieldTypeToVal (ft:fts)))
-        (A.LiTypeIdent (A.Id s))     -> (D.VConstr s (map fieldTypeToVal (ft:fts)))
--}
-
-fieldTypeToVal :: A.TypeParameter -> D.Value
-fieldTypeToVal (A.TParameter t) = typeToVal t
-
-typeToVal :: A.Type -> D.Value -- TODO ,
-typeToVal t = case t of
-        A.TypeIds (A.STypeIdent (A.TypeId t1))    -> D.VConstr t1 []
-        A.TypeIds (A.LiTypeIdent (A.Id t1))       -> undefined -- TODO
-        A.TypeTuple t1 t2                     -> case length t2 of
-           1 -> D.VConstr "(,)"  [typeToVal $ t1, (typeToVal $ head t2)]
-           2 -> D.VConstr "(,,)" [typeToVal t1, (typeToVal $ head t2), (typeToVal $ head $ drop 1 $ t2)]
-        A.TypeList t1                       -> undefined
-        A.TypeVoid                            -> undefined
-        A.TypeDecl t1 t2                      -> undefined
-        A.LiTypeDecl t1 t2                    -> undefined
-        A.TypeApp t1 t2                       -> undefined
-
-
->>>>>>> Fix cType in Converter
 -- Extracts the expression from a def
 defToExp :: A.Def -> D.Exp
 defToExp (A.DDef _ _ e)         = cExp e
@@ -175,6 +141,9 @@ variables = map (("#x"++).show) [1..]
 argToPat :: A.Arg -> D.Pattern
 argToPat (A.DArg p) = cPattern p
 
+typeIdentName :: A.TypeIdent -> String
+typeIdentName (STypeIdent (TypeId name)) = name
+typeIdentName (LiTypeIdent (Id name))    = name
 
 -- Converts a pattern
 cPattern :: A.Pattern -> D.Pattern

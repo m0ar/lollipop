@@ -39,7 +39,7 @@ makeBinding (DConstr name val@(VConstr s vs)) env  = (name, val):(bindDataTypes 
         bindDataTypes []                         = []
         bindDataTypes ((VConstr name' vals):vs') = (name',v):(bindDataTypes vs')
             where v = vConstructor name' (length vals) id
-makeBinding (DFunc name vs e) env = [(name, val)]
+makeBinding (DFunc name _ vs e) env = [(name, val)]
     where
         addLams [] e     = e
         addLams (v:vs) e = ELam v (addLams vs e)
