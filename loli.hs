@@ -90,3 +90,4 @@ buildEnv file = do
         Left  err     -> do
             putStrLn "No such file, nothing loaded."
             throw NoSuchFile
+
