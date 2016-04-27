@@ -11,6 +11,9 @@ import Converter hiding (main)
 import AST.DataTypes
 import AST.Environment
 import qualified AbsGrammar as A
+import TI
+import Control.Monad.State
+import Control.Monad.Except
 
 import LexGrammar
 import ParGrammar
@@ -53,10 +56,15 @@ repl file env = do
         _ -> case pExp (myLexer i) of
             Bad s -> do putStrLn s
                         loop
-            Ok e -> case eval env (cExp e) of -- TODO: type check input
-               (VIO io, _) -> putStrLn "running" >> io >> loop
-               ((VFun _), _)   -> putStrLn "function" >> loop
-               (v, _)      -> print v >> loop
+            Ok e -> case runTI (infer (TypeEnv M.empty) (cExp e)) of   --empty env, need to use startTIEnv when implemented
+                (Left error,_) -> do
+                    putStrLn "TYPE ERROR:"
+                    putStrLn error
+                    loop
+                (Right t,_)    -> case eval env (cExp e) of
+                    (VIO io, _)   -> putStrLn "running" >> io >> loop
+                    ((VFun _), _) -> putStrLn "function" >> loop
+                    (v, _)        -> print v >> loop
 
 
 buildEnv :: String -> IO Env
