@@ -153,7 +153,9 @@ showList [v, (VConstr "Cons" vs)] = (show v) ++ ", " ++ AST.DataTypes.showList v
 -- Types 
 data Type =
     TVar Var
-    | TConstr String
+    | TiVar Var
+    | TConstr ConstrID
+    | TiConstr ConstrID
     | TFun Type Type
     | TApp Type Type
     deriving (Eq, Ord)
