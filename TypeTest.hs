@@ -1,5 +1,7 @@
 module TypeTest where
 import TI
+import AST.DataTypes
+import Data.Map
 
 testTI = fst $ runTI $ do
     let t = TFun (TVar "b") (TApp (TConstr "[]") (TVar "b")) 
@@ -10,7 +12,7 @@ testExp :: Exp -> IO()
 testExp e = putStrLn $ testExpToString e
     where
         testExpToString :: Exp -> String
-        testExpToString e = case runTI (infer (TypeEnv M.empty) e) of
+        testExpToString e = case runTI (infer (TypeEnv empty) e) of
                 (Left error,_) -> show e ++ "\n-- ERROR: " ++ error ++ "\n"
                 (Right t,_)    -> show e ++ " :: " ++ show t ++ "\n"
 
