@@ -13,7 +13,7 @@ type Program = [Declaration]
 
 
 data Declaration =
-         DFunc Var Vars Exp
+         DFunc Var Type Vars Exp
        | DConstr ConstrID Value -- change Value to something else later
 
 
@@ -96,7 +96,7 @@ instance Show Lit where
         CLit c -> [c]
 
 instance Show Declaration where
-    show (DFunc var vars e) = "function: " ++ var ++ "\n " ++ (show e)
+    show (DFunc var tDecls vars e) = "function: " ++ var ++ "\n " ++ (show e)
 
 -- Show functions --
 instance Show Exp where

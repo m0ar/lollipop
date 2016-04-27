@@ -28,8 +28,8 @@ cDeclaration (A.DFunc (A.Id name) tDecls defs)
                 | nbrAs == 0 && length defs > 1 -- if there is no input arguments, but several defs
                     = error $ "Conflicting definitions for function " ++ name
                 | nbrAs >= 1 -- pattern matching can arrise
-                    = D.DFunc name vars (defsToCase vars vars defs')
-                | otherwise = D.DFunc name [] (defToExp $ head defs) -- pattern matching can't arrise
+                    = D.DFunc name (cType tDecls) vars (defsToCase vars vars defs')
+                | otherwise = D.DFunc name (cType tDecls) [] (defToExp $ head defs) -- pattern matching can't arrise
      where vars = take (countAs $ head defs) variables -- reserves variables for the input arguments
            nbrAs = countAs $ head defs -- an arbitrary definitions number of arguments
            countAs (A.DDef _ as _) = length as -- counts number of arguments of a definition
@@ -64,11 +64,6 @@ typeToVal t = case t of
         TypeDecl t1 t2                      -> undefined
         LiTypeDecl t1 t2                    -> undefined
         TypeApp t1 t2                       -> undefined
-
--- Converts type declarations from the surface syntax to
--- an actual type in the type system
---convertTypeDecl :: A.Type -> D.Type
---convertTypeDecl t = undefined -- Fix after grammar changes!
 
 -- Converts types from the surface syntax to a minimized set of types used by the typechecker.
 cType :: A.Type -> D.Type
