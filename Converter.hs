@@ -72,7 +72,7 @@ cType (A.TypeTuple  t1  ts) = case ts of
     (t2:[])    -> D.TApp (D.TApp (D.TConstr "(,)") (cType t1)) (cType t2)
     (t2:t3:[]) -> D.TApp (D.TApp (D.TApp (D.TConstr "(,)") (cType t1)) (cType t2)) (cType t3)
     _          -> error "Tuples only defined for two or three elements."
-cType (A.TypeList   t     ) = D.TList $ cType t
+cType (A.TypeList   t     ) = D.TApp (D.TConstr "[]") (cType t)
 cType  A.TypeVoid           = D.TConstr "()"
 cType (A.TypeDecl   t1  t2) = D.TFun (cType t1) (cType t2)
 cType (A.LiTypeDecl t1  t2) = D.TFun (cType t1) (cType t2)
