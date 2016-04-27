@@ -1,5 +1,13 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 module AST.DataTypes where
 
+import ErrM
+import Control.Exception
+import Data.Typeable
+
+data LoliException = NoSuchFile | SyntaxError | LinearException
+    deriving (Show, Typeable)
+instance Exception LoliException
 
 type Program = [Declaration]
 

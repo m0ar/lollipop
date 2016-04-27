@@ -39,10 +39,11 @@ makeBinding (DConstr name val@(VConstr s vs)) env  = (name, val):(bindDataTypes 
         bindDataTypes []                         = []
         bindDataTypes ((VConstr name' vals):vs') = (name',v):(bindDataTypes vs')
             where v = vConstructor name' (length vals) id
-makeBinding (DFunc name vs e) env = [(name, eval env (addLams vs e))]
+makeBinding (DFunc name vs e) env = [(name, val)]
     where
         addLams [] e     = e
         addLams (v:vs) e = ELam v (addLams vs e)
+        (val, env')      = eval env (addLams vs e)
 
 -- startEnv creates the basic environment
 startEnv :: Env
@@ -103,29 +104,39 @@ vConstrToBool (VConstr "False" []) = False
 
 
 -- evaluation of an expression in an environment
-eval :: Env -> Exp -> Value
+eval :: Env -> Exp -> (Value, Env)
 eval env expr = case expr of
-    ELetIn var e1 e2         -> eval env' e2
-        where env' = addToEnv env var (eval env' e1)
-    EConstr cid              -> lookupInEnv env cid
+    ELetIn var e1 e2         -> eval env'' e2
+        where env'       = addToEnv env var v
+              (v, env'') = eval env' e1
+    EConstr cid              -> let v = lookupInEnv env cid
+                                in (v, env)
+    EiConstr cid             -> let v = lookupInEnv env cid
+                                in (v, (consumeLinear env cid))
     EApp e1 e2               -> case (eval env e1) of
-         VFun v1 -> v1 v2
-            where v2 = eval env e2
-         _       -> VConstr "Undefined" []
-    ELam var e               -> VFun $ \v -> eval (addToEnv env var v) e
-    EVar var                 -> lookupInEnv env var
-    ELit lit                 -> VLit lit
-    EUnOp op e               -> f $ eval env e
+         ((VFun v1), env') -> ((v1 v2), env'')
+            where (v2, env'') = eval env' e2
+         _              -> ((VConstr "Undefined" []), env)
+    ELam var e               -> let v' = VFun $ \v -> fst $ eval (addToEnv env var v) e
+                                in (v', env)
+    EVar var                 -> let v = lookupInEnv env var
+                                in (v, env)
+    EiVar var                -> let v = lookupInEnv env var
+                                in (v, (consumeLinear env var))
+    ELit lit                 -> let v = VLit lit
+                                in (v, env)
+    EUnOp op e               -> ((f $ fst $ eval env e), env)
         where (VFun f) = lookupInEnv env (show op)
-    EBinOp op e1 e2          -> f $ eval env e2
+    EBinOp op e1 e2          -> ((f $ fst $ eval env e2), env)
         where (VFun f') = lookupInEnv env (show op)
-              (VFun f)  = f' $ eval env e1
-    ECase expr' []           -> VLit (ILit 0)
+              (VFun f)  = f' $ fst $ eval env e1
+    ECase expr' []           -> let v = VLit (ILit 0)
+                                in (v, env)
     ECase expr' pEs          -> fromJust $ evalCase v env pEs
-        where v = eval env expr'
+        where v = fst $ eval env expr'
 
 -- evalCase is a helper function to eval.
-evalCase :: Value -> Env -> [(Pattern, Exp)] -> Maybe Value
+evalCase :: Value -> Env -> [(Pattern, Exp)] -> Maybe (Value, Env)
 evalCase _ _ []              = Nothing
 evalCase v env ((p, expr):pes) = case match p v of
     Just vvs    -> Just $ eval env' expr

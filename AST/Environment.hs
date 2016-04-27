@@ -3,6 +3,7 @@ module AST.Environment where
 import Data.Map
 import qualified Data.Map as M
 import AST.DataTypes
+import Control.Exception
 
 type Env = Map Var Value
 
@@ -23,5 +24,14 @@ addManyToEnv env (v1:vars) (v2:vals) = addManyToEnv (addToEnv env v1 v2) vars va
 
 lookupInEnv :: Env -> Var -> Value
 lookupInEnv env var = case M.lookup var env of
-        Nothing -> VConstr "Undefined" []
+        Nothing -> case M.lookup ("!" ++ var) env of
+            Nothing -> VConstr "Undefined" []
+            Just v  -> throw LinearException -- if variable found as used linear
         Just v  -> v
+
+-- consumes, and unbinds a linear variable
+-- once used the name of the variable starts
+-- with an !
+consumeLinear :: Env -> Var -> Env
+consumeLinear e v = M.insert ("!" ++ v) (VConstr "" []) e'
+    where e' = M.delete v e
