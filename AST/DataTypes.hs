@@ -11,11 +11,13 @@ data Declaration =
 
 data Exp = EApp Exp Exp
        | EVar Var
+       | EiVar Var
        | ELit Lit
        | EUnOp Op Exp
        | EBinOp Op Exp Exp
        | ELam Var Exp
        | EConstr ConstrID
+       | EiConstr ConstrID
        | ECase Exp [(Pattern, Exp)]
        | ELetIn Var Exp Exp  -- let var = exp in exp
        | EListComp Exp [(Var, Value)] Exp
