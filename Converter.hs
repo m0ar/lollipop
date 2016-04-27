@@ -65,6 +65,23 @@ typeToVal t = case t of
         LiTypeDecl t1 t2                    -> undefined
         TypeApp t1 t2                       -> undefined
 
+-- Converts type declarations from the surface syntax to
+-- an actual type in the type system
+--convertTypeDecl :: A.Type -> D.Type
+--convertTypeDecl t = undefined -- Fix after grammar changes!
+
+-- Converts types from the surface syntax to a minimized set of types used by the typechecker.
+cType :: A.Type -> D.Type
+cType (A.TypeIds    t     ) = D.TVar $ identToString t
+cType (A.TypeTuple  t1  ts) = case ts of
+    (t2:[])    -> D.TApp (D.TApp (D.TConstr "(,)") (cType t1)) (cType t2)
+    (t2:t3:[]) -> D.TApp (D.TApp (D.TApp (D.TConstr "(,)") (cType t1)) (cType t2)) (cType t3)
+    _          -> error "Tuples only defined for two or three elements."
+cType (A.TypeList   t     ) = D.TList $ cType t
+cType  A.TypeVoid           = D.TConstr "()"
+cType (A.TypeDecl   t1  t2) = D.TFun (cType t1) (cType t2)
+cType (A.LiTypeDecl t1  t2) = D.TFun (cType t1) (cType t2)
+cType (A.TypeApp    t1  t2) = D.TApp (cType t1) (cType t2)
 
 -- Converts type indentifiers to actual strings
 identToString :: A.TypeIdent -> String
@@ -78,6 +95,40 @@ extractId :: A.Id -> String
 extractId (A.Id s)      = s
 
 
+<<<<<<< 8a26911eb5b65f1322b4cf8ae75fff1bbf2fb1a6
+=======
+
+{-
+Fix after grammar changes
+dPatToVal :: A.Cons -> D.Value
+dPatToVal (A.DConstr1 id fts) =
+    case id of
+        (A.STypeIdent  (A.TypeId s)) -> (D.VConstr s (map fieldTypeToVal fts)) -- TODO lägg till s som en typ i miljön
+        (A.LiTypeIdent (A.Id s))     -> (D.VConstr s (map fieldTypeToVal fts))
+dPatToVal (A.DConstr2 id ft fts) =
+    case id of
+        (A.STypeIdent  (A.TypeId s)) -> (D.VConstr s (map fieldTypeToVal (ft:fts)))
+        (A.LiTypeIdent (A.Id s))     -> (D.VConstr s (map fieldTypeToVal (ft:fts)))
+-}
+
+fieldTypeToVal :: A.TypeParameter -> D.Value
+fieldTypeToVal (A.TParameter t) = typeToVal t
+
+typeToVal :: A.Type -> D.Value -- TODO ,
+typeToVal t = case t of
+        A.TypeIds (A.STypeIdent (A.TypeId t1))    -> D.VConstr t1 []
+        A.TypeIds (A.LiTypeIdent (A.Id t1))       -> undefined -- TODO
+        A.TypeTuple t1 t2                     -> case length t2 of
+           1 -> D.VConstr "(,)"  [typeToVal $ t1, (typeToVal $ head t2)]
+           2 -> D.VConstr "(,,)" [typeToVal t1, (typeToVal $ head t2), (typeToVal $ head $ drop 1 $ t2)]
+        A.TypeList t1                       -> undefined
+        A.TypeVoid                            -> undefined
+        A.TypeDecl t1 t2                      -> undefined
+        A.LiTypeDecl t1 t2                    -> undefined
+        A.TypeApp t1 t2                       -> undefined
+
+
+>>>>>>> Fix cType in Converter
 -- Extracts the expression from a def
 defToExp :: A.Def -> D.Exp
 defToExp (A.DDef _ _ e)         = cExp e

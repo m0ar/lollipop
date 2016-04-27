@@ -149,7 +149,7 @@ LEnumElem3.     EnumElem        ::= Char ;
 -- Types, either regular or linear
 TypeIds.        Type2           ::= TypeIdent ;
 TypeTuple.      Type2           ::= "(" Type "," [Type] ")" ;
-TypeList.       Type2           ::= "[" [Type] "]" ;
+TypeList.       Type2           ::= "[" Type "]" ;
 TypeVoid.       Type2           ::= "()" ;
 TypeDecl.       Type1           ::= Type2 "->" Type1 ;
 LiTypeDecl.     Type1           ::= Type2 "-o" Type1 ;
