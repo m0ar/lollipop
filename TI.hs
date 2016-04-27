@@ -157,8 +157,10 @@ ti env (ELetIn v e1 e2)   = do
         env''        = TypeEnv (M.insert v t' env')
     ti env'' e2
 -- Linear type inference
-ti env (EiConstr s) = undefined
-ti env (EiVar s)    = undefined
+ti env (EiConstr id) = lookupType env id
+ti (TypeEnv env) (EiVar v) = case M.lookup v env of
+        Nothing -> throwError $ "unbound linear variable: " ++ v
+        Just v' -> instantiate v'
 
 infer :: TypeEnv -> Exp -> TI Type
 infer env ex = do
@@ -231,10 +233,12 @@ instance Show Type where
     showsPrec _ x = shows (prType x)
 
 prType :: Type -> PP.Doc
-prType (TVar n)   = PP.text n
-prType (TConstr s)= PP.text s
-prType (TFun t s) = prParenType t PP.<+> PP.text "->" PP.<+> prType s
-prType (TApp t s) = prParenType t PP.<+> prType s
+prType (TVar n)    = PP.text n
+prType (TiVar n)   = PP.text "Linear" PP.<+> PP.text n
+prType (TConstr s) = PP.text s
+prType (TiConstr s)= PP.text "Linear" PP.<+> PP.text s
+prType (TFun t s)  = prParenType t PP.<+> PP.text "->" PP.<+> prType s
+prType (TApp t s)  = prParenType t PP.<+> prType s
 
 prParenType :: Type -> PP.Doc
 prParenType t = case t of
