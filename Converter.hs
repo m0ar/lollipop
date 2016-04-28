@@ -13,8 +13,8 @@ main :: IO ()
 main = putStrLn "welcome to the converter"
 
 cProgram :: A.Program -> D.Program
-cPorgram p = D.Program [cDataDecl d | d@(D.DData tId ids cs) <- ds]
-                     [cFuncDecl f | f@(D.DFunc fId t ds) <- ds]
+cProgram p = D.Program [cDataDecl d | d@(A.DData tId ids cs) <- ds]
+                     [cFuncDecl f | f@(A.DFunc fId t ds) <- ds]
     where ds = progToDecls p
 
 -- Recursively converts the program to internal syntax by
