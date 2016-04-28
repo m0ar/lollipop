@@ -56,11 +56,15 @@ repl file env = do
         _ -> case pExp (myLexer i) of
             Bad s -> do putStrLn s
                         loop
-            Ok e -> case runTI (infer (TypeEnv M.empty) (cExp e)) of   --empty env, need to use startTIEnv when implemented
+            Ok e -> case runTI (infer (TypeEnv M.empty) (cExp e)) of   --empty env, replace with startTIEnv when implemented
                 (Left error,_) -> do
                     putStrLn "TYPE ERROR:"
-                    putStrLn error
-                    loop
+                    putStrLn $ error ++ " in expression: \n" ++ (show e)
+                    case eval env (cExp e) of  --for testing, remove when startTIEnv implemented
+                        (VIO io, _)   -> putStrLn "running" >> io >> loop  --for testing
+                        ((VFun _), _) -> putStrLn "function" >> loop  --for testing
+                        (v, _)        -> print v >> loop  --for testing
+                    --loop
                 (Right t,_)    -> case eval env (cExp e) of
                     (VIO io, _)   -> putStrLn "running" >> io >> loop
                     ((VFun _), _) -> putStrLn "function" >> loop
