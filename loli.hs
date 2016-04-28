@@ -85,13 +85,12 @@ buildEnv file = do
                 Bad s   -> do putStrLn s
                               throw SyntaxError
                 Ok tree -> return tree
-            let ds = cProgram prog
+            let p = cProgram prog
                 -- TODO: type check ds
-                env = addDecsToEnv env ds
+                env = addFuncDeclsToEnv env ((\(Program _ fds) -> fds) p)
             putStrLn $ "Successfully loaded " ++ file
 
             return env
         Left  err     -> do
             putStrLn "No such file, nothing loaded."
             throw NoSuchFile
-
