@@ -13,16 +13,25 @@ import qualified AbsGrammar as A
 main :: IO ()
 main = putStrLn "welcome to the converter"
 
--- Recursively converts the program to internal syntax by 
--- repeatedly applying cDeclaration to each declaration
 cProgram :: A.Program -> D.Program
-cProgram (A.PFuncs d p)   = ((cDeclaration d):(cProgram p))
-cProgram (A.PLast d)      = ((cDeclaration d):[])
--- cProgram (PImports i p)
+cPorgram p = Program [cDataDecl d | d@(DData tId ids cs) <- ds]
+                     [cFuncDecl f | f@(DFunc fId t ds) <- ds]
+    where ds = progToDecls p
+
+-- Recursively converts the program to internal syntax by
+-- repeatedly applying cDeclaration to each declaration
+progToDecls :: A.Program -> [A.Declaration]
+progToDecls (A.PFuncs d p)   = d:(progToDecls p)
+progToDecls (A.PLast d)      = [d]
+
+
+--cProgram (A.PFuncs d p)   = Program ((cDeclaration d):(cProgram p))
+
+--cProgram (A.PLast d)      = Program ((cDeclaration d):[])
 
 -- Converts any declaration to a case
-cDeclaration :: A.Declaration -> D.Declaration
-cDeclaration (A.DFunc (A.Id name) tDecls defs)
+cFuncDecl :: A.Declaration -> D.FuncDecl
+cFuncDecl (A.DFunc (A.Id name) tDecls defs)
                 | not sameNbrAs -- definitons has different number of arguments
                     = error $ "Defintions for function " ++ name ++ " have different number of arguments"
                 | nbrAs == 0 && length defs > 1 -- if there is no input arguments, but several defs
@@ -36,7 +45,10 @@ cDeclaration (A.DFunc (A.Id name) tDecls defs)
            countAs (A.DGuardsDef _ as _) = length as -- counts number of arguments of a definition
            sameNbrAs = all (== nbrAs) (map countAs defs) -- all defs should have same number of arguments
            defs' = allDef defs
-cDeclaration (DData (STypeIdent (TypeId s)) fTs dPs) = D.DConstr s (D.VConstr s (map dPatToVal dPs))
+
+cDataDecl :: A.Declaration -> D.DataDecl
+cDataDecl (DData (STypeIdent (TypeId s)) fTs dPs) = D.DData s (D.VConstr s (map dPatToVal dPs))
+
 
 dPatToVal :: A.Constr -> D.Value
 dPatToVal (DConstr1 id fts) =

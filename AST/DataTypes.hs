@@ -13,7 +13,7 @@ data Program = Program [DataDecl] [FuncDecl]
 
 data FuncDecl = DFunc Var Type Vars Exp
 
-data DataDecl = DConstr ConstrID [Var] [ConstrDecl]
+data DataDecl = DData ConstrID [Var] [ConstrDecl]
 data ConstrDecl = ConstrDecl ConstrID [Type]
 
 data Exp = EApp Exp Exp
@@ -94,8 +94,8 @@ instance Show Lit where
         DLit d -> show d
         CLit c -> [c]
 
-instance Show Declaration where
-    show (DFunc var tDecls vars e) = "function: " ++ var ++ "\n " ++ (show e)
+--instance Show Declaration where
+--    show (DFunc var tDecls vars e) = "function: " ++ var ++ "\n " ++ (show e)
 
 -- Show functions --
 instance Show Exp where
