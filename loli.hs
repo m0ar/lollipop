@@ -32,31 +32,31 @@ myLLexer = resolveLayout True . myLexer
 
 main = do
     E.getArgs >>= \s -> case s of
-        [file] -> buildEnv file >>= repl file
-        []     -> repl "" startEnv
+        [file] -> buildEnv file >>= uncurry (repl file)
+        []     -> repl "" startEnv (TypeEnv M.empty)
         _      -> putStrLn "Invalid arguments"
 
-repl :: String -> Env -> IO ()
-repl file env = do
-    let loop = repl file env
+repl :: String -> Env -> TypeEnv -> IO ()
+repl file env tEnv = do
+    let loop = repl file env tEnv
     putStr (file ++ ">") >> hFlush stdout
     i <- getLine
     case i of
         "" -> loop
         ":q" -> return ()
-        ":r" -> buildEnv file >>= repl file
+        ":r" -> buildEnv file >>= uncurry (repl file)
         (':':'t':' ':s) -> putStrLn (show (lookupInEnv env s))
-                               >> (repl file env)
+                               >> (repl file env tEnv)
         (':':'l':s) -> case words s of
             [newfile] -> do
             res <- try $ buildEnv newfile
-            case (res :: Either LoliException Env) of
-                Right env -> repl newfile env
-                Left  err -> repl "" env
+            case (res :: Either LoliException (Env, TypeEnv)) of
+                Right (env, tEnv) -> repl newfile env tEnv
+                Left  err         -> repl "" env tEnv
         _ -> case pExp (myLexer i) of
             Bad s -> do putStrLn s
                         loop
-            Ok e -> case runTI (infer (TypeEnv M.empty) (cExp e)) of   --empty env, replace with startTIEnv when implemented
+            Ok e -> case runTI (infer tEnv (cExp e)) of   --empty env, replace with startTIEnv when implemented
                 (Left error,_) -> do
                     putStrLn "TYPE ERROR:"
                     putStrLn $ error ++ " in expression: \n" ++ (show e)
@@ -71,10 +71,10 @@ repl file env = do
                     (v, _)        -> print v >> loop
 
 
-buildEnv :: String -> IO Env
+buildEnv :: String -> IO (Env, TypeEnv)
 buildEnv ""   = do
     putStrLn "No file loaded"
-    return startEnv
+    return (startEnv, (TypeEnv M.empty))
 buildEnv file = do
     res <- try $ readFile (file ++ ".lp")
     case (res :: Either IOError String) of
@@ -85,12 +85,12 @@ buildEnv file = do
                 Bad s   -> do putStrLn s
                               throw SyntaxError
                 Ok tree -> return tree
-            let p = cProgram prog
-                -- TODO: type check ds
-                env = addFuncDeclsToEnv env ((\(Program _ fds) -> fds) p)
+            let p@(Program ds fs) = cProgram prog
+                env = addFuncDeclsToEnv env fs
+                env' = addDataDeclsToEnv env ds
+            --print p
             putStrLn $ "Successfully loaded " ++ file
-
-            return env
+            return (env', progToTypeEnv p)
         Left  err     -> do
             putStrLn "No such file, nothing loaded."
             throw NoSuchFile

@@ -19,9 +19,9 @@ interpret ds = do++
                         lookupInEnv e "main"
 -}
 addDataDeclsToEnv :: Env -> [DataDecl] -> Env
-addDataDeclsToEnv env []       = env
+addDataDeclsToEnv env []                    = env
 addDataDeclsToEnv env ((DData _ _ cds):dds) =
-    addManyToEnv env (fst vvs) (snd vvs)
+    addDataDeclsToEnv (addManyToEnv env (fst vvs) (snd vvs)) dds
         where vvs = unzip $ Prelude.map mkConstr cds
 
 
@@ -31,7 +31,7 @@ mkConstr (ConstrDecl name ts) = (name, (vConstructor name (length ts) id))
 -- addDecsToEnv is a helper function to interpret
 -- Adds declarations to the environment
 addFuncDeclsToEnv :: Env -> [FuncDecl] -> Env
-addFuncDeclsToEnv env []     = env
+addFuncDeclsToEnv env []     = startEnv
 addFuncDeclsToEnv env (d:ds) = insertAll e' (makeBinding d env)
 --addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
     where

@@ -4,17 +4,23 @@ module AST.DataTypes where
 import ErrM
 import Control.Exception
 import Data.Typeable
+import qualified Text.PrettyPrint as PP
 
 data LoliException = NoSuchFile | SyntaxError | LinearException
     deriving (Show, Typeable)
 instance Exception LoliException
 
 data Program = Program [DataDecl] [FuncDecl]
+    deriving (Show)
 
 data FuncDecl = DFunc Var Type Vars Exp
+    deriving (Show)
 
 data DataDecl = DData ConstrID [Var] [ConstrDecl]
+    deriving (Show)
+
 data ConstrDecl = ConstrDecl ConstrID [Type]
+    deriving (Show)
 
 data Exp = EApp Exp Exp
        | EVar Var
@@ -148,13 +154,30 @@ showList :: [Value] -> String
 showList [v, (VConstr "Nil"  [])] = show v
 showList [v, (VConstr "Cons" vs)] = (show v) ++ ", " ++ AST.DataTypes.showList vs
 
-
 -- Types
 data Type =
-    TVar Var
-    | TiVar Var
-    | TConstr ConstrID
-    | TiConstr ConstrID
-    | TFun Type Type
-    | TApp Type Type
-    deriving (Eq, Ord)
+        TVar Var
+        | TiVar Var
+        | TConstr ConstrID
+        | TiConstr ConstrID
+        | TFun Type Type
+        | TApp Type Type
+    deriving Eq
+
+instance Show Type where
+    showsPrec _ x = shows (prType x)
+
+prType :: Type -> PP.Doc
+prType (TVar n)    = PP.text n
+prType (TiVar n)   = PP.text "Linear" PP.<+> PP.text n
+prType (TConstr s) = PP.text s
+prType (TiConstr s)= PP.text "Linear" PP.<+> PP.text s
+prType (TFun t s)  = prParenType t PP.<+> PP.text "->" PP.<+> prType s
+prType (TApp t s)  = prParenType t PP.<+> prType s
+
+
+
+prParenType :: Type -> PP.Doc
+prParenType t = case t of
+    TFun _ _  -> PP.parens (prType t)
+    _         -> prType t

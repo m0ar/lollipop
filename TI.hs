@@ -6,7 +6,6 @@ import Control.Monad.State
 import Control.Monad.Except
 import Data.Map(Map)
 import AST.DataTypes
-import qualified Text.PrettyPrint as PP
 
 data Scheme = Scheme [Var] Type
 
@@ -63,11 +62,11 @@ newTyVar prefix = do
 -- "Refresh" the type to make sure it is actual wrt. the current substitution
 refresh :: Type -> TI Type
 refresh t = do
-  s <- gets tiSubst 
+  s <- gets tiSubst
   return (apply s t)
 
 debugTI :: TI a
-debugTI = do 
+debugTI = do
     s <- gets tiSubst
     error $ show s
 
@@ -105,7 +104,7 @@ varBind u t = do
         varBind' u t | t == TVar u        =  return t
                      | u `S.member` ftv t =  throwError $ "occur check fails: " ++ u ++
                                                  " vs. " ++ show t
-                     | otherwise          =  do 
+                     | otherwise          =  do
                             let newSubst = M.singleton u t
                             modify (\s -> s{tiSubst = composeSubst newSubst (tiSubst s) } )
                             return t
@@ -121,7 +120,7 @@ ti _ (ELit l)           = case l of
     SLit _ -> return $ TApp (TConstr "[]") (TConstr "Char")
 ti env (EUnOp o e) = case o of  -- TODO
     Not -> do
-        t1 <- ti env e 
+        t1 <- ti env e
         t2 <- ti env (EConstr "True")
         unify t1 t2
     _   -> throwError $ "Not a unary operator" -- Should this be here or in DataTypes?
@@ -170,7 +169,7 @@ fDecl (DFunc id t _ _) = (id, Scheme (S.toList (ftv t)) t)
 
 dDecl :: DataDecl -> [(ConstrID, Scheme)]
 dDecl (DData id vars cs) = map (schemify . cDecl tres) cs
-    where 
+    where
         -- Check that there aren't free variables in vars
         schemify (id, t) = (id, Scheme vars t)
         tres             = foldl TApp (TConstr id) (map TVar vars)
@@ -182,8 +181,8 @@ infer :: TypeEnv -> Exp -> TI Type
 infer env ex = do
     a <- newTyVar "a"
     -- Manually adding declarations to the environment
-    let env' = declarePoly "Cons" (TFun a 
-            (TFun (TApp (TConstr "[]") a) 
+    let env' = declarePoly "Cons" (TFun a
+            (TFun (TApp (TConstr "[]") a)
             (TApp (TConstr "[]") a)))
             env
     let env'' = declarePoly "Nil" (TApp (TConstr "[]") a) env'
@@ -214,7 +213,7 @@ newtype TypeEnv = TypeEnv (M.Map String Scheme)
 remove :: Var -> TypeEnv -> TypeEnv
 remove var (TypeEnv env) = TypeEnv (M.delete var env)
 
-add :: Var -> Scheme -> TypeEnv -> TypeEnv 
+add :: Var -> Scheme -> TypeEnv -> TypeEnv
 add v sch (TypeEnv m) = TypeEnv (M.insert v sch m)
 
 instance Types TypeEnv where
@@ -225,8 +224,8 @@ generalize :: TypeEnv -> Type -> Scheme
 generalize env t = Scheme vars t
     where vars = S.toList (ftv t `S.difference` ftv env)
 
-instantiate :: Scheme -> TI Type 
-instantiate (Scheme vars t) = do  
+instantiate :: Scheme -> TI Type
+instantiate (Scheme vars t) = do
     nvars <- mapM (\ _ -> newTyVar "a") vars
     let s = M.fromList (zip vars nvars)
     refresh (apply s t)
@@ -243,20 +242,3 @@ declarePoly v t e = add  v (generalize e t) e
 
 declareMono :: String -> Type -> TypeEnv -> TypeEnv
 declareMono v t = add v (Scheme [] t)
-
-
-instance Show Type where
-    showsPrec _ x = shows (prType x)
-
-prType :: Type -> PP.Doc
-prType (TVar n)    = PP.text n
-prType (TiVar n)   = PP.text "Linear" PP.<+> PP.text n
-prType (TConstr s) = PP.text s
-prType (TiConstr s)= PP.text "Linear" PP.<+> PP.text s
-prType (TFun t s)  = prParenType t PP.<+> PP.text "->" PP.<+> prType s
-prType (TApp t s)  = prParenType t PP.<+> prType s
-
-prParenType :: Type -> PP.Doc
-prParenType t = case t of
-    TFun _ _  -> PP.parens (prType t)
-    _         -> prType t

@@ -1,4 +1,6 @@
-datatype Gender := Man a b | Woman Int | Frog
+datatype Gender := Man a b | Woman Cake | Frog
+
+datatype Cake a := Sweet a | Lie
 
 datatype D a := C (Cake a)
 
@@ -11,7 +13,7 @@ minz _     := print "gick inge bra"
 
 
 function testGen : Gender -> IO
-testGen Man := print "hello"
+testGen Frog := print "hello"
 -- testGen x := case x of
     -- (Woman a) -> print "She's a lady"
     -- (Man a)   -> print "Now, that's a man"
@@ -97,8 +99,6 @@ tpl2 (1, 2) := 12
 tpl2 (x, y) := x-y
 tpl2 (3, 4) := 34
 
-function tpl3 : Int -> (Int, Int, Int) -> Int
-tpl3 x (3, y, 3) := 6-3
 
 function one : Int
 one (x,y) := (y,x)
