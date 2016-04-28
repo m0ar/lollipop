@@ -162,6 +162,22 @@ ti (TypeEnv env) (EiVar v) = case M.lookup v env of
         Nothing -> throwError $ "unbound linear variable: " ++ v
         Just v' -> instantiate v'
 
+progToTypeEnv :: Program -> TypeEnv
+progToTypeEnv (Program dds fds) = TypeEnv $ M.fromList $ concatMap dDecl dds ++ map fDecl fds
+
+fDecl :: FuncDecl -> (Var, Scheme)
+fDecl (DFunc id t _ _) = (id, Scheme (S.toList (ftv t)) t)
+
+dDecl :: DataDecl -> [(ConstrID, Scheme)]
+dDecl (DData id vars cs) = map (schemify . cDecl tres) cs
+    where 
+        -- Check that there aren't free variables in vars
+        schemify (id, t) = (id, Scheme vars t)
+        tres             = foldl TApp (TConstr id) (map TVar vars)
+
+cDecl :: Type -> ConstrDecl -> (ConstrID, Type)
+cDecl t (ConstrDecl id ts) = (id, foldr TFun t ts)
+
 infer :: TypeEnv -> Exp -> TI Type
 infer env ex = do
     a <- newTyVar "a"
