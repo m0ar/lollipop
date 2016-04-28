@@ -4,7 +4,6 @@
 
 module Converter where
 
-import qualified AST.Interpreter as I
 import qualified AST.DataTypes as D
 import TI
 import AbsGrammar
@@ -14,8 +13,8 @@ main :: IO ()
 main = putStrLn "welcome to the converter"
 
 cProgram :: A.Program -> D.Program
-cPorgram p = Program [cDataDecl d | d@(DData tId ids cs) <- ds]
-                     [cFuncDecl f | f@(DFunc fId t ds) <- ds]
+cPorgram p = D.Program [cDataDecl d | d@(D.DData tId ids cs) <- ds]
+                     [cFuncDecl f | f@(D.DFunc fId t ds) <- ds]
     where ds = progToDecls p
 
 -- Recursively converts the program to internal syntax by
@@ -43,11 +42,11 @@ cFuncDecl (A.DFunc (A.Id name) tDecls defs)
 
 -- Converts a data declaration to a DataDecl in DataTypes
 cDataDecl :: A.Declaration -> D.DataDecl
-cDataDecl (DData (STypeIdent (TypeId s)) ids cs) = D.DData s [s | Id s <- ids] (map cConstr cs)
+cDataDecl (DData (STypeIdent (TypeId s)) ids cs) = D.DData s [name | Id name <- ids] (map cConstr cs)
 
 -- Converts a constructor
 cConstr :: A.Constr -> D.ConstrDecl
-dPatToVal (DConstr1 tId tps) =
+cConstr (DConstr1 tId tps) =
     case tId of
         (STypeIdent  (TypeId s)) -> D.ConstrDecl s [cType t | (TParameter t) <- tps] -- TODO lägg till s som en typ i miljön
         (LiTypeIdent (Id s))     -> D.ConstrDecl s [cType t | (TParameter t) <- tps]
