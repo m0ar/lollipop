@@ -216,7 +216,7 @@ function elem : [a] -> a -> Boolean
 elem xs := any (\x y -> x==y) xs
 
 -- Returns the sum of all elements of the list
-function sumList : [Int] -> Int
+function sumList : [a] -> a
 sumList := foldr (\x y -> x+y) 0
 
 -- Returns the greatest element of the list

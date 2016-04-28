@@ -80,17 +80,31 @@ buildEnv file = do
     case (res :: Either IOError String) of
         Right content -> do
             fc <- readFile (file ++ ".lp")
-            sg <- readFile "sugar.lp"
-            prog <- let ts = (myLLexer $ fc ++ " \n" ++ sg) in case pProgram ts of
+            prog <- let ts = (myLLexer fc) in case pProgram ts of
                 Bad s   -> do putStrLn s
                               throw SyntaxError
                 Ok tree -> return tree
+            (sEnv, (TypeEnv sTEnv)) <- buildSugar
             let p@(Program ds fs) = cProgram prog
-                env = addFuncDeclsToEnv env fs
-                env' = addDataDeclsToEnv env ds
-            --print p
+                env   = addFuncDeclsToEnv env fs
+                env'  = addDataDeclsToEnv env ds
+                env'' = M.union env' sEnv
+                (TypeEnv pTEnv) = progToTypeEnv p
+                tEnv  = M.union pTEnv sTEnv
             putStrLn $ "Successfully loaded " ++ file
-            return (env', progToTypeEnv p)
+            return (env'', (TypeEnv tEnv))
         Left  err     -> do
             putStrLn "No such file, nothing loaded."
             throw NoSuchFile
+
+buildSugar :: IO (Env, TypeEnv)
+buildSugar = do
+    sg <- readFile "sugar.lp"
+    sugar <- let ts = (myLLexer sg) in case pProgram ts of
+        Bad s   -> do putStrLn s
+                      throw SyntaxError
+        Ok tree -> return tree
+    let p@(Program ds fs) = cProgram sugar
+        env = addFuncDeclsToEnv env fs
+        env' = addDataDeclsToEnv env ds
+    return (env', progToTypeEnv p)

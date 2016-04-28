@@ -1,7 +1,5 @@
 datatype Gender := Man a b | Woman Cake | Frog
 
-datatype Cake a := Sweet a | Lie
-
 datatype D a := C (Cake a)
 
 function minz : IO
@@ -70,9 +68,6 @@ function head : [Int] -> Int
 head (x:[]) := x
 head (x:xs) := x
 
-function snd : [Int] -> Int
-snd (x:xs) := head xs
-
 function trd : [Int] -> Int
 trd (x:xs) := snd xs
 
@@ -140,10 +135,6 @@ testMap := map (print "x") [1,2,3]
 
 function naturals : [Int]
 naturals := cons 0 (map (\x -> x+1) naturals)
-
-function foldr : atobtob -> b -> [a] -> b
-foldr f b [] := b
-foldr f b (x:xs) := f x (foldr f b xs)
 
 -- Sum of first 100 naturals
 function main : Int
