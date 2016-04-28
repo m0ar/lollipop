@@ -9,13 +9,12 @@ data LoliException = NoSuchFile | SyntaxError | LinearException
     deriving (Show, Typeable)
 instance Exception LoliException
 
-type Program = [Declaration]
+data Program = Program [DataDecl] [FuncDecl]
 
+data FuncDecl = DFunc Var Type Vars Exp
 
-data Declaration =
-         DFunc Var Type Vars Exp
-       | DConstr ConstrID Value -- change Value to something else later
-
+data DataDecl = DConstr ConstrID [Var] [ConstrDecl]
+data ConstrDecl = ConstrDecl ConstrID [Type]
 
 data Exp = EApp Exp Exp
        | EVar Var
@@ -150,7 +149,7 @@ showList [v, (VConstr "Nil"  [])] = show v
 showList [v, (VConstr "Cons" vs)] = (show v) ++ ", " ++ AST.DataTypes.showList vs
 
 
--- Types 
+-- Types
 data Type =
     TVar Var
     | TiVar Var
