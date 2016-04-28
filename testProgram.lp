@@ -1,4 +1,4 @@
-datatype Gender := (Man a a) | (Woman Int) | (Frog Int)
+datatype Gender := Man a b | Woman Int | Frog
 
 datatype D a := C (Cake a)
 
