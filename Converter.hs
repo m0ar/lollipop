@@ -4,7 +4,6 @@
 
 module Converter where
 
-import qualified AST.Interpreter as I
 import qualified AST.DataTypes as D
 import TI
 import AbsGrammar
@@ -13,16 +12,20 @@ import qualified AbsGrammar as A
 main :: IO ()
 main = putStrLn "welcome to the converter"
 
--- Recursively converts the program to internal syntax by 
--- repeatedly applying cDeclaration to each declaration
 cProgram :: A.Program -> D.Program
-cProgram (A.PFuncs d p)   = ((cDeclaration d):(cProgram p))
-cProgram (A.PLast d)      = ((cDeclaration d):[])
--- cProgram (PImports i p)
+cPorgram p = D.Program [cDataDecl d | d@(D.DData tId ids cs) <- ds]
+                     [cFuncDecl f | f@(D.DFunc fId t ds) <- ds]
+    where ds = progToDecls p
 
--- Converts any declaration to a case
-cDeclaration :: A.Declaration -> D.Declaration
-cDeclaration (A.DFunc (A.Id name) tDecls defs)
+-- Recursively converts the program to internal syntax by
+-- repeatedly applying cDeclaration to each declaration
+progToDecls :: A.Program -> [A.Declaration]
+progToDecls (A.PFuncs d p)   = d:(progToDecls p)
+progToDecls (A.PLast d)      = [d]
+
+-- Converts a function declaration to a case-expression in DataTypes
+cFuncDecl :: A.Declaration -> D.FuncDecl
+cFuncDecl (A.DFunc (A.Id name) tDecls defs)
                 | not sameNbrAs -- definitons has different number of arguments
                     = error $ "Defintions for function " ++ name ++ " have different number of arguments"
                 | nbrAs == 0 && length defs > 1 -- if there is no input arguments, but several defs
@@ -36,21 +39,17 @@ cDeclaration (A.DFunc (A.Id name) tDecls defs)
            countAs (A.DGuardsDef _ as _) = length as -- counts number of arguments of a definition
            sameNbrAs = all (== nbrAs) (map countAs defs) -- all defs should have same number of arguments
            defs' = allDef defs
-cDeclaration (DData (STypeIdent (TypeId s)) fTs dPs) = D.DConstr s (D.VConstr s (map dPatToVal dPs))
 
-dPatToVal :: A.Constr -> D.Value
-dPatToVal (DConstr1 id fts) =
-    case id of
-        (STypeIdent  (TypeId s)) -> (D.VConstr s (map fieldTypeToVal fts)) -- TODO lägg till s som en typ i miljön
-        (LiTypeIdent (Id s))     -> (D.VConstr s (map fieldTypeToVal fts))
-dPatToVal (DConstr2 id ft fts) =
-    case id of
-        (STypeIdent  (TypeId s)) -> (D.VConstr s (map fieldTypeToVal (ft:fts)))
-        (LiTypeIdent (Id s))     -> (D.VConstr s (map fieldTypeToVal (ft:fts)))
+-- Converts a data declaration to a DataDecl in DataTypes
+cDataDecl :: A.Declaration -> D.DataDecl
+cDataDecl (DData (STypeIdent (TypeId s)) ids cs) = D.DData s [name | Id name <- ids] (map cConstr cs)
 
-
-fieldTypeToVal :: A.TypeParameter -> D.Value
-fieldTypeToVal (A.TParameter t) = typeToVal t
+-- Converts a constructor
+cConstr :: A.Constr -> D.ConstrDecl
+cConstr (DConstr1 tId tps) =
+    case tId of
+        (STypeIdent  (TypeId s)) -> D.ConstrDecl s [cType t | (TParameter t) <- tps] -- TODO lägg till s som en typ i miljön
+        (LiTypeIdent (Id s))     -> D.ConstrDecl s [cType t | (TParameter t) <- tps]
 
 typeToVal :: A.Type -> D.Value -- TODO
 typeToVal t = case t of
