@@ -3,7 +3,7 @@
 -- ------------------------------------------
 
 -- Works like Haskells Maybe
-datatype Cake a := (Sweet a) | Lie
+datatype Cake a := Sweet a | Lie
 -- either the cake is a Sweet or
 -- the cake is a lie
 
@@ -100,7 +100,7 @@ isEven x := mod x 2 == 0
 function and : [Boolean] -> Boolean
 and := foldr (\x y -> x && y) True
 
--- Checks if a list of Booleans contains 
+-- Checks if a list of Booleans contains
 -- any True
 function or : [Boolean] -> Boolean
 or xs := foldr (\x y -> x || y) False xs
@@ -127,7 +127,7 @@ fst (x,y) := x
 function snd : (a,b) -> b
 snd (x,y) := y
 
--- Returns the maximum of the two elements 
+-- Returns the maximum of the two elements
 -- in the tuple
 function max : (a,a) -> a
 max (x,y)
@@ -184,7 +184,7 @@ takeWhile f (x:xs)
     := (x:(takeWhile f xs)) when f x
     := []
 
--- Returns all except the n first elements of 
+-- Returns all except the n first elements of
 -- the list
 function drop : Int -> [a] -> [a]
 drop _ []     := []

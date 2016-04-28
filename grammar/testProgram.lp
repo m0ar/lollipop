@@ -97,10 +97,12 @@ zipWith f (x:xs) (y:ys) := f x y : zipWith' f xs ys ;
 
 --type A := [(String,Int)] ;
 --type B := ([String] -> Int) -> Bool ;
+datatype Maybe a := Just a b | Nothing
 
-datatype D a := C (Maybe a)
+datatype Gender := Man a b | Woman Int | Frog
 
-datatype D a := C (Maybe a) 
+datatype Cake a := Sweet a | Lie
+
 datatype Value :=
         VIO (IO Value) -- void IO
         | VString String -- TODO Remove
