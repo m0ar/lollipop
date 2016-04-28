@@ -24,12 +24,7 @@ progToDecls :: A.Program -> [A.Declaration]
 progToDecls (A.PFuncs d p)   = d:(progToDecls p)
 progToDecls (A.PLast d)      = [d]
 
-
---cProgram (A.PFuncs d p)   = Program ((cDeclaration d):(cProgram p))
-
---cProgram (A.PLast d)      = Program ((cDeclaration d):[])
-
--- Converts any declaration to a case
+-- Converts a function declaration to a case-expression in DataTypes
 cFuncDecl :: A.Declaration -> D.FuncDecl
 cFuncDecl (A.DFunc (A.Id name) tDecls defs)
                 | not sameNbrAs -- definitons has different number of arguments
@@ -46,23 +41,16 @@ cFuncDecl (A.DFunc (A.Id name) tDecls defs)
            sameNbrAs = all (== nbrAs) (map countAs defs) -- all defs should have same number of arguments
            defs' = allDef defs
 
+-- Converts a data declaration to a DataDecl in DataTypes
 cDataDecl :: A.Declaration -> D.DataDecl
-cDataDecl (DData (STypeIdent (TypeId s)) fTs dPs) = D.DData s (D.VConstr s (map dPatToVal dPs))
+cDataDecl (DData (STypeIdent (TypeId s)) ids cs) = D.DData s [s | Id s <- ids] (map cConstr cs)
 
-
-dPatToVal :: A.Constr -> D.Value
-dPatToVal (DConstr1 id fts) =
-    case id of
-        (STypeIdent  (TypeId s)) -> (D.VConstr s (map fieldTypeToVal fts)) -- TODO lägg till s som en typ i miljön
-        (LiTypeIdent (Id s))     -> (D.VConstr s (map fieldTypeToVal fts))
-dPatToVal (DConstr2 id ft fts) =
-    case id of
-        (STypeIdent  (TypeId s)) -> (D.VConstr s (map fieldTypeToVal (ft:fts)))
-        (LiTypeIdent (Id s))     -> (D.VConstr s (map fieldTypeToVal (ft:fts)))
-
-
-fieldTypeToVal :: A.TypeParameter -> D.Value
-fieldTypeToVal (A.TParameter t) = typeToVal t
+-- Converts a constructor
+cConstr :: A.Constr -> D.ConstrDecl
+dPatToVal (DConstr1 tId tps) =
+    case tId of
+        (STypeIdent  (TypeId s)) -> D.ConstrDecl s [cType t | (TParameter t) <- tps] -- TODO lägg till s som en typ i miljön
+        (LiTypeIdent (Id s))     -> D.ConstrDecl s [cType t | (TParameter t) <- tps]
 
 typeToVal :: A.Type -> D.Value -- TODO
 typeToVal t = case t of
