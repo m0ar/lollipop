@@ -6,10 +6,10 @@ import AST.Environment
 import AST.DataTypes
 import Data.Map
 import qualified Data.Map as M
-
+{-
 -- call interpret with io
 interpret :: Program -> IO ()
-interpret ds = do
+interpret ds = do++
     let v = interpret' ds
     case v of
         VIO v -> v >> return ()
@@ -17,15 +17,25 @@ interpret ds = do
     where
         interpret' ds = let e = addDecsToEnv e ds in
                         lookupInEnv e "main"
+-}
+addDataDeclsToEnv :: Env -> [DataDecls] -> Env
+addDataDeclsToEnv env []       = env
+addDataDeclsToEnv env ((DataName _ _ cds):dds) = 
+    addManyToEnv env (fst vvs) (snd vvs)
+        where vvs = unzip $ Prelude.map mkConstr cds
+    
 
+mkConstr :: ConstrDecl -> (String, Value)
+mkConstr (DConstr name ts) = (name, (vConstructor name (length ts) id))
+                        
 -- addDecsToEnv is a helper function to interpret
 -- Adds declarations to the environment
-addDecsToEnv :: Env -> [Declaration] -> Env
-addDecsToEnv env []     = startEnv
-addDecsToEnv env (d:ds) = insertAll e' (makeBinding d env)
+addFuncDeclsToEnv :: Env -> [FuncFecl] -> Env
+addFuncDeclsToEnv env []     = env
+addFuncDeclsToEnv env (d:ds) = insertAll e' (makeBinding d env)
 --addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
     where
-        e' = addDecsToEnv env ds
+        e' = addFuncDeclsToEnv env ds
 
 insertAll :: Env -> [(Var,Value)] -> Env
 insertAll e []     = e
@@ -33,12 +43,14 @@ insertAll e ((var,val):vs) = insertAll (addToEnv e var val) vs
 
 -- makeBinding is a helper function to addDecsToEnv
 -- Makes bindings from declarations to environment
-makeBinding :: Declaration -> Env -> [(Var, Value)]
+makeBinding :: FuncDecl -> Env -> [(Var, Value)]
+{-
 makeBinding (DConstr name val@(VConstr s vs)) env  = (name, val):(bindDataTypes vs)
     where
         bindDataTypes []                         = []
         bindDataTypes ((VConstr name' vals):vs') = (name',v):(bindDataTypes vs')
             where v = vConstructor name' (length vals) id
+            -}
 makeBinding (DFunc name _ vs e) env = [(name, val)]
     where
         addLams [] e     = e
