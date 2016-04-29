@@ -1,2 +1,2 @@
 function main : iInt -o Int
-main x := x + x
+main x := x + 6 + x

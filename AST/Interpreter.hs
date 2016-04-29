@@ -71,30 +71,40 @@ eval env expr = case expr of
     ELetIn var e1 e2         -> eval env'' e2
         where env'       = addToEnv env var v
               (v, env'') = eval env' e1
-    EConstr cid              -> let v = lookupInEnv env cid
-                                in (v, env)
+    EConstr cid              -> case (head cid) of -- checks if variables linear
+                                    'i' -> let v = lookupInEnv env cid
+                                               e = consumeLinear env cid
+                                            in (v, e)
+                                    _   -> let v = lookupInEnv env cid
+                                            in (v, env)
     EApp e1 e2               -> case (eval env e1) of
-         ((VFun v1), env') -> ((v1 v2), env'')
-            where (v2, env'') = eval env' e2
+         ((VFun v1), env') -> let (v2, env'') = eval env' e2
+                              in ((v1 v2), env'')
          _                 -> ((VConstr "Undefined" []), env)
     ELam var e               -> let v' = VFun $ \v -> fst $ eval (addToEnv env var v) e
-                                in (v', env)
+                                in (v', (consumeLinear env var))
+                                -- TODO instead of using fst $ eval (addToEnv env var v) e
+                                -- we need to get the new env and return this ! 
     EVar var                 -> case (head var) of -- checks if variables linear
                                     'i' -> let v = lookupInEnv env var
-                                            in (v, (consumeLinear env var))
+                                               e = consumeLinear env var
+                                            in (v, e)
                                     _   -> let v = lookupInEnv env var
                                             in (v, env)
     ELit lit                 -> let v = VLit lit
                                 in (v, env)
-    EUnOp op e               -> ((f $ fst $ eval env e), env)
+    EUnOp op e               -> let (v, env') = eval env e
+                                in ((f v), env')
         where (VFun f) = lookupInEnv env (show op)
-    EBinOp op e1 e2          -> ((f $ fst $ eval env e2), env)
-        where (VFun f') = lookupInEnv env (show op)
-              (VFun f)  = f' $ fst $ eval env e1
+    EBinOp op e1 e2          -> let (v1, env')  = eval env e1 --finds value and new env from first expr in original env
+                                    (VFun f)    = lookupInEnv env' (show op) -- find function from op in new env
+                                    (VFun f')   = f v1 -- creates function from  f and v1
+                                    (v2, env'') = eval env' e2 --finds snd expr in updated env
+                                in ((f' v2), env'')
     ECase expr' []           -> let v = VLit (ILit 0)
                                 in (v, env)
-    ECase expr' pEs          -> fromJust $ evalCase v env pEs
-        where (v,e) = eval env expr'
+    ECase expr' pEs          -> let (v, env') = eval env expr'
+                                in fromJust $ evalCase v env pEs
 
 -- evalCase is a helper function to eval.
 evalCase :: Value -> Env -> [(Pattern, Exp)] -> Maybe (Value, Env)
