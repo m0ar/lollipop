@@ -155,11 +155,6 @@ ti env (ELetIn v e1 e2)   = do
         t'           = generalize env t1
         env''        = TypeEnv (M.insert v t' env')
     ti env'' e2
--- Linear type inference
-ti env (EiConstr id) = lookupType env id
-ti (TypeEnv env) (EiVar v) = case M.lookup v env of
-        Nothing -> throwError $ "unbound linear variable: " ++ v
-        Just v' -> instantiate v'
 
 progToTypeEnv :: Program -> TypeEnv
 progToTypeEnv (Program dds fds) = TypeEnv $ M.fromList $ concatMap dDecl dds ++ map fDecl fds
