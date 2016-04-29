@@ -59,61 +59,11 @@ makeBinding (DFunc name _ vs e) env = [(name, val)]
 
 -- startEnv creates the basic environment
 startEnv :: Env
-startEnv = printF $ readLnF $ addF $ mulF $ bindF $ powF
-                  $ thenF $ true $ false $ tuple $ truple
-                  $ nil $ cons $ undef $ gtF $ divF
-                  $ eqF $ notF $ orF $ consF $ concatF $ M.empty
+startEnv = startEnv' M.empty startEnvironment
     where
-        printF  = M.insert "print" $ VFun $ \(VLit (SLit cs)) -> VIO $ vPrint cs
-        readLnF = M.insert "readLine" $ VIO $ fmap (VLit . SLit) readLn
-        concatF = M.insert "#concat" $ VFun $ \v1 -> VFun $ \v2 -> vConcat v1 v2
-        consF   = M.insert "#cons" $ VFun $ \v -> VFun $ \(VConstr cid vs) -> (VConstr "Cons" [v, (VConstr cid vs)])
-        addF    = M.insert "#add" $ VFun $ \(VLit x) -> VFun $ \(VLit y) -> VLit $ x+y
-        powF    = M.insert "#pow" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ DLit $ (fromIntegral x) ^^ y
-        mulF    = M.insert "#mul" $ VFun $ \(VLit x) -> VFun $ \(VLit y) -> VLit $ x*y
-        divF    = M.insert "#div" $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ DLit $ (fromIntegral x)/(fromIntegral y)
-        gtF     = M.insert "#gt"  $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> boolToVConstr (x>y)
-        eqF     = M.insert "#eq"  $ VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> boolToVConstr (x==y)
-        notF    = M.insert "#not" $ VFun $ \v -> boolToVConstr $ not $ vConstrToBool v
-        orF     = M.insert "#or"  $ VFun $ \v1 -> VFun $ \v2 -> boolToVConstr $ (vConstrToBool v1) || (vConstrToBool v2)
-        bindF   = M.insert "#bind" $ VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> run $ a2 s  -- a1 >>= \s -> a2 s
-        thenF   = M.insert "#then" $ VFun $ \(VIO a1) -> VFun $ \(VIO a2) -> VIO $ a1 >> a2
-        undef   = M.insert "Undefined" $ vConstructor "Undefined" 0 id
-        true    = M.insert "True" $ vConstructor "True" 0 id -- move to sugar
-        false   = M.insert "False" $ vConstructor "False" 0 id  -- move to sugar
-        tuple   = M.insert "(,)" $ vConstructor "(,)" 2 id
-        truple  = M.insert "(,,)" $ vConstructor "(,,)" 3 id
-        nil     = M.insert "Nil" $ vConstructor "Nil" 0 id
-        cons    = M.insert "Cons" $ vConstructor "Cons" 2 id -- change to using #cons
-
-vPrint :: [Char] -> IO Value
-vPrint []     = return $ VConstr "()" []
-vPrint (c:[]) = putChar c >> putChar '\n' >> vPrint []
-vPrint (c:cs) = putChar c >> vPrint cs
-
-vConstructor :: ConstrID -> Int -> ([Value] -> [Value]) -> Value
-vConstructor cid n k
-    | n < 0      = error "vConstructor must be called with n >= 0"
-    | n == 0     = VConstr cid $ k []
-    | otherwise  = VFun $ \v -> vConstructor cid (n-1) $ (. (v:)) k
-
-run :: Value -> IO Value
-run act = case act of
-    VIO a -> a
-    _     -> error "faulty type"
-
-vConcat :: Value -> Value -> Value
-vConcat (VConstr "Nil" []) v2 = v2
-vConcat (VConstr "Cons" [v1, vs]) v2 = VConstr "Cons" [v1, (vConcat vs v2)]
-
-boolToVConstr :: Bool -> Value
-boolToVConstr b = VConstr (show b) []
-
-vConstrToBool :: Value -> Bool
-vConstrToBool (VConstr "True" []) = True
-vConstrToBool (VConstr "False" []) = False
-
-
+        startEnv' :: Env -> [(String, Value, Type)] -> Env
+        startEnv' env [] = env
+        startEnv' env ((a,b,c):xs) = startEnv' (M.insert a b env) xs
 
 -- evaluation of an expression in an environment
 eval :: Env -> Exp -> (Value, Env)
