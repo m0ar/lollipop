@@ -31,14 +31,34 @@ cFuncDecl (A.DFunc (A.Id name) tDecls defs)
                 | nbrAs == 0 && length defs > 1 -- if there is no input arguments, but several defs
                     = error $ "Conflicting definitions for function " ++ name
                 | nbrAs >= 1 -- pattern matching can arrise
-                    = D.DFunc name (cType tDecls) vars (defsToCase vars vars defs')
+                    = D.DFunc name (cType tDecls) linVs (defsToCase linVs linVs defs')
                 | otherwise = D.DFunc name (cType tDecls) [] (defToExp $ head defs) -- pattern matching can't arrise
-     where vars = take (countAs $ head defs) variables -- reserves variables for the input arguments
+     where vars  = take (countAs $ head defs) variables -- reserves variables for the input arguments
+           linVs = linearize vars (typeDeclToList tDecls) -- creates linear variables
            nbrAs = countAs $ head defs -- an arbitrary definitions number of arguments
            countAs (A.DDef _ as _) = length as -- counts number of arguments of a definition
            countAs (A.DGuardsDef _ as _) = length as -- counts number of arguments of a definition
            sameNbrAs = all (== nbrAs) (map countAs defs) -- all defs should have same number of arguments
            defs' = allDef defs
+
+-- converts the recurive datatype Type to a list of
+-- TypeIdents
+typeDeclToList :: A.Type -> [A.TypeIdent]
+typeDeclToList (TypeIds ti)       = [ti]
+typeDeclToList (TypeTuple t ts)   = undefined
+typeDeclToList (TypeList t)       = typeDeclToList t
+typeDeclToList TypeVoid           = []
+typeDeclToList (TypeDecl t1 t2)   = (typeDeclToList t1)++(typeDeclToList t2)
+typeDeclToList (LiTypeDecl t1 t2) = (typeDeclToList t1)++(typeDeclToList t2)
+typeDeclToList (TypeApp t1 t2)    = (typeDeclToList t1)++(typeDeclToList t2)
+
+-- linearizes linear variables for use in interpreter
+linearize :: [D.Var] -> [A.TypeIdent] -> [D.Var]
+linearize [] _  = []
+linearize vs [] = vs
+linearize (v:vs) (t:ts) = case t of
+    STypeIdent (TypeId name) -> v:(linearize vs ts)
+    LiTypeIdent (Id name)    -> ('i':v):(linearize vs ts)
 
 -- Converts a data declaration to a DataDecl in DataTypes
 cDataDecl :: A.Declaration -> D.DataDecl

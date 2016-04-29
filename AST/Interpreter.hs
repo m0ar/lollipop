@@ -123,18 +123,16 @@ eval env expr = case expr of
               (v, env'') = eval env' e1
     EConstr cid              -> let v = lookupInEnv env cid
                                 in (v, env)
-    EiConstr cid             -> let v = lookupInEnv env cid
-                                in (v, (consumeLinear env cid))
     EApp e1 e2               -> case (eval env e1) of
          ((VFun v1), env') -> ((v1 v2), env'')
             where (v2, env'') = eval env' e2
          _              -> ((VConstr "Undefined" []), env)
     ELam var e               -> let v' = VFun $ \v -> fst $ eval (addToEnv env var v) e
                                 in (v', env)
-    EVar var                 -> let v = lookupInEnv env var
-                                in (v, env)
-    EiVar var                -> let v = lookupInEnv env var
-                                in (v, (consumeLinear env var))
+    EVar var                 -> case (head var) of
+                                    'i' -> undefined
+                                    _   -> let v = lookupInEnv env var
+                                           in (v, env)
     ELit lit                 -> let v = VLit lit
                                 in (v, env)
     EUnOp op e               -> ((f $ fst $ eval env e), env)
