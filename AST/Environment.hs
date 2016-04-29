@@ -40,19 +40,21 @@ startEnvironment :: [(String, Value, Type)]
 startEnvironment = [
                 (    "print"
                     ,VFun $ \(VLit (SLit cs)) -> VIO $ vPrint cs
-                    ,undefined
+                    ,TFun (TApp (TConstr "[]") (TConstr "Char")) (TConstr "IO")
                 ),
                 (    "readLine"
                     ,VIO $ fmap (VLit . SLit) readLn
-                    ,undefined
+                    ,TApp (TConstr "IO") (TApp (TConstr "[]") (TConstr "Char"))
                 ),
                 (    "#concat"
                     ,VFun $ \v1 -> VFun $ \v2 -> vConcat v1 v2
-                    ,undefined
+                    ,TFun (TApp (TConstr "[]") 
+                                (TApp (TConstr "[]") a))
+                          (TApp (TConstr "[]") a)
                 ),
                 (    "#cons"
                     ,VFun $ \v -> VFun $ \(VConstr cid vs) -> (VConstr "Cons" [v, (VConstr cid vs)])
-                    ,undefined
+                    ,TFun a (TApp (TConstr "[]") a)
                 ),
                 (    "#add"
                     ,VFun $ \(VLit x) -> VFun $ \(VLit y) -> VLit $ x+y
@@ -72,19 +74,20 @@ startEnvironment = [
                 ),
                 (    "#gt"
                     ,VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> boolToVConstr (x>y)
-                    ,undefined
+                    ,TFun (TFun a a) (TConstr "Bool")
                 ),
                 (    "#eq"
                     ,VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> boolToVConstr (x==y)
-                    ,undefined
+                    ,TFun (TFun a a) (TConstr "Bool")
                 ),
                 (    "#not"
                     ,VFun $ \v -> boolToVConstr $ not $ vConstrToBool v
-                    ,undefined
+                    ,TFun (TConstr "Bool") (TConstr "Bool")
                 ),
                 (    "#or"
                     ,VFun $ \v1 -> VFun $ \v2 -> boolToVConstr $ (vConstrToBool v1) || (vConstrToBool v2)
-                    ,undefined
+                    ,TFun (TFun (TConstr "Bool") (TConstr "Bool")) 
+                          (TConstr "Bool")
                 ),
                 (    "#bind"
                     ,VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> run $ a2 s  -- a1 >>= \s -> a2 s
@@ -108,7 +111,9 @@ startEnvironment = [
                 ),
                 (    "Cons"
                     ,vConstructor "Cons" 2 id
-                    ,TFun a (TFun (TApp (TConstr "[]") a) (TApp (TConstr "[]") a))
+                    ,TFun a (TFun 
+                                (TApp (TConstr "[]") a) 
+                                (TApp (TConstr "[]") a))
                 ),
                 (    "Nil"
                     ,vConstructor "Nil" 0 id
@@ -116,6 +121,7 @@ startEnvironment = [
                 )
            ]
        where a = TVar "a"
+
 
 vPrint :: [Char] -> IO Value
 vPrint []     = return $ VConstr "()" []
