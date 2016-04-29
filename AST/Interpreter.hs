@@ -126,13 +126,14 @@ eval env expr = case expr of
     EApp e1 e2               -> case (eval env e1) of
          ((VFun v1), env') -> ((v1 v2), env'')
             where (v2, env'') = eval env' e2
-         _              -> ((VConstr "Undefined" []), env)
+         _                 -> ((VConstr "Undefined" []), env)
     ELam var e               -> let v' = VFun $ \v -> fst $ eval (addToEnv env var v) e
                                 in (v', env)
-    EVar var                 -> case (head var) of
-                                    'i' -> undefined
+    EVar var                 -> case (head var) of -- checks if variables linear
+                                    'i' -> let v = lookupInEnv env var
+                                            in (v, (consumeLinear env var))
                                     _   -> let v = lookupInEnv env var
-                                           in (v, env)
+                                            in (v, env)
     ELit lit                 -> let v = VLit lit
                                 in (v, env)
     EUnOp op e               -> ((f $ fst $ eval env e), env)
@@ -143,7 +144,7 @@ eval env expr = case expr of
     ECase expr' []           -> let v = VLit (ILit 0)
                                 in (v, env)
     ECase expr' pEs          -> fromJust $ evalCase v env pEs
-        where v = fst $ eval env expr'
+        where (v,e) = eval env expr'
 
 -- evalCase is a helper function to eval.
 evalCase :: Value -> Env -> [(Pattern, Exp)] -> Maybe (Value, Env)
