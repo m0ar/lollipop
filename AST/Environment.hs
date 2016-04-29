@@ -103,11 +103,11 @@ startEnvironment = [
                 ),
                 (    "(,)"
                     ,vConstructor "(,)" 2 id
-                    ,TApp (TApp (TConstr "(,)") a) a
+                    ,TFun a (TVar "b")
                 ),
                 (    "(,,)"
                     ,vConstructor "(,,)" 3 id
-                    ,TApp (TApp (TApp (TConstr "(,)") a) a) a
+                    ,TFun a (TFun (TVar "b") (TVar "c"))
                 ),
                 (    "Cons"
                     ,vConstructor "Cons" 2 id
