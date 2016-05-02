@@ -44,13 +44,6 @@ insertAll e ((var,val):vs) = insertAll (addToEnv e var val) vs
 -- makeBinding is a helper function to addDecsToEnv
 -- Makes bindings from declarations to environment
 makeBinding :: FuncDecl -> Env -> [(Var, Value)]
-{-
-makeBinding (DConstr name val@(VConstr s vs)) env  = (name, val):(bindDataTypes vs)
-    where
-        bindDataTypes []                         = []
-        bindDataTypes ((VConstr name' vals):vs') = (name',v):(bindDataTypes vs')
-            where v = vConstructor name' (length vals) id
-            -}
 makeBinding (DFunc name _ vs e) env = [(name, val)]
     where
         addLams [] e     = e
