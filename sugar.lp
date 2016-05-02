@@ -245,7 +245,7 @@ filter f (x:xs)
 
 function concat : [a] -> [a] -> [a]
 concat []     ys := ys
-concat (x:xs) ys := cons x (concat xs ys)
+concat (x:xs) ys := x:(concat xs ys)
 
 function map : atob -> [a] -> [b]
 map f (x:xs) := (f x):(map f xs)
