@@ -172,13 +172,19 @@ cPattern p = case p of
     A.PListPat lp              -> cLPat lp
     A.PWild                    -> D.PWild
     A.PId (A.Id name)          -> D.PVar name
-    A.PLit l                   -> D.PLit (cLit l)
+    A.PLit l                   -> case l of
+        A.LitString str -> strToPat str
+        _               -> D.PLit (cLit l)
     A.PConstrEmp (TypeId name) -> D.PConstr name []
     A.PCons p1 p2              -> D.PConstr "Cons" [(cPattern p1), (cPattern p2)]
     A.PDataConstr ts p ps      -> D.PConstr (typeIdentName ts) (map cPattern (p:ps))
     -- (A.PConsConstr (TypeId name) p1 ps p2) -> D.PConstr "Cons" [(D.PConstr name (map cPattern (p1:ps))), (cPattern p2)]
     A.PEmpty                   -> D.PConstr "Nil" []
 
+-- converts a string to a pattern in core syntax
+strToPat :: String -> D.Pattern
+strToPat []     = D.PConstr "Nil" []
+strToPat (c:cs) = D.PConstr "Cons" [D.PLit (D.CLit c), strToPat cs]
 
 -- Converts a list pattern
 cLPat :: A.ListPat -> D.Pattern
@@ -191,7 +197,6 @@ cLit :: A.Literal -> D.Lit
 cLit (A.LitInt x)      = D.ILit $ fromInteger x
 cLit (A.LitDouble x)   = D.DLit x
 cLit (A.LitChar x)     = D.CLit x
-cLit (A.LitString x)   = D.SLit x
 
 
 -- Converts a constructor
@@ -199,12 +204,18 @@ cConst :: A.Cons -> D.Exp
 cConst (A.DConst1 (A.TypeId cid) cid' ids) = D.EConstr cid
 cConst (A.DConst2 (A.TypeId cid))         = D.EConstr cid
 
+-- Converts a string to an expression in core syntax
+strToExp :: String -> D.Exp
+strToExp []      = D.EConstr "Nil"
+strToExp (c:cs) = D.EApp (D.EApp (D.EConstr "Cons") (D.ELit (D.CLit c))) (strToExp cs)
 
 -- Converts an expression
 cExp :: A.Exp -> D.Exp
 cExp (A.EVar (A.Id name))   = (D.EVar name)
 cExp (A.ETuple t)           = cTuple t
-cExp (A.ELiteral lit)       = (D.ELit $ cLit lit)
+cExp (A.ELiteral lit)       = case lit of
+    A.LitString str -> strToExp str
+    _               -> (D.ELit $ cLit lit)
 cExp (A.EConst c)            = case c of
     (A.DConst2 (A.TypeId name)) -> (D.EConstr name)
 -- cExp (A.EListComp e lcps)
@@ -242,11 +253,17 @@ cExp (A.EAbs (A.Id n) ns e) = (D.ELam n (cList' ns e))
 -- Converts a list of expressions
 cList :: [A.Exp] -> D.Exp
 cList ls = case (head ls) of
-    ELiteral _ -> cLitList ls
-    ENeg _     -> cLitList ls
-    ETuple _   -> cTupleList ls
-    EConst _   -> cConstList ls
-    EList _    -> cListList ls
+    ELiteral (LitString str) -> cStrLitList ls
+    ELiteral _               -> cLitList ls
+    ENeg     _               -> cLitList ls
+    ETuple   _               -> cTupleList ls
+    EConst   _               -> cConstList ls
+    EList    _               -> cListList ls
+
+cStrLitList :: [A.Exp] -> D.Exp
+cStrLitList []     = D.EConstr "Nil"
+cStrLitList ((A.ELiteral (A.LitString l)):ls) =
+    D.EApp ((D.EApp (D.EConstr "Cons") (strToExp l))) (cStrLitList ls)
 
 -- Converts a list of lists
 cListList :: [A.Exp] -> D.Exp

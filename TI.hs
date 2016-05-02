@@ -116,7 +116,6 @@ ti _ (ELit l)           = case l of
     ILit _ -> return $ TConstr "Int"
     DLit _ -> return $ TConstr "Double"
     CLit _ -> return $ TConstr "Char"
-    SLit _ -> return $ TApp (TConstr "[]") (TConstr "Char")
 ti env (EUnOp o e) = case o of  -- TODO
     Not -> do
         t1 <- ti env e

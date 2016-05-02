@@ -38,12 +38,13 @@ consumeLinear e v = M.insert ("!" ++ v) (VConstr "" []) e'
 
 startEnvironment :: [(String, Value, Scheme)]
 startEnvironment = [
-                (    "print"
-                    ,VFun $ \(VLit (SLit cs)) -> VIO $ vPrint cs
-                    ,Scheme [] $ TFun (TApp (TConstr "[]") (TConstr "Char")) (TConstr "IO")
+                (    "printChar"
+                    ,VFun $ \(VLit (CLit cs)) -> VIO $ vPrint cs
+                    ,undefined
                 ),
+                
                 (    "readLine"
-                    ,VIO $ fmap (VLit . SLit) readLn
+                    ,VConstr "Undefined" []
                     ,Scheme [] $ TApp (TConstr "IO") (TApp (TConstr "[]") (TConstr "Char"))
                 ),
                 (    "#concat"
@@ -118,11 +119,8 @@ startEnvironment = [
            ]
        where a = TVar "a"
 
-
-vPrint :: [Char] -> IO Value
-vPrint []     = return $ VConstr "()" []
-vPrint (c:[]) = putChar c >> putChar '\n' >> vPrint []
-vPrint (c:cs) = putChar c >> vPrint cs
+vPrint :: Char -> IO Value
+vPrint c = putChar c >> return (VConstr "()" [])
 
 vConstructor :: ConstrID -> Int -> ([Value] -> [Value]) -> Value
 vConstructor cid n k

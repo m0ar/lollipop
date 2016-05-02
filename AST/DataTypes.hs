@@ -58,13 +58,11 @@ type ConstrID = String
 data Lit = ILit Int
         | DLit Double
         | CLit Char
-        | SLit [Char]
     deriving Eq
 
 instance Eq Value where
     (==) (VLit (ILit x)) (VLit (ILit y)) = x == y
     (==) (VLit (DLit x)) (VLit (DLit y)) = x == y
-    (==) (VLit (SLit x)) (VLit (SLit y)) = x == y
     (==) (VLit (CLit x)) (VLit (CLit y)) = x == y
     (==) _                _              = False
 
@@ -95,7 +93,6 @@ instance Show Op where
 
 instance Show Lit where
     show lit = case lit of
-        SLit s -> s
         ILit i -> show i
         DLit d -> show d
         CLit c -> [c]
@@ -133,7 +130,7 @@ instance Show Exp where
 
 instance Show Pattern where
     show p = case p of
-        PConstr cid vs -> cid ++ " "  ++ (concatMap show vs) ++ " = "
+        PConstr cid vs -> " " ++ cid ++ " "  ++ (concatMap show vs)
         PLit l         -> show l
         PWild          -> "_ -> "
         PVar v    -> v ++ " -> "
