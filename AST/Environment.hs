@@ -48,7 +48,7 @@ startEnvironment = [
                 ),
                 (    "#concat"
                     ,VFun $ \v1 -> VFun $ \v2 -> vConcat v1 v2
-                    ,TFun (TApp (TConstr "[]") 
+                    ,TFun (TApp (TConstr "[]")
                                 (TApp (TConstr "[]") a))
                           (TApp (TConstr "[]") a)
                 ),
@@ -86,7 +86,7 @@ startEnvironment = [
                 ),
                 (    "#or"
                     ,VFun $ \v1 -> VFun $ \v2 -> boolToVConstr $ (vConstrToBool v1) || (vConstrToBool v2)
-                    ,TFun (TFun (TConstr "Bool") (TConstr "Bool")) 
+                    ,TFun (TFun (TConstr "Bool") (TConstr "Bool"))
                           (TConstr "Bool")
                 ),
                 (    "#bind"
@@ -96,10 +96,6 @@ startEnvironment = [
                 (    "#then"
                     ,VFun $ \(VIO a1) -> VFun $ \(VIO a2) -> VIO $ a1 >> a2
                     ,undefined
-                ),
-                (    "Undefined"
-                    ,vConstructor "Undefined" 0 id
-                    ,TApp (TConstr "Undefined") a
                 ),
                 (    "(,)"
                     ,vConstructor "(,)" 2 id
@@ -111,8 +107,8 @@ startEnvironment = [
                 ),
                 (    "Cons"
                     ,vConstructor "Cons" 2 id
-                    ,TFun a (TFun 
-                                (TApp (TConstr "[]") a) 
+                    ,TFun a (TFun
+                                (TApp (TConstr "[]") a)
                                 (TApp (TConstr "[]") a))
                 ),
                 (    "Nil"

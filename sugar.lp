@@ -7,6 +7,8 @@ datatype Cake a := Sweet a | Lie
 -- either the cake is a Sweet or
 -- the cake is a lie
 
+datatype Undefined := Undefined
+
 function getCake : Cake -> a
 getCake (Sweet x) := x
 getCake _         := Undefined
