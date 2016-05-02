@@ -6,18 +6,18 @@ import AST.Environment
 import AST.DataTypes
 import Data.Map
 import qualified Data.Map as M
-{-
+
 -- call interpret with io
 interpret :: Program -> IO ()
-interpret ds = do++
-    let v = interpret' ds
+interpret (Program dd fd) = do
+    let v = interpret' dd fd
     case v of
         VIO v -> v >> return ()
         v     -> (putStrLn $ show v) >> return ()
     where
-        interpret' ds = let e = addDecsToEnv e ds in
-                        lookupInEnv e "main"
--}
+        interpret' dd fd = let e = addFuncDeclsToEnv e fd in
+                        lookupInEnv (addDataDeclsToEnv e dd) "main"
+
 addDataDeclsToEnv :: Env -> [DataDecl] -> Env
 addDataDeclsToEnv env []                    = env
 addDataDeclsToEnv env ((DData _ _ cds):dds) =
