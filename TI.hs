@@ -172,15 +172,11 @@ cDecl :: Type -> ConstrDecl -> (ConstrID, Type)
 cDecl t (ConstrDecl id ts) = (id, foldr TFun t ts)
 
 infer :: TypeEnv -> Exp -> TI Type
-infer env ex = do
-    a <- newTyVar "a"
-    -- Manually adding declarations to the environment
-    let env' = declarePoly "Cons" (TFun a
-            (TFun (TApp (TConstr "[]") a)
-            (TApp (TConstr "[]") a)))
-            env
-    let env'' = declarePoly "Nil" (TApp (TConstr "[]") a) env'
-    ti env'' ex >>= refresh
+infer env ex = ti (tiStartEnv' env startEnvironment) ex >>= refresh
+        where
+            tiStartEnv' :: TypeEnv -> [(String, Value, Scheme)] -> TypeEnv
+            tiStartEnv' env [] = env
+            tiStartEnv' env ((a,b,c):xs) = tiStartEnv' (add a c env) xs
 
 -- Returns the free expression variables in patterns
 freeVarsP :: Pattern -> [Var]
