@@ -22,6 +22,8 @@ data DataDecl = DData ConstrID [Var] [ConstrDecl]
 data ConstrDecl = ConstrDecl ConstrID [Type]
     deriving (Show)
 
+data Scheme = Scheme [Var] Type
+
 data Exp = EApp Exp Exp
        | EVar Var
        | ELit Lit

@@ -6,8 +6,7 @@ import Control.Monad.State
 import Control.Monad.Except
 import Data.Map(Map)
 import AST.DataTypes
-
-data Scheme = Scheme [Var] Type
+import AST.Environment
 
 class Types a where
     ftv    ::  a -> S.Set Var

@@ -54,7 +54,7 @@ makeBinding (DFunc name _ vs e) env = [(name, val)]
 startEnv :: Env
 startEnv = startEnv' M.empty startEnvironment
     where
-        startEnv' :: Env -> [(String, Value, Type)] -> Env
+        startEnv' :: Env -> [(String, Value, Scheme)] -> Env
         startEnv' env [] = env
         startEnv' env ((a,b,c):xs) = startEnv' (M.insert a b env) xs
 

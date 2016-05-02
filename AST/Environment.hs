@@ -36,25 +36,25 @@ consumeLinear :: Env -> Var -> Env
 consumeLinear e v = M.insert ("!" ++ v) (VConstr "" []) e'
     where e' = M.delete v e
 
-startEnvironment :: [(String, Value, Type)]
+startEnvironment :: [(String, Value, Scheme)]
 startEnvironment = [
                 (    "print"
                     ,VFun $ \(VLit (SLit cs)) -> VIO $ vPrint cs
-                    ,TFun (TApp (TConstr "[]") (TConstr "Char")) (TConstr "IO")
+                    ,Scheme [] $ TFun (TApp (TConstr "[]") (TConstr "Char")) (TConstr "IO")
                 ),
                 (    "readLine"
                     ,VIO $ fmap (VLit . SLit) readLn
-                    ,TApp (TConstr "IO") (TApp (TConstr "[]") (TConstr "Char"))
+                    ,Scheme [] $ TApp (TConstr "IO") (TApp (TConstr "[]") (TConstr "Char"))
                 ),
                 (    "#concat"
                     ,VFun $ \v1 -> VFun $ \v2 -> vConcat v1 v2
-                    ,TFun (TApp (TConstr "[]")
+                    ,Scheme ["a"] $ TFun (TApp (TConstr "[]")
                                 (TApp (TConstr "[]") a))
                           (TApp (TConstr "[]") a)
                 ),
                 (    "#cons"
                     ,VFun $ \v -> VFun $ \(VConstr cid vs) -> (VConstr "Cons" [v, (VConstr cid vs)])
-                    ,TFun a (TApp (TConstr "[]") a)
+                    ,Scheme ["a"] $ TFun a (TApp (TConstr "[]") a)
                 ),
                 (    "#add"
                     ,VFun $ \(VLit x) -> VFun $ \(VLit y) -> VLit $ x+y
@@ -74,19 +74,19 @@ startEnvironment = [
                 ),
                 (    "#gt"
                     ,VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> boolToVConstr (x>y)
-                    ,TFun (TFun a a) (TConstr "Bool")
+                    ,Scheme ["a"] $ TFun (TFun a a) (TConstr "Bool")
                 ),
                 (    "#eq"
                     ,VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> boolToVConstr (x==y)
-                    ,TFun (TFun a a) (TConstr "Bool")
+                    ,Scheme ["a"] $ TFun (TFun a a) (TConstr "Bool")
                 ),
                 (    "#not"
                     ,VFun $ \v -> boolToVConstr $ not $ vConstrToBool v
-                    ,TFun (TConstr "Bool") (TConstr "Bool")
+                    ,Scheme [] $ TFun (TConstr "Bool") (TConstr "Bool")
                 ),
                 (    "#or"
                     ,VFun $ \v1 -> VFun $ \v2 -> boolToVConstr $ (vConstrToBool v1) || (vConstrToBool v2)
-                    ,TFun (TFun (TConstr "Bool") (TConstr "Bool"))
+                    ,Scheme [] $ TFun (TFun (TConstr "Bool") (TConstr "Bool"))
                           (TConstr "Bool")
                 ),
                 (    "#bind"
@@ -99,21 +99,21 @@ startEnvironment = [
                 ),
                 (    "(,)"
                     ,vConstructor "(,)" 2 id
-                    ,TFun a (TVar "b")
+                    ,Scheme ["a","b"] $ TFun a (TVar "b")
                 ),
                 (    "(,,)"
                     ,vConstructor "(,,)" 3 id
-                    ,TFun a (TFun (TVar "b") (TVar "c"))
+                    ,Scheme ["a","b","c"] $ TFun a (TFun (TVar "b") (TVar "c"))
                 ),
                 (    "Cons"
                     ,vConstructor "Cons" 2 id
-                    ,TFun a (TFun
+                    ,Scheme ["a"] $ TFun a (TFun
                                 (TApp (TConstr "[]") a)
                                 (TApp (TConstr "[]") a))
                 ),
                 (    "Nil"
                     ,vConstructor "Nil" 0 id
-                    ,TApp (TConstr "[]") a
+                    ,Scheme ["a"] $ TApp (TConstr "[]") a
                 )
            ]
        where a = TVar "a"
