@@ -48,7 +48,7 @@ makeBinding (DFunc name _ vs e) env = [(name, val)]
     where
         addLams [] e     = e
         addLams (v:vs) e = ELam v (addLams vs e)
-        (val, env')      = eval env (addLams vs e)
+        val              = eval env (addLams vs e)
 
 -- startEnv creates the basic environment
 startEnv :: Env
@@ -59,48 +59,29 @@ startEnv = startEnv' M.empty startEnvironment
         startEnv' env ((a,b,c):xs) = startEnv' (M.insert a b env) xs
 
 -- evaluation of an expression in an environment
-eval :: Env -> Exp -> (Value, Env)
+eval :: Env -> Exp -> Value
 eval env expr = case expr of
-    ELetIn var e1 e2         -> eval env'' e2
-        where env'       = addToEnv env var v
-              (v, env'') = eval env' e1
-    EConstr cid              -> case (head cid) of -- checks if variables linear
-                                    'i' -> let v = lookupInEnv env cid
-                                               e = consumeLinear env cid
-                                            in (v, e)
-                                    _   -> let v = lookupInEnv env cid
-                                            in (v, env)
+    ELetIn var e1 e2         -> eval env' e2
+        where env' = addToEnv env var (eval env' e1)
+    EConstr cid              -> lookupInEnv env cid
     EApp e1 e2               -> case (eval env e1) of
-         ((VFun v1), env') -> let (v2, env'') = eval env' e2
-                              in ((v1 v2), env'')
-         _                 -> ((VConstr "Undefined" []), env)
-    ELam var e               -> let v' = VFun $ \v -> fst $ eval (addToEnv env var v) e
-                                in (v', (consumeLinear env var))
-                                -- TODO instead of using fst $ eval (addToEnv env var v) e
-                                -- we need to get the new env and return this ! 
-    EVar var                 -> case (head var) of -- checks if variables linear
-                                    'i' -> let v = lookupInEnv env var
-                                               e = consumeLinear env var
-                                            in (v, e)
-                                    _   -> let v = lookupInEnv env var
-                                            in (v, env)
-    ELit lit                 -> let v = VLit lit
-                                in (v, env)
-    EUnOp op e               -> let (v, env') = eval env e
-                                in ((f v), env')
+         VFun v1 -> v1 v2
+            where v2 = eval env e2
+         _       -> VConstr "Undefined" []
+    ELam var e               -> VFun $ \v -> eval (addToEnv env var v) e
+    EVar var                 -> lookupInEnv env var
+    ELit lit                 -> VLit lit
+    EUnOp op e               -> f $ eval env e
         where (VFun f) = lookupInEnv env (show op)
-    EBinOp op e1 e2          -> let (v1, env')  = eval env e1 --finds value and new env from first expr in original env
-                                    (VFun f)    = lookupInEnv env' (show op) -- find function from op in new env
-                                    (VFun f')   = f v1 -- creates function from  f and v1
-                                    (v2, env'') = eval env' e2 --finds snd expr in updated env
-                                in ((f' v2), env'')
-    ECase expr' []           -> let v = VLit (ILit 0)
-                                in (v, env)
-    ECase expr' pEs          -> let (v, env') = eval env expr'
-                                in fromJust $ evalCase v env pEs
+    EBinOp op e1 e2          -> f $ eval env e2
+        where (VFun f') = lookupInEnv env (show op)
+              (VFun f)  = f' $ eval env e1
+    ECase expr' []           -> VLit (ILit 0)
+    ECase expr' pEs          -> fromJust $ evalCase v env pEs
+        where v = eval env expr'
 
 -- evalCase is a helper function to eval.
-evalCase :: Value -> Env -> [(Pattern, Exp)] -> Maybe (Value, Env)
+evalCase :: Value -> Env -> [(Pattern, Exp)] -> Maybe Value
 evalCase _ _ []              = Nothing
 evalCase v env ((p, expr):pes) = case match p v of
     Just vvs    -> Just $ eval env' expr

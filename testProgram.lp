@@ -138,7 +138,7 @@ naturals := cons 0 (map (\x -> x+1) naturals)
 
 -- Sum of first 100 naturals
 function main : Int
-main := foldr (\x -> \y -> (x+y)) 0 (take 5 [1,2,3,4,5,6,7,8])
+main := foldr (\x y -> x + y) 0 (take 5 [1,2,3,4,5,6,7,8])
 
 function testPat : Int -> [Int] -> [Int]
 testPat := pat 0 dv 2
