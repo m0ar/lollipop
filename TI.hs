@@ -171,11 +171,40 @@ cDecl :: Type -> ConstrDecl -> (ConstrID, Type)
 cDecl t (ConstrDecl id ts) = (id, foldr TFun t ts)
 
 infer :: TypeEnv -> Exp -> TI Type
-infer env ex = ti (tiStartEnv' env startEnvironment) ex >>= refresh
-        where
-            tiStartEnv' :: TypeEnv -> [(String, Value, Scheme)] -> TypeEnv
-            tiStartEnv' env [] = env
-            tiStartEnv' env ((a,b,c):xs) = tiStartEnv' (add a c env) xs
+infer env ex = case (linearCheck M.empty ex) of
+    Nothing -> ti (tiStartEnv' env startEnvironment) ex >>= refresh
+                where
+                    tiStartEnv' :: TypeEnv -> [(String, Value, Scheme)] -> TypeEnv
+                    tiStartEnv' env [] = env
+                    tiStartEnv' env ((a,b,c):xs) = tiStartEnv' (add a c env) xs
+    Just x -> error "linear error"
+
+linearCheck :: (M.Map Var Int) -> Exp -> Maybe Int
+linearCheck m e = case M.size (M.filter (> 1) (lc e m)) of
+    0       -> Nothing
+    _       -> Just 1
+
+lc ::  Exp -> (M.Map Var Int) -> (M.Map Var Int)
+lc e m = case e of
+    (EApp e1 e2)       -> lc e1 (lc e2 m)
+    (EVar var)         -> case (head var) of
+        'i' -> M.insertWith (+) var 1 m
+        _   -> m
+    (ELit _)           -> m
+    (EUnOp _ e)        -> lc e m
+    (EBinOp _ e1 e2)   -> lc e1 (lc e2 m)
+    (ELam var e)       -> case (head var) of
+        'i' -> lc e (M.insertWith (+) var 1 m)
+        _   -> lc e m
+    (EConstr cid)      -> case (head cid) of
+        'i' -> M.insertWith (+) cid 1 m
+        _   -> m
+    (ECase e pes)      -> let env = lc e m
+                            in case (all (isNothing) (map (linearCheck env) (map snd pes))) of
+                                True  -> env
+                                False -> error "Linear error"
+    (ELetIn _ e1 e2)   -> lc e1 (lc e2 m)
+    (EListComp e2 vvs e1) -> undefined
 
 -- Returns the free expression variables in patterns
 freeVarsP :: Pattern -> [Var]
