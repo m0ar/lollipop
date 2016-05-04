@@ -282,5 +282,5 @@ zipWith f (x:xs) (y:ys) := (f x y):(zipWith f xs ys)
 
 -- print takes a list of characters and calls printChar one every element
 function print : [Char] -> IO ()
-print [c]    := printChar c
+print []     := printChar '\n'
 print (c:cs) := printChar c >> print cs
