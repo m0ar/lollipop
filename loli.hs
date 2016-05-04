@@ -91,6 +91,7 @@ buildEnv file = do
                 env'' = M.union env' sEnv
                 (TypeEnv pTEnv) = progToTypeEnv p
                 tEnv  = M.union pTEnv sTEnv
+            tiTypes <- checkDecls p (TypeEnv sTEnv)
             putStrLn $ "Successfully loaded " ++ file
             return (env'', (TypeEnv tEnv))
         Left  err     -> do
@@ -108,3 +109,13 @@ buildSugar = do
         env = addFuncDeclsToEnv env fs
         env' = addDataDeclsToEnv env ds
     return (env', progToTypeEnv p)
+
+checkDecls :: Program -> TypeEnv -> IO [TI Type]
+checkDecls p t = return $ Prelude.map (checkDecl t) (getDFuncs p)
+    where checkDecl :: TypeEnv -> FuncDecl -> TI Type
+          checkDecl te (DFunc id t vs e) = case (runTI $ infer te e) of
+              (Left err, _) -> error (show err)
+              (Right r, _)  -> unify t r
+
+getDFuncs :: Program -> [FuncDecl]
+getDFuncs (Program _ ds) = [d | d@(DFunc id t vs e) <- ds]
