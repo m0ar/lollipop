@@ -44,7 +44,7 @@ startEnvironment = [
                 ),
                 
                 (    "readLine"
-                    ,VConstr "Undefined" []
+                    ,VIO $ fmap strToValue readLn
                     ,Scheme [] $ TApp (TConstr "IO") (TApp (TConstr "[]") (TConstr "Char"))
                 ),
                 (    "#concat"
@@ -121,6 +121,10 @@ startEnvironment = [
 
 vPrint :: Char -> IO Value
 vPrint c = putChar c >> return (VConstr "()" [])
+
+strToValue :: [Char] -> Value
+strToValue []     = VConstr "Nil" []
+strToValue (c:cs) = VConstr "Cons" [VLit (CLit c), strToValue cs]
 
 vConstructor :: ConstrID -> Int -> ([Value] -> [Value]) -> Value
 vConstructor cid n k
