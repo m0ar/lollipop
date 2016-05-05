@@ -14,6 +14,7 @@ import qualified AbsGrammar as A
 import TI
 import Control.Monad.State
 import Control.Monad.Except
+import Data.Maybe
 
 import LexGrammar
 import ParGrammar
@@ -91,7 +92,8 @@ buildEnv file = do
                 env'' = M.union env' sEnv
                 (TypeEnv pTEnv) = progToTypeEnv p
                 tEnv  = M.union pTEnv sTEnv
-            tiTypes <- checkDecls p (TypeEnv sTEnv)
+                tiTypes = checkDecls p (TypeEnv sTEnv)
+            putStrLn $ "Typecheck correctly " ++ (show $ all isJust tiTypes)
             putStrLn $ "Successfully loaded " ++ file
             return (env'', (TypeEnv tEnv))
         Left  err     -> do
@@ -110,12 +112,12 @@ buildSugar = do
         env' = addDataDeclsToEnv env ds
     return (env', progToTypeEnv p)
 
-checkDecls :: Program -> TypeEnv -> IO [TI Type]
-checkDecls p t = return $ Prelude.map (checkDecl t) (getDFuncs p)
-    where checkDecl :: TypeEnv -> FuncDecl -> TI Type
+checkDecls :: Program -> TypeEnv -> [Maybe (TI Type)]
+checkDecls p t = Prelude.map (checkDecl t) (getDFuncs p)
+    where checkDecl :: TypeEnv -> FuncDecl -> Maybe (TI Type)
           checkDecl te (DFunc id t vs e) = case (runTI $ infer te e) of
-              (Left err, _) -> error (show err)
-              (Right r, _)  -> unify t r
+                                              (Left err, _) -> error $ "Type error - " ++ err --Nothing
+                                              (Right r, _)  -> Just (unify t r)
 
 getDFuncs :: Program -> [FuncDecl]
 getDFuncs (Program _ ds) = [d | d@(DFunc id t vs e) <- ds]
