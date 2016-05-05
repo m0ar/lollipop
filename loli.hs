@@ -94,7 +94,7 @@ buildEnv file = do
                 (TypeEnv pTEnv) = progToTypeEnv p
                 tEnv  = M.union pTEnv sTEnv
                 tiTypes = checkDecls p (TypeEnv tEnv)
-            putStrLn $ "Typecheck correctly " ++ (show $ all isRight tiTypes)
+            putStrLn $ "Typecheck correctly " ++ (show $ all isRight (Prelude.map (fst . runTI) tiTypes))
             --putStrLn $ " " ++ (show $ getDFuncs p)
             putStrLn $ "\nSuccessfully loaded " ++ file
             return (env'', (TypeEnv tEnv))
@@ -114,9 +114,9 @@ buildSugar = do
         env' = addDataDeclsToEnv env ds
     return (env', progToTypeEnv p)
 
-checkDecls :: Program -> TypeEnv -> (TI Type)
+checkDecls :: Program -> TypeEnv -> [TI Type]
 checkDecls p t = Prelude.map (checkDecl t) (getDFuncs p)
-    where checkDecl :: TypeEnv -> FuncDecl -> Maybe (TI Type)
+    where checkDecl :: TypeEnv -> FuncDecl -> (TI Type)
           checkDecl te (DFunc id t vs e) = case (runTI $ infer te e) of
                                               (Left err, _) -> error $ "Type error - " ++ err --
                                               (Right r, _)  -> unify t r
