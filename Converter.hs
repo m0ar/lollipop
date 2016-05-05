@@ -120,7 +120,7 @@ defToExp (A.DGuardsDef _ _ gs)  = cExp $ cGuard gs
 -- creates following case-trees
 
 defsToCase :: [D.Var] -> [D.Var] -> [A.Def] -> D.Exp
-defsToCase  _    (v:[]) ((A.DDef _ (a:[]) e):[])
+defsToCase  _    (v:_) ((A.DDef _ (a:_) e):[])
     = D.ECase (D.EVar v) [((argToPat a), (cExp e))]
 defsToCase vsOrg (v:[]) ((A.DDef _ (a:[]) e):ds)
     = D.ECase (D.EVar v)

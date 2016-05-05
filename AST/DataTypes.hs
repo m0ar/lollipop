@@ -159,10 +159,10 @@ data Type =
         | TiConstr ConstrID
         | TFun Type Type
         | TApp Type Type
-    deriving Eq
+    deriving (Eq, Show)
 
-instance Show Type where
-    showsPrec _ x = shows (prType x)
+--instance Show Type where
+    --showsPrec _ x = shows (prType x)
 
 prType :: Type -> PP.Doc
 prType (TVar n)    = PP.text n

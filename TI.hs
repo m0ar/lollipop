@@ -155,10 +155,30 @@ ti env (ELetIn v e1 e2)   = do
     ti env'' e2
 
 progToTypeEnv :: Program -> TypeEnv
-progToTypeEnv (Program dds fds) = TypeEnv $ M.fromList $ concatMap dDecl dds ++ map fDecl fds
+--progToTypeEnv (Program dds fds) = TypeEnv $ M.fromList $ concatMap dDecl dds ++ map fDecl fds
+progToTypeEnv (Program dds fds) = TypeEnv $ M.fromList $ concatMap dDecl dds ++ concatMap fDecl fds
 
-fDecl :: FuncDecl -> (Var, Scheme)
-fDecl (DFunc id t _ _) = (id, Scheme (S.toList (ftv t)) t)
+fDecl :: FuncDecl -> [(Var, Scheme)]
+--fDecl (DFunc id t vs _) = (id, Scheme (S.toList (ftv t)) t)
+fDecl (DFunc id t vs _) = (id, Scheme (S.toList (ftv t)) t):(varsToScheme t vs)
+
+varsToScheme :: Type -> [Var] -> [(Var, Scheme)]
+varsToScheme _ []     = []
+varsToScheme t (v:vs) = case t of
+    TVar var     -> [(v, Scheme (S.toList (ftv t)) t)]
+    TiVar var    -> [(v, Scheme (S.toList (ftv t)) t)]
+    TConstr cid  -> [(cid, Scheme (S.toList (ftv t)) t)]
+    TiConstr cid -> [(cid, Scheme (S.toList (ftv t)) t)]
+    TFun t1 t2   -> (v, Scheme (S.toList (ftv t)) t1):(varsToScheme t2 vs)
+    TApp t1 t2   -> (v, Scheme (S.toList (ftv t)) t1):(varsToScheme t2 vs)
+
+{--data Type =
+        TVar Var
+        | TiVar Var
+        | TConstr ConstrID
+        | TiConstr ConstrID
+        | TFun Type Type
+        | TApp Type Type--}
 
 dDecl :: DataDecl -> [(ConstrID, Scheme)]
 dDecl (DData id vars cs) = map (schemify . cDecl tres) cs
@@ -178,7 +198,7 @@ infer env ex = ti (tiStartEnv' env startEnvironment) ex >>= refresh
         tiStartEnv' env ((a,b,c):xs) = tiStartEnv' (add a c env) xs
 
     -- checks that no linear variables occurs more than once in an expression
-linearCheck :: (M.Map Var Int) -> Exp -> Bool
+{--linearCheck :: (M.Map Var Int) -> Exp -> Bool
 linearCheck m e = case M.size (M.filter (> 1) (lc e m)) of
     0       -> True -- success
     _       -> False -- fail
@@ -203,7 +223,7 @@ lc e m = case e of
                                 True  -> env
                                 False -> error "Linear error"
     (ELetIn _ e1 e2)   -> lc e1 (lc e2 m)
-    (EListComp e2 vvs e1) -> undefined
+    (EListComp e2 vvs e1) -> undefined--}
 
 -- Returns the free expression variables in patterns
 freeVarsP :: Pattern -> [Var]
@@ -223,6 +243,7 @@ patToExp :: Pattern -> Exp
 patToExp (PConstr v vs) = foldl EApp (EConstr v) (map patToExp vs)
 patToExp (PVar v)       = EVar v
 patToExp (PLit x)       = ELit x
+patToExp PWild          = ELit (ILit 2)
 
 
 newtype TypeEnv = TypeEnv (M.Map String Scheme)

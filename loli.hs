@@ -23,6 +23,7 @@ import qualified AbsGrammar as G
 import ErrM
 import Control.Exception
 import Data.Typeable
+import Data.Either
 
 import Data.Map
 import qualified Data.Map as M
@@ -93,9 +94,8 @@ buildEnv file = do
                 (TypeEnv pTEnv) = progToTypeEnv p
                 tEnv  = M.union pTEnv sTEnv
                 tiTypes = checkDecls p (TypeEnv tEnv)
-            --putStrLn $ "Typecheck correctly " ++ (show $ and linCheck)
-            --putStrLn $ show (getRhs p)
-            --putStrLn $ "Typecheck correctly " ++ (show $ all isJust tiTypes)
+            putStrLn $ "Typecheck correctly " ++ (show $ all isRight tiTypes)
+            --putStrLn $ " " ++ (show $ getDFuncs p)
             putStrLn $ "\nSuccessfully loaded " ++ file
             return (env'', (TypeEnv tEnv))
         Left  err     -> do
@@ -114,12 +114,12 @@ buildSugar = do
         env' = addDataDeclsToEnv env ds
     return (env', progToTypeEnv p)
 
-checkDecls :: Program -> TypeEnv -> [Maybe (TI Type)]
+checkDecls :: Program -> TypeEnv -> (TI Type)
 checkDecls p t = Prelude.map (checkDecl t) (getDFuncs p)
     where checkDecl :: TypeEnv -> FuncDecl -> Maybe (TI Type)
           checkDecl te (DFunc id t vs e) = case (runTI $ infer te e) of
                                               (Left err, _) -> error $ "Type error - " ++ err --
-                                              (Right r, _)  -> Just (unify t r)
+                                              (Right r, _)  -> unify t r
 
 -- returns all functions in a program
 getDFuncs :: Program -> [FuncDecl]
