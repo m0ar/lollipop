@@ -92,9 +92,11 @@ buildEnv file = do
                 env'' = M.union env' sEnv
                 (TypeEnv pTEnv) = progToTypeEnv p
                 tEnv  = M.union pTEnv sTEnv
-                tiTypes = checkDecls p (TypeEnv sTEnv)
-            putStrLn $ "Typecheck correctly " ++ (show $ all isJust tiTypes)
-            putStrLn $ "Successfully loaded " ++ file
+                tiTypes = checkDecls p (TypeEnv tEnv)
+            --putStrLn $ "Typecheck correctly " ++ (show $ and linCheck)
+            --putStrLn $ show (getRhs p)
+            --putStrLn $ "Typecheck correctly " ++ (show $ all isJust tiTypes)
+            putStrLn $ "\nSuccessfully loaded " ++ file
             return (env'', (TypeEnv tEnv))
         Left  err     -> do
             putStrLn "No such file, nothing loaded."
@@ -116,8 +118,20 @@ checkDecls :: Program -> TypeEnv -> [Maybe (TI Type)]
 checkDecls p t = Prelude.map (checkDecl t) (getDFuncs p)
     where checkDecl :: TypeEnv -> FuncDecl -> Maybe (TI Type)
           checkDecl te (DFunc id t vs e) = case (runTI $ infer te e) of
-                                              (Left err, _) -> error $ "Type error - " ++ err --Nothing
+                                              (Left err, _) -> error $ "Type error - " ++ err --
                                               (Right r, _)  -> Just (unify t r)
 
+-- returns all functions in a program
 getDFuncs :: Program -> [FuncDecl]
 getDFuncs (Program _ ds) = [d | d@(DFunc id t vs e) <- ds]
+
+-- returns the expression of a funcion
+getExps :: Program -> [Exp]
+getExps p = [e | (DFunc id t vs e) <- getDFuncs p]
+
+-- returns all the right hand side expression of a program
+getRhs :: Program -> [Exp]
+getRhs p = concatMap getRhs' (getExps p)
+    where getRhs' e = case e of
+            (ECase _ pes) -> [e' | (p,e') <- pes]
+            _             -> []
