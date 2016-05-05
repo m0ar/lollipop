@@ -156,13 +156,14 @@ ti env (ELetIn v e1 e2)   = do
 
 progToTypeEnv :: Program -> TypeEnv
 --progToTypeEnv (Program dds fds) = TypeEnv $ M.fromList $ concatMap dDecl dds ++ map fDecl fds
-progToTypeEnv (Program dds fds) = TypeEnv $ M.fromList $ concatMap dDecl dds ++ concatMap fDecl fds
+progToTypeEnv (Program dds fds) = TypeEnv $ M.fromList $ concatMap dDecl dds ++ map fDecl fds
 
-fDecl :: FuncDecl -> [(Var, Scheme)]
+fDecl :: FuncDecl -> (Var, Scheme)
 --fDecl (DFunc id t vs _) = (id, Scheme (S.toList (ftv t)) t)
-fDecl (DFunc id t vs _) = (id, Scheme (S.toList (ftv t)) t):(varsToScheme t vs)
+--fDecl (DFunc id t vs _) = (id, Scheme (S.toList (ftv t)) t):(varsToScheme t vs)
+fDecl (DFunc id t vs _) = (id, (Scheme vs t))
 
-varsToScheme :: Type -> [Var] -> [(Var, Scheme)]
+{--varsToScheme :: Type -> [Var] -> [(Var, Scheme)]
 varsToScheme _ []     = []
 varsToScheme t (v:vs) = case t of
     TVar var     -> [(v, Scheme (S.toList (ftv t)) t)]
@@ -170,7 +171,9 @@ varsToScheme t (v:vs) = case t of
     TConstr cid  -> [(cid, Scheme (S.toList (ftv t)) t)]
     TiConstr cid -> [(cid, Scheme (S.toList (ftv t)) t)]
     TFun t1 t2   -> (v, Scheme (S.toList (ftv t)) t1):(varsToScheme t2 vs)
-    TApp t1 t2   -> (v, Scheme (S.toList (ftv t)) t1):(varsToScheme t2 vs)
+    TApp t1 t2   -> (v, Scheme (S.toList (ftv t)) t1):(varsToScheme t2 vs)--}
+
+-- (TFun (TVar "Int") (TFun (TVar "Int") (TFun (TVar "Int") (TVar "Int"))))
 
 {--data Type =
         TVar Var

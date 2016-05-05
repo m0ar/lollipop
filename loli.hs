@@ -94,13 +94,17 @@ buildEnv file = do
                 (TypeEnv pTEnv) = progToTypeEnv p
                 tEnv  = M.union pTEnv sTEnv
                 tiTypes = checkDecls p (TypeEnv tEnv)
-            putStrLn $ "Typecheck correctly " ++ (show $ all isRight (Prelude.map (fst . runTI) tiTypes))
+            putStrLn $ "Typecheck correctly " ++ (show $ all isRight' (Prelude.map (fst . runTI) tiTypes))
             --putStrLn $ " " ++ (show $ getDFuncs p)
             putStrLn $ "\nSuccessfully loaded " ++ file
             return (env'', (TypeEnv tEnv))
         Left  err     -> do
             putStrLn "No such file, nothing loaded."
             throw NoSuchFile
+
+isRight' :: Either a b -> Bool
+isRight' (Right _) = True
+isRight' _         = False
 
 buildSugar :: IO (Env, TypeEnv)
 buildSugar = do
