@@ -60,27 +60,27 @@ startEnvironment = [
                 ),
                 (    "#add"
                     ,VFun $ \(VLit x) -> VFun $ \(VLit y) -> VLit $ x+y
-                    ,Scheme [] $ TFun (TFun (TConstr "Int") 
-                                            (TConstr "Int")) 
-                                      (TConstr "Int")
+                    ,Scheme [] $ TFun (TConstr "Int")
+                                      (TFun (TConstr "Int") 
+                                            (TConstr "Int"))
                 ),
                 (    "#pow"
                     ,VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ DLit $ (fromIntegral x) ^^ y
-                    ,Scheme [] $ TFun (TFun (TConstr "Int") 
+                    ,Scheme [] $ TFun (TConstr "Int")
+                                      (TFun (TConstr "Int") 
                                             (TConstr "Int")) 
-                                      (TConstr "Int")
                 ),
                 (    "#mul"
                     ,VFun $ \(VLit x) -> VFun $ \(VLit y) -> VLit $ x*y
-                    ,Scheme [] $ TFun (TFun (TConstr "Int") 
-                                            (TConstr "Int")) 
-                                      (TConstr "Int")
+                    ,Scheme [] $ TFun (TConstr "Int")
+                                      (TFun (TConstr "Int") 
+                                            (TConstr "Int"))
                 ),
                 (    "#div"
                     ,VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ DLit $ (fromIntegral x)/(fromIntegral y)
-                    ,Scheme [] $ TFun (TFun (TConstr "Int") 
-                                            (TConstr "Int")) 
-                                      (TConstr "Int")
+                    ,Scheme [] $ TFun (TConstr "Int")
+                                      (TFun (TConstr "Int") 
+                                            (TConstr "Int"))
                 ),
                 (    "#gt"
                     ,VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> boolToVConstr (x>y)
