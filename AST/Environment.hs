@@ -40,13 +40,18 @@ startEnvironment :: [(String, Value, Scheme)]
 startEnvironment = [
                 (    "printChar"
                     ,VFun $ \(VLit (CLit cs)) -> VIO $ vPrint cs
-                    ,Scheme [] $ TFun (TConstr "Char")  
+                    ,Scheme [] $ TFun (TConstr "Char")
                                       (TApp (TConstr "IO") (TConstr "Char"))
                 ),
-                
+
                 (    "readLine"
                     ,VIO $ fmap strToValue readLn
                     ,Scheme [] $ TApp (TConstr "IO") (TApp (TConstr "[]") (TConstr "Char"))
+                ),
+
+                (    "undefined"
+                    ,throw (Undefined "undefined")
+                    ,Scheme ["a"] a
                 ),
                 (    "#concat"
                     ,VFun $ \v1 -> VFun $ \v2 -> vConcat v1 v2
@@ -61,25 +66,25 @@ startEnvironment = [
                 (    "#add"
                     ,VFun $ \(VLit x) -> VFun $ \(VLit y) -> VLit $ x+y
                     ,Scheme [] $ TFun (TConstr "Int")
-                                      (TFun (TConstr "Int") 
+                                      (TFun (TConstr "Int")
                                             (TConstr "Int"))
                 ),
                 (    "#pow"
                     ,VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ DLit $ (fromIntegral x) ^^ y
                     ,Scheme [] $ TFun (TConstr "Int")
-                                      (TFun (TConstr "Int") 
-                                            (TConstr "Int")) 
+                                      (TFun (TConstr "Int")
+                                            (TConstr "Int"))
                 ),
                 (    "#mul"
                     ,VFun $ \(VLit x) -> VFun $ \(VLit y) -> VLit $ x*y
                     ,Scheme [] $ TFun (TConstr "Int")
-                                      (TFun (TConstr "Int") 
+                                      (TFun (TConstr "Int")
                                             (TConstr "Int"))
                 ),
                 (    "#div"
                     ,VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> VLit $ DLit $ (fromIntegral x)/(fromIntegral y)
                     ,Scheme [] $ TFun (TConstr "Int")
-                                      (TFun (TConstr "Int") 
+                                      (TFun (TConstr "Int")
                                             (TConstr "Int"))
                 ),
                 (    "#gt"
