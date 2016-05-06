@@ -24,9 +24,7 @@ addManyToEnv env (v1:vars) (v2:vals) = addManyToEnv (addToEnv env v1 v2) vars va
 
 lookupInEnv :: Env -> Var -> Value
 lookupInEnv env var = case M.lookup var env of
-        Nothing -> case M.lookup ("!" ++ var) env of
-            Nothing -> VConstr "Undefined" []
-            Just v  -> throw LinearException -- if variable found as used linear
+        Nothing -> throw $ Undefined "Internal error: Not found in environment"
         Just v  -> v
 
 -- consumes, and unbinds a linear variable
