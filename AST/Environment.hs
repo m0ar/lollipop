@@ -40,7 +40,8 @@ startEnvironment :: [(String, Value, Scheme)]
 startEnvironment = [
                 (    "printChar"
                     ,VFun $ \(VLit (CLit cs)) -> VIO $ vPrint cs
-                    ,undefined
+                    ,Scheme [] $ TFun (TConstr "Char")  
+                                      (TApp (TConstr "IO") (TConstr "Char"))
                 ),
                 
                 (    "readLine"
