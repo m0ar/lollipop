@@ -35,7 +35,7 @@ myLLexer = resolveLayout True . myLexer
 main = do
     E.getArgs >>= \s -> case s of
         [file] -> buildEnv file >>= uncurry (repl file)
-        []     -> repl "" startEnv (TypeEnv M.empty)
+        []     -> repl "" startEnv (tiStartEnv (TypeEnv M.empty) startEnvironment)
         _      -> putStrLn "Invalid arguments"
 
 repl :: String -> Env -> TypeEnv -> IO ()
@@ -76,7 +76,7 @@ repl file env tEnv = do
 buildEnv :: String -> IO (Env, TypeEnv)
 buildEnv ""   = do
     putStrLn "No file loaded"
-    return (startEnv, (TypeEnv M.empty))
+    return (startEnv, (tiStartEnv (TypeEnv M.empty) startEnvironment))
 buildEnv file = do
     res <- try $ readFile (file ++ ".lp")
     case (res :: Either IOError String) of
@@ -91,8 +91,9 @@ buildEnv file = do
                 env   = addFuncDeclsToEnv env fs
                 env'  = addDataDeclsToEnv env ds
                 env'' = M.union env' sEnv
+                (TypeEnv startTiEnv) = tiStartEnv (TypeEnv M.empty) startEnvironment
                 (TypeEnv pTEnv) = progToTypeEnv p
-                tEnv  = M.union pTEnv sTEnv
+                tEnv  = M.union startTiEnv $ M.union pTEnv sTEnv
                 tiTypes = checkDecls p (TypeEnv tEnv)
             putStrLn $ "Typecheck correctly " ++ (show $ all isRight' (Prelude.map (fst . runTI) tiTypes))
             --putStrLn $ " " ++ (show $ getDFuncs p)
@@ -101,6 +102,10 @@ buildEnv file = do
         Left  err     -> do
             putStrLn "No such file, nothing loaded."
             throw NoSuchFile
+
+tiStartEnv :: TypeEnv -> [(String, Value, Scheme)] -> TypeEnv
+tiStartEnv env [] = env
+tiStartEnv env ((a,b,c):xs) = tiStartEnv (add a c env) xs
 
 isRight' :: Either a b -> Bool
 isRight' (Right _) = True

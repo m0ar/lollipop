@@ -193,11 +193,7 @@ cDecl :: Type -> ConstrDecl -> (ConstrID, Type)
 cDecl t (ConstrDecl id ts) = (id, foldr TFun t ts)
 
 infer :: TypeEnv -> Exp -> TI Type
-infer env ex = ti (tiStartEnv' env startEnvironment) ex >>= refresh
-    where
-        tiStartEnv' :: TypeEnv -> [(String, Value, Scheme)] -> TypeEnv
-        tiStartEnv' env [] = env
-        tiStartEnv' env ((a,b,c):xs) = tiStartEnv' (add a c env) xs
+infer env ex = ti env ex >>= refresh
 
     -- checks that no linear variables occurs more than once in an expression
 {--linearCheck :: (M.Map Var Int) -> Exp -> Bool
