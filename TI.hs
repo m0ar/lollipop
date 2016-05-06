@@ -196,7 +196,7 @@ infer :: TypeEnv -> Exp -> TI Type
 infer env ex = ti env ex >>= refresh
 
     -- checks that no linear variables occurs more than once in an expression
-{--linearCheck :: (M.Map Var Int) -> Exp -> Bool
+linearCheck :: (M.Map Var Int) -> Exp -> Bool
 linearCheck m e = case M.size (M.filter (> 1) (lc e m)) of
     0       -> True -- success
     _       -> False -- fail
@@ -219,9 +219,9 @@ lc e m = case e of
     (ECase e pes)      -> let env = lc e m
                             in case (and (map (linearCheck env) (map snd pes))) of
                                 True  -> env
-                                False -> error "Linear error"
+                                False -> throw LinearException
     (ELetIn _ e1 e2)   -> lc e1 (lc e2 m)
-    (EListComp e2 vvs e1) -> undefined--}
+    (EListComp e2 vvs e1) -> undefined
 
 -- Returns the free expression variables in patterns
 freeVarsP :: Pattern -> [Var]
@@ -241,7 +241,7 @@ patToExp :: Pattern -> Exp
 patToExp (PConstr v vs) = foldl EApp (EConstr v) (map patToExp vs)
 patToExp (PVar v)       = EVar v
 patToExp (PLit x)       = ELit x
-patToExp PWild          = ELit (ILit 2)
+patToExp PWild          = EVar "undefined"
 
 
 newtype TypeEnv = TypeEnv (M.Map String Scheme)
