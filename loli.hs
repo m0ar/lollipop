@@ -47,7 +47,7 @@ repl file env tEnv = do
         "" -> loop
         ":q" -> return ()
         ":r" -> buildEnv file >>= uncurry (repl file)
-        (':':'t':' ':s) -> putStrLn (show (lookupInEnv env s))
+        (':':'t':' ':s) -> putStrLn (show (lookupType' tEnv s))
                                >> (repl file env tEnv)
         (':':'l':s) -> case words s of
             [newfile] -> do
@@ -121,9 +121,10 @@ buildSugar = do
 checkDecls :: Program -> TypeEnv -> [TI Type]
 checkDecls p t = Prelude.map (checkDecl t) (getDFuncs p)
     where checkDecl :: TypeEnv -> FuncDecl -> (TI Type)
-          checkDecl te (DFunc id t vs e) = case (runTI $ infer te e) of
+          checkDecl te (DFunc id t vs e) = case (runTI $ infer te e') of
                                               (Left err, _) -> error $ "Type error - " ++ err --
                                               (Right r, _)  -> unify t r
+                      where e' = Prelude.foldr ELam e vs
 
 -- returns all functions in a program
 getDFuncs :: Program -> [FuncDecl]

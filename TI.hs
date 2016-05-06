@@ -7,6 +7,7 @@ import Control.Monad.Except
 import Data.Map(Map)
 import AST.DataTypes
 import AST.Environment
+import Control.Exception
 
 class Types a where
     ftv    ::  a -> S.Set Var
@@ -159,9 +160,9 @@ progToTypeEnv :: Program -> TypeEnv
 progToTypeEnv (Program dds fds) = TypeEnv $ M.fromList $ concatMap dDecl dds ++ map fDecl fds
 
 fDecl :: FuncDecl -> (Var, Scheme)
---fDecl (DFunc id t vs _) = (id, Scheme (S.toList (ftv t)) t)
+fDecl (DFunc id t vs _) = (id, Scheme (S.toList (ftv t)) t)
 --fDecl (DFunc id t vs _) = (id, Scheme (S.toList (ftv t)) t):(varsToScheme t vs)
-fDecl (DFunc id t vs _) = (id, (Scheme vs t))
+--fDecl (DFunc id t vs _) = (id, (Scheme vs t))
 
 {--varsToScheme :: Type -> [Var] -> [(Var, Scheme)]
 varsToScheme _ []     = []
@@ -277,6 +278,11 @@ lookupType :: TypeEnv -> String -> TI Type
 lookupType (TypeEnv m) v = case M.lookup v m of
   Nothing -> throwError $ "Undeclared variable " ++ v
   Just sch -> instantiate sch
+
+lookupType' :: TypeEnv -> String -> Scheme
+lookupType' (TypeEnv m) s = case (M.lookup s m) of
+    Nothing   -> throw $ TypeException "Undeclared variable"
+    Just sch  -> sch
 
 declarePoly :: String -> Type -> TypeEnv -> TypeEnv
 declarePoly v t e = add  v (generalize e t) e

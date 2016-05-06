@@ -6,7 +6,7 @@ import Control.Exception
 import Data.Typeable
 import qualified Text.PrettyPrint as PP
 
-data LoliException = NoSuchFile | SyntaxError | LinearException
+data LoliException = NoSuchFile | SyntaxError | LinearException | TypeException String
     deriving (Show, Typeable)
 instance Exception LoliException
 
@@ -23,6 +23,8 @@ data ConstrDecl = ConstrDecl ConstrID [Type]
     deriving (Show)
 
 data Scheme = Scheme [Var] Type
+    deriving Show
+
 
 data Exp = EApp Exp Exp
        | EVar Var
@@ -159,10 +161,10 @@ data Type =
         | TiConstr ConstrID
         | TFun Type Type
         | TApp Type Type
-    deriving (Eq, Show)
+    deriving (Eq)
 
---instance Show Type where
-    --showsPrec _ x = shows (prType x)
+instance Show Type where
+    showsPrec _ x = shows (prType x)
 
 prType :: Type -> PP.Doc
 prType (TVar n)    = PP.text n

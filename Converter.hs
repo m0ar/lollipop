@@ -87,7 +87,8 @@ typeToVal t = case t of
 
 -- Converts types from the surface syntax to a minimized set of types used by the typechecker.
 cType :: A.Type -> D.Type
-cType (A.TypeIds    t     ) = D.TVar $ identToString t
+cType (A.TypeIds (A.STypeIdent s))  = D.TConstr $ extractTId s
+cType (A.TypeIds (A.LiTypeIdent s)) = D.TVar $ extractId s
 cType (A.TypeTuple  t1  ts) = case ts of
     (t2:[])    -> D.TApp (D.TApp (D.TConstr "(,)") (cType t1)) (cType t2)
     (t2:t3:[]) -> D.TApp (D.TApp (D.TApp (D.TConstr "(,)") (cType t1)) (cType t2)) (cType t3)
