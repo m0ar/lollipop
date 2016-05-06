@@ -95,9 +95,11 @@ buildEnv file = do
                 (TypeEnv pTEnv) = progToTypeEnv p
                 tEnv  = M.union startTiEnv $ M.union pTEnv sTEnv
                 tiTypes = checkDecls p (TypeEnv tEnv)
-            putStrLn $ "Typecheck correctly " ++ (show $ all isRight' (Prelude.map (fst . runTI) tiTypes))
+            --putStrLn $ "Typecheck correctly " ++ (show $ all isRight' (Prelude.map (fst . runTI) tiTypes))
+            case lefts (Prelude.map (fst . runTI) tiTypes) of
+                [] -> putStrLn $ "\nSuccessfully loaded " ++ file
+                xs -> putStrLn $ "Type error: " ++ show xs
             --putStrLn $ " " ++ (show $ getDFuncs p)
-            putStrLn $ "\nSuccessfully loaded " ++ file
             return (env'', (TypeEnv tEnv))
         Left  err     -> do
             putStrLn "No such file, nothing loaded."
@@ -126,9 +128,9 @@ buildSugar = do
 checkDecls :: Program -> TypeEnv -> [TI Type]
 checkDecls p t = Prelude.map (checkDecl t) (getDFuncs p)
     where checkDecl :: TypeEnv -> FuncDecl -> (TI Type)
-          checkDecl te (DFunc id t vs e) = case (runTI $ infer te e') of
-                                              (Left err, _) -> error $ "Type error - " ++ err --
-                                              (Right r, _)  -> unify t r
+          checkDecl te (DFunc id t vs e) = do
+                r <- infer te e'
+                unify t r
                       where e' = Prelude.foldr ELam e vs
 
 -- returns all functions in a program
