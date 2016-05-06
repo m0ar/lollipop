@@ -57,8 +57,9 @@ linearize :: [D.Var] -> [A.TypeIdent] -> [D.Var]
 linearize [] _  = []
 linearize vs [] = vs
 linearize (v:vs) (t:ts) = case t of
-    STypeIdent (TypeId name) -> v:(linearize vs ts)
-    LiTypeIdent (Id name)    -> ('i':v):(linearize vs ts)
+    STypeIdent (TypeId name)  -> v:(linearize vs ts)
+    LiTypeIdent (Id ('i':_))) -> ('i':v):(linearize vs ts)
+    LiTypeIdent (Id name)     -> v:(linearize vs ts)
 
 -- Converts a data declaration to a DataDecl in DataTypes
 cDataDecl :: A.Declaration -> D.DataDecl
