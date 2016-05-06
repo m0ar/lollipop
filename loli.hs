@@ -43,7 +43,7 @@ repl file env tEnv = do
     let loop = repl file env tEnv
     putStr (file ++ ">") >> hFlush stdout
     i <- getLine
-    case i of
+    flip catch (\e -> print (e :: LoliException) >> loop) $ case i of
         "" -> loop
         ":q" -> return ()
         ":r" -> buildEnv file >>= uncurry (repl file)

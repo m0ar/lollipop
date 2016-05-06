@@ -123,8 +123,7 @@ ti env (EUnOp o e) = case o of  -- TODO
         t2 <- ti env (EConstr "True")
         unify t1 t2
     _   -> throwError $ "Not a unary operator" -- Should this be here or in DataTypes?
-ti env (EBinOp u e1 e2) = case u of -- TODO
-    _   -> throwError $ "Not a binary operator" -- Should this be here or in DataTypes?
+ti env (EBinOp u e1 e2) = ti env (EApp (EApp (EVar (show u)) e1) e2)
 ti env (ELam v e)         = do
     t0 <- newTyVar "a"
     let TypeEnv env' = remove v env
@@ -156,7 +155,6 @@ ti env (ELetIn v e1 e2)   = do
     ti env'' e2
 
 progToTypeEnv :: Program -> TypeEnv
---progToTypeEnv (Program dds fds) = TypeEnv $ M.fromList $ concatMap dDecl dds ++ map fDecl fds
 progToTypeEnv (Program dds fds) = TypeEnv $ M.fromList $ concatMap dDecl dds ++ map fDecl fds
 
 fDecl :: FuncDecl -> (Var, Scheme)
