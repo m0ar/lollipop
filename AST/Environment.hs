@@ -105,15 +105,18 @@ startEnvironment = [
                 ),
                 (    "#then"
                     ,VFun $ \(VIO a1) -> VFun $ \(VIO a2) -> VIO $ a1 >> a2
-                    ,undefined
+                    ,Scheme ["a","b"] $ TFun (TApp (TConstr "IO") a) 
+                                             (TFun (TApp (TConstr "IO") b) 
+                                                   (TConstr "IO"))
                 ),
                 (    "(,)"
                     ,vConstructor "(,)" 2 id
-                    ,Scheme ["a","b"] $ TFun a (TVar "b")
+                    ,Scheme ["a","b"] $ TFun a (TFun b (TApp (TConstr "(,)") (TApp a b)))
                 ),
                 (    "(,,)"
                     ,vConstructor "(,,)" 3 id
-                    ,Scheme ["a","b","c"] $ TFun a (TFun (TVar "b") (TVar "c"))
+                    ,Scheme ["a","b","c"] $ TFun a (TFun b (TFun c (TApp (TConstr "(,,)") 
+                                                                         (TApp a (TApp b c)))))
                 ),
                 (    "Cons"
                     ,vConstructor "Cons" 2 id
@@ -127,6 +130,8 @@ startEnvironment = [
                 )
            ]
        where a = TVar "a"
+             b = TVar "b"
+             c = TVar "c"
 
 vPrint :: Char -> IO Value
 vPrint c = putChar c >> return (VConstr "()" [])
