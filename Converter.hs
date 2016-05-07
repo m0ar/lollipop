@@ -261,6 +261,7 @@ cList ls = case (head ls) of
     ETuple   _               -> cTupleList ls
     EConst   _               -> cConstList ls
     EList    _               -> cListList ls
+    _                        -> error $ "\nError in cList, unable to parse expression: " ++ show (head ls)
 
 cStrLitList :: [A.Exp] -> D.Exp
 cStrLitList []     = D.EConstr "Nil"
