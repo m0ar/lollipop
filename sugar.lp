@@ -122,26 +122,26 @@ all f xs := and (map f xs)
 -- ------------------------------------------
 
 -- Returns the first element in the tuple
-function fst : (a,b) -> a
-fst (x,y) := x
+-- function fst : (a,b) -> a
+-- fst (x,y) := x
 
--- Returns the second element in the tuple
-function snd : (a,b) -> b
-snd (x,y) := y
+-- -- Returns the second element in the tuple
+-- function snd : (a,b) -> b
+-- snd (x,y) := y
 
 -- Returns the maximum of the two elements
 -- in the tuple
-function max : (a,a) -> a
-max (x,y)
-    := x when x > y
-    := y
+-- function max : (a,a) -> a
+-- max (x,y)
+--     := x when x > y
+--     := y
 
 -- Returns the minimum of the two elements
 -- in the tuple
-function min : (a,a) -> a
-min (x,y)
-    := x when x < y
-    := y
+-- function min : (a,a) -> a
+-- min (x,y)
+--     := x when x < y
+--     := y
 
 -- ------------------------------------------
 -- Functions over lists
@@ -208,9 +208,9 @@ length []     := 0
 length (x:xs) := 1 + length xs
 
 -- Returns the reversed list
-function reverse : [a] -> [a]
-reverse []     := []
-reverse (x:xs) := reverse xs ++ [x]
+-- function reverse : [a] -> [a]
+-- reverse []     := []
+-- reverse (x:xs) := reverse xs ++ [x]
 
 -- Returns true if the given value is an element
 -- in the list, otherwise false.
@@ -267,18 +267,18 @@ zip _ []          := []
 zip (x:xs) (y:ys) := (x,y):(zip xs ys)
 
 -- Unzips a list of tuples to a tuple of lists
-function unzip : [(a,b)] -> ([a], [b])
-unzip []          := ([], [])
-unzip ((x,y):xys) := ((x:(fst (unzip xys))),
-                      (y:(snd (unzip xys))))
+-- function unzip : [(a,b)] -> ([a], [b])
+-- unzip []          := ([], [])
+-- unzip ((x,y):xys) := ((x:(fst (unzip xys))),
+--                       (y:(snd (unzip xys))))
 
 -- Applies the function on the corresponding elements
 -- in the input lists and returns the list of the
 -- values returned by the function
-function zipWith : (a -> b -> c) -> [a] -> [b] -> [c]
-zipWith _ [] _          := []
-zipWith _ _ []          := []
-zipWith f (x:xs) (y:ys) := (f x y):(zipWith f xs ys)
+-- function zipWith : (a -> b -> c) -> [a] -> [b] -> [c]
+-- zipWith _ [] _          := []
+-- zipWith _ _ []          := []
+-- zipWith f (x:xs) (y:ys) := (f x y):(zipWith f xs ys)
 
 -- print takes a list of characters and calls printChar one every element
 function print : [Char] -> IO ()
