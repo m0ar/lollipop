@@ -106,7 +106,7 @@ buildEnv file = do
             getLefts :: [(String, TI Type)] -> String
             getLefts []         = []
             getLefts ((s,t):xs) = if isLeft res
-                        then "\n" ++ s ++ ": \n" ++ show res ++ getLefts xs
+                        then "\n" ++ s ++ " : " ++ (replicate (20 - (length s)) ' ') ++ (either show show $ res) ++ getLefts xs
                         else getLefts xs
                         where res = fst (runTI t)
 
