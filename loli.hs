@@ -105,7 +105,7 @@ buildEnv file = do
         where
             getLefts :: [(String, TI Type)] -> String
             getLefts []         = []
-            getLefts ((s,t):xs) = if isLeft res
+            getLefts ((s,t):xs) = if isLeft' res
                         then "\n" ++ s ++ " : " ++ (replicate (20 - (length s)) ' ') ++ (either show show $ res) ++ getLefts xs
                         else getLefts xs
                         where res = fst (runTI t)
@@ -117,6 +117,10 @@ tiStartEnv env ((a,b,c):xs) = tiStartEnv (add a c env) xs
 isRight' :: Either a b -> Bool
 isRight' (Right _) = True
 isRight' _         = False
+
+isLeft' :: Either a b -> Bool
+isLeft' (Left _) = True
+isLeft' _        = False
 
 buildSugar :: IO (Env, TypeEnv)
 buildSugar = do

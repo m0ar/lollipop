@@ -13,7 +13,7 @@ main :: IO ()
 main = putStrLn "welcome to the converter"
 
 cProgram :: A.Program -> D.Program
-cProgram p = D.Program [cDataDecl d | d@(A.DData tId ids cs) <- ds]
+cProgram p = D.Program [cDataDecl d | d@(A.DData tId ids cs) <- ds] -- ++[cTypeDecl td | td@(A.DSyn tId ids t d) <- ds]
                      [cFuncDecl f | f@(A.DFunc fId t ds) <- ds]
     where ds = progToDecls p
 
@@ -64,6 +64,10 @@ linearize (v:vs) (t:ts) = case t of
 -- Converts a data declaration to a DataDecl in DataTypes
 cDataDecl :: A.Declaration -> D.DataDecl
 cDataDecl (DData (STypeIdent (TypeId s)) ids cs) = D.DData s [name | Id name <- ids] (map cConstr cs)
+
+-- Converts a type declaration to a DataDecl in DataTypes
+-- cTypeDecl :: A.Declaration -> D.DataDecl
+-- cTypeDecl (DSyn (STypeIdent (TypeId s)) ids t d) = D.DData s [name | Id name <- ids] (map cConstr cs)
 
 -- Converts a constructor
 cConstr :: A.Constr -> D.ConstrDecl
