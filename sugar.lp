@@ -208,9 +208,9 @@ length []     := 0
 length (x:xs) := 1 + length xs
 
 -- Returns the reversed list
--- function reverse : [a] -> [a]
--- reverse []     := []
--- reverse (x:xs) := reverse xs ++ [x]
+function reverse : [a] -> [a]
+reverse []     := []
+reverse (x:xs) := reverse xs ++ [x]
 
 -- Returns true if the given value is an element
 -- in the list, otherwise false.
