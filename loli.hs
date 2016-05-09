@@ -138,21 +138,43 @@ checkDecls :: Program -> TypeEnv -> [(String, TI Type)]
 checkDecls p t = Prelude.map (checkDecl t) (getDFuncs p)
     where checkDecl :: TypeEnv -> FuncDecl -> (String, TI Type)
           checkDecl te (DFunc id t vs e) = (id, do
+                let es = Prelude.map getExp (getRhs p)
+                let ps = args e
+                let te' = bindLocalVars ps t te -- local type env
+                let linOk = all (linearCheck M.empty te') es
                 r <- infer te e'
-                unify t r)
+                case linOk of
+                    False -> error "Linear fail"
+                    True  -> unify t r)
                       where e' = Prelude.foldr ELam e vs
+
+-- returns the inner expression of a case-expression
+getExp :: Exp -> Exp
+getExp (ECase _ ((p,e):pes)) = getExp e
+getExp (ECase _ ((p,e):[]))  = e
+getExp e                     = e
+
+-- returns the arguments of a case-expression
+args :: Exp -> [Pattern]
+args (ECase _ ((p,e):pes)) = p:(args e)
+args (ECase _ ((p,e):[]))  = [p]
+args _                     = []
+
+-- binds local variables to a type to use when checking linear type rules
+bindLocalVars :: [Pattern] -> Type -> TypeEnv -> TypeEnv
+bindLocalVars [] _ tEnv             = tEnv
+bindLocalVars ((PVar v):ps) t tEnv  = case t of
+                        (TFun t1 t2) -> bindLocalVars ps t2 (add v (Scheme [v] t1) tEnv)
+                        (TApp t1 t2) -> bindLocalVars ps t2 (add v (Scheme [v] t1) tEnv)
+                        t            -> add v (Scheme [v] t) tEnv
 
 -- returns all functions in a program
 getDFuncs :: Program -> [FuncDecl]
 getDFuncs (Program _ ds) = [d | d@(DFunc id t vs e) <- ds]
 
--- returns the expression of a funcion
-getExps :: Program -> [Exp]
-getExps p = [e | (DFunc id t vs e) <- getDFuncs p]
-
 -- returns all the right hand side expression of a program
 getRhs :: Program -> [Exp]
-getRhs p = concatMap getRhs' (getExps p)
+getRhs p = concatMap getRhs' [e | (DFunc id t vs e) <- getDFuncs p]
     where getRhs' e = case e of
             (ECase _ pes) -> [e' | (p,e') <- pes]
             _             -> []

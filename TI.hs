@@ -196,32 +196,48 @@ infer :: TypeEnv -> Exp -> TI Type
 infer env ex = ti env ex >>= refresh
 
     -- checks that no linear variables occurs more than once in an expression
-linearCheck :: (M.Map Var Int) -> Exp -> Bool
-linearCheck m e = case M.size (M.filter (> 1) (lc e m)) of
-    0       -> True -- success
-    _       -> False -- fail
+linearCheck :: (M.Map Var Int) -> TypeEnv -> Exp -> Bool
+linearCheck m te e =  let lst = (M.filter (> 1) (lc e te m)) in
+                        case M.size lst of
+                            0       -> True -- success
+                            n       -> error $ "linear error: " ++ (show lst) -- fail--}
 
-lc ::  Exp -> (M.Map Var Int) -> (M.Map Var Int)
-lc e m = case e of
-    (EApp e1 e2)       -> lc e1 (lc e2 m)
-    (EVar var)         -> case (head var) of
-        'i' -> M.insertWith (+) var 1 m
-        _   -> m
+lc ::  Exp -> TypeEnv -> (M.Map Var Int) -> (M.Map Var Int)
+lc e tEnv m = case e of
+    (EApp e1 e2)       -> lc e1 tEnv (lc e2 tEnv m)
+    (EVar var)         -> case (lookupType' tEnv var) of
+                            (Scheme vs t) -> case (isLinear t) of
+                                True  -> M.insertWith (+) var 1 m
+                                False -> m
     (ELit _)           -> m
-    (EUnOp _ e)        -> lc e m
-    (EBinOp _ e1 e2)   -> lc e1 (lc e2 m)
-    (ELam var e)       -> case (head var) of
-        'i' -> lc e (M.insertWith (+) var 1 m)
-        _   -> lc e m
-    (EConstr cid)      -> case (head cid) of
-        'i' -> M.insertWith (+) cid 1 m
-        _   -> m
-    (ECase e pes)      -> let env = lc e m
-                            in case (and (map (linearCheck env) (map snd pes))) of
+    (EUnOp _ e)        -> lc e tEnv m
+    (EBinOp _ e1 e2)   -> lc e1 tEnv (lc e2 tEnv m)
+    (ELam var e)       -> case (lookupType' tEnv var) of
+                            (Scheme vs t) -> case (isLinear t) of
+                                True  -> lc e tEnv (M.insertWith (+) var 1 m)
+                                False -> error "linear error!"
+    (EConstr cid)      -> case (lookupType' tEnv cid) of
+                            (Scheme vs t) -> case (isLinear t) of
+                                True  -> M.insertWith (+) cid 1 m
+                                False -> m
+    (ECase ex pes)     -> let env = lc ex tEnv m
+                              es = (map snd pes)
+                              lst = map (linearCheck env tEnv) es
+                            in case (and lst) of
                                 True  -> env
-                                False -> throw LinearException
-    (ELetIn _ e1 e2)   -> lc e1 (lc e2 m)
+                                False -> error $ "m: " ++ (show m) ++ " es: " ++ (show es)  -- throw LinearException
+    (ELetIn _ e1 e2)   -> lc e1 tEnv (lc e2 tEnv m)
     (EListComp e2 vvs e1) -> undefined
+
+
+-- checks if a type is linear
+isLinear :: Type -> Bool
+isLinear t = case t of
+    (TiVar _)         -> True
+    (TiConstr _)      -> True
+    (TVar ('i':_))    -> True
+    (TConstr ('i':_)) -> True
+    _                 -> False
 
 -- Returns the free expression variables in patterns
 freeVarsP :: Pattern -> [Var]
