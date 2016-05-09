@@ -45,7 +45,7 @@ cFuncDecl (A.DFunc (A.Id name) tDecls defs)
 -- TypeIdents
 typeDeclToList :: A.Type -> [A.TypeIdent]
 typeDeclToList (TypeIds ti)       = [ti]
-typeDeclToList (TypeTuple t ts)   = undefined
+typeDeclToList (TypeTuple t ts)   = concatMap typeDeclToList (t:ts)
 typeDeclToList (TypeList t)       = typeDeclToList t
 typeDeclToList TypeVoid           = []
 typeDeclToList (TypeDecl t1 t2)   = (typeDeclToList t1)++(typeDeclToList t2)
