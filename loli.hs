@@ -139,14 +139,21 @@ checkDecls p t = Prelude.map (checkDecl t) (getDFuncs p)
     where checkDecl :: TypeEnv -> FuncDecl -> (String, TI Type)
           checkDecl te (DFunc id t vs e) = (id, do
                 let es = Prelude.map getExp (getRhs p)
-                let ps = args e
-                let te' = bindLocalVars ps t te -- local type env
-                let linOk = all (linearCheck M.empty te') es
+                let as = args e
+                let te' = bindLocalVars as t te -- local type env
+                let lEnv = initLocal M.empty as-- builds local env
+                let linOk = all (linearCheck lEnv te') es
                 r <- infer te e'
                 case linOk of
                     False -> error "Linear fail"
                     True  -> unify t r)
                       where e' = Prelude.foldr ELam e vs
+
+-- creates a local startenv inits all variables into it
+initLocal :: (M.Map Var Int) -> [Pattern] -> (M.Map Var Int)
+initLocal env []     = env
+initLocal env (p:ps) = case p of
+    (PVar v) -> initLocal (M.insert v 0 env) ps
 
 -- returns the inner expression of a case-expression
 getExp :: Exp -> Exp

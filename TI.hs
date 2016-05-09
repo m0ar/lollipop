@@ -197,7 +197,7 @@ infer env ex = ti env ex >>= refresh
 
     -- checks that no linear variables occurs more than once in an expression
 linearCheck :: (M.Map Var Int) -> TypeEnv -> Exp -> Bool
-linearCheck m te e =  let lst = (M.filter (> 1) (lc e te m)) in
+linearCheck m te e =  let lst = (M.filter (/= 1) (lc e te m)) in
                         case M.size lst of
                             0       -> True -- success
                             n       -> error $ "linear error: " ++ (show lst) -- fail--}
