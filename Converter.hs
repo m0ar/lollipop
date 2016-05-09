@@ -261,6 +261,7 @@ cExp (A.EAbs (A.Id n) ns e) = (D.ELam n (cList' ns e))
 
 -- Converts a list of expressions
 cList :: [A.Exp] -> D.Exp
+cList [] = D.EConstr "Nil"
 cList ls = case (head ls) of
     ELiteral (LitString str) -> cStrLitList ls
     ELiteral _               -> cLitList ls
@@ -268,7 +269,7 @@ cList ls = case (head ls) of
     ETuple   _               -> cTupleList ls
     EConst   _               -> cConstList ls
     EList    _               -> cListList ls
-    EVar     (Id a)          -> D.EVar a
+    EVar     (Id a)          -> D.EApp ((D.EApp (D.EConstr "Cons") (D.EVar a))) (cList $ tail ls)
     _                        -> error $ "\nError in cList, unable to parse expression: " ++ show (head ls)
 
 cStrLitList :: [A.Exp] -> D.Exp
