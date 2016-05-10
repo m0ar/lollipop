@@ -140,20 +140,26 @@ checkDecls p t = Prelude.map (checkDecl t) (getDFuncs p)
           checkDecl te (DFunc id t vs e) = (id, do
                 let es = Prelude.map getExp (getRhs p)
                 let as = args e
-                let te' = bindLocalVars as t te -- local type env
-                let lEnv = initLocal M.empty as-- builds local env
-                let linOk = all (linearCheck lEnv te') es
+                let linearOK = and $ Prelude.map (linCheck t te) (zip as es)
                 r <- infer te e'
-                case linOk of
+                case linearOK of
                     False -> error "Linear fail"
                     True  -> unify t r)
                       where e' = Prelude.foldr ELam e vs
+
+linCheck :: Type -> TypeEnv -> ([Pattern], Exp) -> Bool
+linCheck t te (ps,e) = let te' = bindLocalVars ps t te
+                           lEnv = initLocal M.empty ps
+                      in linearCheck lEnv te' e
 
 -- creates a local startenv inits all variables into it
 initLocal :: (M.Map Var Int) -> [Pattern] -> (M.Map Var Int)
 initLocal env []     = env
 initLocal env (p:ps) = case p of
-    (PVar v) -> initLocal (M.insert v 0 env) ps
+    (PVar v)        -> initLocal (M.insert v 0 env) ps
+    (PConstr cid _) -> initLocal (M.insert cid 0 env) ps
+    _               -> initLocal env ps
+
 
 -- returns the inner expression of a case-expression
 getExp :: Exp -> Exp
@@ -161,11 +167,14 @@ getExp (ECase _ ((p,e):pes)) = getExp e
 getExp (ECase _ ((p,e):[]))  = e
 getExp e                     = e
 
--- returns the arguments of a case-expression
-args :: Exp -> [Pattern]
-args (ECase _ ((p,e):pes)) = p:(args e)
-args (ECase _ ((p,e):[]))  = [p]
+args :: Exp -> [[Pattern]]
+args (ECase _ ((p,e):pes)) = (p:(args' e)):(concatMap args (snd $ unzip $ pes))
 args _                     = []
+
+args' :: Exp -> [Pattern]
+args' (ECase _ [])        = []
+args' (ECase _ ((p,e):_)) = p:(args' e)
+args' _                   = []
 
 -- binds local variables to a type to use when checking linear type rules
 bindLocalVars :: [Pattern] -> Type -> TypeEnv -> TypeEnv
@@ -174,6 +183,14 @@ bindLocalVars ((PVar v):ps) t tEnv  = case t of
                         (TFun t1 t2) -> bindLocalVars ps t2 (add v (Scheme [v] t1) tEnv)
                         (TApp t1 t2) -> bindLocalVars ps t2 (add v (Scheme [v] t1) tEnv)
                         t            -> add v (Scheme [v] t) tEnv
+bindLocalVars ((PConstr cid _):ps) t tEnv  = case t of
+                        (TFun t1 t2) -> bindLocalVars ps t2 (add cid (Scheme [cid] t1) tEnv)
+                        (TApp t1 t2) -> bindLocalVars ps t2 (add cid (Scheme [cid] t1) tEnv)
+                        t            -> add cid (Scheme [cid] t) tEnv
+bindLocalVars (_:ps) t tEnv = case t of
+                        (TFun t1 t2) -> bindLocalVars ps t2 tEnv
+                        (TApp t1 t2) -> bindLocalVars ps t2 tEnv
+                        t            -> error "internal error"
 
 -- returns all functions in a program
 getDFuncs :: Program -> [FuncDecl]
