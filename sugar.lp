@@ -55,7 +55,7 @@ function div : Int -> Int -> Int
 div _ 0 := Undefined
 div 0 _ := 0
 div x y
-    := div -x -y        when y < 0
+    := div (-x) (-y)    when y < 0
     := -1 + div (x+y) y when x < 0
     := 1 + div (x-y) y  when x > y
     := 1                when x == y
@@ -100,14 +100,13 @@ isEven x := mod x 2 == 0
 -- Checks if a list of Booleans only
 -- contains Trues
 function and : [Boolean] -> Boolean
-and := foldr (\x y -> x && y) True
+and xs := foldr (\x y -> x && y) True xs
 
 -- Checks if a list of Booleans contains
 -- any True
 function or : [Boolean] -> Boolean
 or xs := foldr (\x y -> x || y) False xs
 
--- Check if any element of a list
 -- satisfies the predicate.
 function any : atoBoolean -> [a] -> Boolean
 any f xs := or (map f xs)

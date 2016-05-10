@@ -53,13 +53,11 @@ startEnvironment = [
                 ),
                 (    "#concat"
                     ,VFun $ \v1 -> VFun $ \v2 -> vConcat v1 v2
-                    ,Scheme ["a"] $ TFun (TApp (TConstr "[]")
-                                (TApp (TConstr "[]") a))
-                          (TApp (TConstr "[]") a)
+                    ,Scheme ["a"] $ TFun (TApp (TConstr "[]") a) (TFun (TApp (TConstr "[]") a) (TApp (TConstr "[]") a))
                 ),
                 (    "#cons"
                     ,VFun $ \v -> VFun $ \(VConstr cid vs) -> (VConstr "Cons" [v, (VConstr cid vs)])
-                    ,Scheme ["a"] $ TFun a (TApp (TConstr "[]") a)
+                    ,Scheme ["a","b"] $ TFun a (TFun b (TApp (TConstr "[]") a))
                 ),
                 (    "#add"
                     ,VFun $ \(VLit x) -> VFun $ \(VLit y) -> VLit $ x+y
@@ -87,20 +85,20 @@ startEnvironment = [
                 ),
                 (    "#gt"
                     ,VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> boolToVConstr (x>y)
-                    ,Scheme ["a"] $ TFun (TFun a a) (TConstr "Bool")
+                    ,Scheme ["a"] $ TFun a (TFun a (TConstr "Boolean"))
                 ),
                 (    "#eq"
                     ,VFun $ \(VLit (ILit x)) -> VFun $ \(VLit (ILit y)) -> boolToVConstr (x==y)
-                    ,Scheme ["a"] $ TFun (TFun a a) (TConstr "Bool")
+                    ,Scheme ["a"] $ TFun a (TFun a (TConstr "Boolean"))
                 ),
                 (    "#not"
                     ,VFun $ \v -> boolToVConstr $ not $ vConstrToBool v
-                    ,Scheme [] $ TFun (TConstr "Bool") (TConstr "Bool")
+                    ,Scheme [] $ TFun (TConstr "Boolean") (TConstr "Boolean")
                 ),
                 (    "#or"
                     ,VFun $ \v1 -> VFun $ \v2 -> boolToVConstr $ (vConstrToBool v1) || (vConstrToBool v2)
-                    ,Scheme [] $ TFun (TFun (TConstr "Bool") (TConstr "Bool"))
-                          (TConstr "Bool")
+                    ,Scheme [] $ TFun (TConstr "Boolean") (TFun (TConstr "Boolean")
+                          (TConstr "Boolean"))
                 ),
                 (    "#bind"
                     ,VFun $ \(VIO a1) -> VFun $ \(VFun a2) -> VIO $ a1 >>= \s -> run $ a2 s  -- a1 >>= \s -> a2 s
@@ -114,12 +112,11 @@ startEnvironment = [
                 ),
                 (    "(,)"
                     ,vConstructor "(,)" 2 id
-                    ,Scheme ["a","b"] $ TFun a (TFun b (TApp (TConstr "(,)") (TApp a b)))
+                    ,Scheme ["a","b"] $ TFun a (TFun b (TApp (TApp (TConstr "(,)") a) b))
                 ),
                 (    "(,,)"
                     ,vConstructor "(,,)" 3 id
-                    ,Scheme ["a","b","c"] $ TFun a (TFun b (TFun c (TApp (TConstr "(,,)") 
-                                                                         (TApp a (TApp b c)))))
+                    ,Scheme ["a","b","c"] $ TFun a (TFun b (TFun c (TApp (TApp (TApp (TConstr "(,,)") a) b) c)))
                 ),
                 (    "Cons"
                     ,vConstructor "Cons" 2 id

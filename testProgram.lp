@@ -24,14 +24,14 @@ testFoldl := foldl (\acc x -> acc + x) 0
 function addL : [Int] -> [Int] -> [Int]
 great x := x:[2,3,4]
 
-function great : Bool
+function great : Boolean
 great := 7 < 8 || 3 > 6
 
 function lett : Int
 lett := let x := pw
         in x + 2
 
-function nt : Int
+function nt : Boolean
 nt := not True
 
 function dv : Int
@@ -43,7 +43,7 @@ pw := 5 ^ (-2)
 function putStrLn : Int
 putStrLn := (print "hej" >> print " da, ") >> print " mamma"
 
-function testLam : Int -> Int
+function testLam : [Int] -> Int
 testLam := (\y -> 2+(head y)) (tail [1,2,3])
 
 function testLamMap : [Int]
@@ -57,7 +57,7 @@ function sumFstList : [[Int]] -> Int
 sumFstList (x:[]) := head x
 sumFstList (x:xs) := (head x) + (sumFstList xs)
 
-function fst : [(Int,Int)] -> Int
+function fst : (Int,Int) -> Int
 fst (x,y) := x
 
 function sum : [Int] -> Int
@@ -69,9 +69,9 @@ head (x:[]) := x
 head (x:xs) := x
 
 function trd : [Int] -> Int
-trd (x:xs) := snd xs
+trd (x:xs) := head (tail xs)
 
-function tail : [Int] -> Int
+function tail : [Int] -> [Int]
 tail (x:[]) := x
 tail (x:xs) := xs
 
@@ -80,13 +80,13 @@ last y := case y of
     (x:[]) -> x
     (x:xs) -> last xs
 
-function lst : [Int]
+function lst : [Boolean]
 lst := [True,False,True]
 
 function tpl : (Int, Int)
 tpl := (1, 2)
 
-function bl : Bool
+function bl : Boolean
 bl := True
 
 function tpl2 : (Int, Int) -> Int
@@ -95,7 +95,7 @@ tpl2 (x, y) := x-y
 tpl2 (3, 4) := 34
 
 
-function one : Int
+function one : (a,b) -> (b,a)
 one (x,y) := (y,x)
 
 function pat : Int -> Int -> Int -> Int
@@ -107,7 +107,7 @@ function patR : Int -> Int -> Int -> Int
 patR x 2 5 := x + 1
 patR y 2 2 := 2
 
-function grd : Int
+function grd : Boolean
 grd a b := True when a > b
 	       := False when a < b
 	       := False
