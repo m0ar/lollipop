@@ -107,6 +107,7 @@ and xs := foldr (\x y -> x && y) True xs
 function or : [Boolean] -> Boolean
 or xs := foldr (\x y -> x || y) False xs
 
+--- Check if any element of a list
 -- satisfies the predicate.
 function any : atoBoolean -> [a] -> Boolean
 any f xs := or (map f xs)
