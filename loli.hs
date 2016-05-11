@@ -130,15 +130,17 @@ startSugarEnv = buildEnv startEnv (tiStartEnv (TypeEnv M.empty) startEnvironment
 checkDecls :: Program -> TypeEnv -> [(String, TI Type)]
 checkDecls p t = Prelude.map (checkDecl t) (getDFuncs p)
     where checkDecl :: TypeEnv -> FuncDecl -> (String, TI Type)
-          checkDecl te (DFunc id t vs e) = (id, do
-                let es = Prelude.map getExp (getRhs p)
+          checkDecl te d@(DFunc id t vs e) = (id, do
+                --let es = error $ show $ Prelude.map getExp (getRhs p)
+                let es' = Prelude.map getExp (getRhs d)
                 let as = args e
-                let linearOK = True -- and $ Prelude.map (linCheck t te) (zip as es)
+                let linearOK = and $ Prelude.map (linCheck t te) (zip as es')
                 r <- infer te e'
                 case linearOK of
                     False -> error "Linear fail"
                     True  -> unify t r)
                       where e' = Prelude.foldr ELam e vs
+
 
 linCheck :: Type -> TypeEnv -> ([Pattern], Exp) -> Bool
 linCheck t te (ps,e) = let te' = bindLocalVars ps t te
@@ -197,8 +199,7 @@ getDFuncs :: Program -> [FuncDecl]
 getDFuncs (Program _ ds) = [d | d@(DFunc id t vs e) <- ds]
 
 -- returns all the right hand side expression of a program
-getRhs :: Program -> [Exp]
-getRhs p = concatMap getRhs' [e | (DFunc id t vs e) <- getDFuncs p]
-    where getRhs' e = case e of
-            (ECase _ pes) -> [e' | (p,e') <- pes]
-            _             -> []
+getRhs :: FuncDecl -> [Exp]
+getRhs (DFunc id t vs e) = case e of
+          (ECase _ pes) -> [e' | (p,e') <- pes]
+          _             -> []
