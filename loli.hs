@@ -140,7 +140,7 @@ checkDecls p t = Prelude.map (checkDecl t) (getDFuncs p)
           checkDecl te (DFunc id t vs e) = (id, do
                 let es = Prelude.map getExp (getRhs p)
                 let as = args e
-                let linearOK = and $ Prelude.map (linCheck t te) (zip as es)
+                let linearOK = True--and $ Prelude.map (linCheck t te) (zip as es)
                 r <- infer te e'
                 case linearOK of
                     False -> error "Linear fail"
@@ -183,14 +183,21 @@ bindLocalVars ((PVar v):ps) t tEnv  = case t of
                         (TFun t1 t2) -> bindLocalVars ps t2 (add v (Scheme [v] t1) tEnv)
                         (TApp t1 t2) -> bindLocalVars ps t2 (add v (Scheme [v] t1) tEnv)
                         t            -> add v (Scheme [v] t) tEnv
-bindLocalVars ((PConstr cid _):ps) t tEnv  = case t of
-                        (TFun t1 t2) -> bindLocalVars ps t2 (add cid (Scheme [cid] t1) tEnv)
-                        (TApp t1 t2) -> bindLocalVars ps t2 (add cid (Scheme [cid] t1) tEnv)
-                        t            -> add cid (Scheme [cid] t) tEnv
+bindLocalVars ((PConstr cid ps'):ps) t tEnv  = case t of
+                        (TFun t1 t2) -> bindLocalVars ps t2 (bindAll ps' t1 tEnv)
+                        (TApp t1 t2) -> bindLocalVars ps t2 (bindAll ps' t1 tEnv)
+                        t            -> bindAll ps' t tEnv
 bindLocalVars (_:ps) t tEnv = case t of
                         (TFun t1 t2) -> bindLocalVars ps t2 tEnv
                         (TApp t1 t2) -> bindLocalVars ps t2 tEnv
                         t            -> error "internal error"
+
+-- binds all patterns to a definitive type
+bindAll :: [Pattern] -> Type -> TypeEnv -> TypeEnv
+bindAll [] _ te     = te
+bindAll (p:ps) t te = case p of
+    (PVar v) -> bindAll ps t (add v (Scheme [v] (TVar "a")) te)
+    _        -> te
 
 -- returns all functions in a program
 getDFuncs :: Program -> [FuncDecl]
