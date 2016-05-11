@@ -85,6 +85,8 @@ unify t1 t2 = do
         m1 <- go l1 l2
         m2 <- go r1 r2
         return $ TApp m1 m2
+    go (TConstr "Undefined") a  = return a
+    go a (TConstr "Undefined")  = return a
     go e1 e2                    = throwError $ "types do not unify: " ++ show e1 ++
                                         " vs. " ++ show e2
 
