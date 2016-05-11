@@ -110,6 +110,7 @@ buildEnv progEnv tiEnv file = do
                         else getLefts xs
                         where res = fst (runTI t)
 
+-- Builds a starting type environment.
 tiStartEnv :: TypeEnv -> [(String, Value, Scheme)] -> TypeEnv
 tiStartEnv env [] = env
 tiStartEnv env ((a,b,c):xs) = tiStartEnv (add a c env) xs
@@ -122,20 +123,9 @@ isLeft' :: Either a b -> Bool
 isLeft' (Left _) = True
 isLeft' _        = False
 
+-- Builds a starting environment with predefined functions and sugar.
 startSugarEnv :: IO (Env, TypeEnv)
 startSugarEnv = buildEnv startEnv (tiStartEnv (TypeEnv M.empty) startEnvironment) "sugar"
-
---buildSugar :: IO (Env, TypeEnv)
---buildSugar = do
---    sg <- readFile "sugar.lp"
---    sugar <- let ts = (myLLexer sg) in case pProgram ts of
---        Bad s   -> do putStrLn s
---                      throw SyntaxError
---        Ok tree -> return tree
---    let p@(Program ds fs) = cProgram sugar
---        env = addFuncDeclsToEnv env fs
---        env' = addDataDeclsToEnv env ds
---    return (env', progToTypeEnv p)
 
 checkDecls :: Program -> TypeEnv -> [(String, TI Type)]
 checkDecls p t = Prelude.map (checkDecl t) (getDFuncs p)
