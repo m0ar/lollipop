@@ -158,7 +158,6 @@ initLocal env (p:ps) = case p of
 
 -- returns the inner expression of a case-expression
 getExp :: Exp -> Exp
-getExp (ECase _ ((p,e):[]))  = e
 getExp (ECase _ ((p,e):pes)) = getExp e
 getExp e                     = e
 
