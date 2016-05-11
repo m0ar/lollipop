@@ -33,9 +33,10 @@ import System.Environment as E
 myLLexer = resolveLayout True . myLexer
 
 main = do
+    (pe,te) <- startSugarEnv
     E.getArgs >>= \s -> case s of
-        [file] -> buildEnv file >>= uncurry (repl file)
-        []     -> repl "" startEnv (tiStartEnv (TypeEnv M.empty) startEnvironment)
+        [file] -> buildEnv pe te file >>= uncurry (repl file)
+        []     -> repl "" pe te
         _      -> putStrLn "Invalid arguments"
 
 repl :: String -> Env -> TypeEnv -> IO ()
@@ -46,12 +47,12 @@ repl file env tEnv = do
     flip catch (\e -> print (e :: LoliException) >> loop) $ case i of
         "" -> loop
         ":q" -> return ()
-        ":r" -> buildEnv file >>= uncurry (repl file)
+        ":r" -> buildEnv env tEnv file >>= uncurry (repl file) -- WOOOT
         (':':'t':' ':s) -> putStrLn (show (lookupType' tEnv s))
                                >> (repl file env tEnv)
         (':':'l':s) -> case words s of
             [newfile] -> do
-            res <- try $ buildEnv newfile
+            res <- try $ buildEnv env tEnv newfile
             case (res :: Either LoliException (Env, TypeEnv)) of
                 Right (env, tEnv) -> repl newfile env tEnv
                 Left  err         -> repl "" env tEnv
@@ -73,11 +74,11 @@ repl file env tEnv = do
                     v        -> print v >> loop
 
 
-buildEnv :: String -> IO (Env, TypeEnv)
-buildEnv ""   = do
+buildEnv :: Env -> TypeEnv -> String -> IO (Env, TypeEnv)
+buildEnv progEnv tiEnv ""   = do
     putStrLn "No file loaded"
-    return (startEnv, (tiStartEnv (TypeEnv M.empty) startEnvironment))
-buildEnv file = do
+    return (progEnv, tiEnv)
+buildEnv progEnv tiEnv file = do
     res <- try $ readFile (file ++ ".lp")
     case (res :: Either IOError String) of
         Right content -> do
@@ -86,14 +87,13 @@ buildEnv file = do
                 Bad s   -> do putStrLn s
                               throw SyntaxError
                 Ok tree -> return tree
-            (sEnv, (TypeEnv sTEnv)) <- buildSugar
+            (sEnv, (TypeEnv sTEnv)) <- return (progEnv, tiEnv)
             let p@(Program ds fs) = cProgram prog
                 env   = addFuncDeclsToEnv env fs
                 env'  = addDataDeclsToEnv env ds
                 env'' = M.union env' sEnv
-                (TypeEnv startTiEnv) = tiStartEnv (TypeEnv M.empty) startEnvironment
                 (TypeEnv pTEnv) = progToTypeEnv p
-                tEnv  = M.union startTiEnv $ M.union pTEnv sTEnv
+                tEnv  = M.union pTEnv sTEnv
                 tiTypes = checkDecls p (TypeEnv tEnv)
             case getLefts tiTypes of
                 [] -> putStrLn $ "\nSuccessfully loaded " ++ file
@@ -122,17 +122,20 @@ isLeft' :: Either a b -> Bool
 isLeft' (Left _) = True
 isLeft' _        = False
 
-buildSugar :: IO (Env, TypeEnv)
-buildSugar = do
-    sg <- readFile "sugar.lp"
-    sugar <- let ts = (myLLexer sg) in case pProgram ts of
-        Bad s   -> do putStrLn s
-                      throw SyntaxError
-        Ok tree -> return tree
-    let p@(Program ds fs) = cProgram sugar
-        env = addFuncDeclsToEnv env fs
-        env' = addDataDeclsToEnv env ds
-    return (env', progToTypeEnv p)
+startSugarEnv :: IO (Env, TypeEnv)
+startSugarEnv = buildEnv startEnv (tiStartEnv (TypeEnv M.empty) startEnvironment) "sugar"
+
+--buildSugar :: IO (Env, TypeEnv)
+--buildSugar = do
+--    sg <- readFile "sugar.lp"
+--    sugar <- let ts = (myLLexer sg) in case pProgram ts of
+--        Bad s   -> do putStrLn s
+--                      throw SyntaxError
+--        Ok tree -> return tree
+--    let p@(Program ds fs) = cProgram sugar
+--        env = addFuncDeclsToEnv env fs
+--        env' = addDataDeclsToEnv env ds
+--    return (env', progToTypeEnv p)
 
 checkDecls :: Program -> TypeEnv -> [(String, TI Type)]
 checkDecls p t = Prelude.map (checkDecl t) (getDFuncs p)
@@ -140,7 +143,7 @@ checkDecls p t = Prelude.map (checkDecl t) (getDFuncs p)
           checkDecl te (DFunc id t vs e) = (id, do
                 let es = Prelude.map getExp (getRhs p)
                 let as = args e
-                let linearOK = and $ Prelude.map (linCheck t te) (zip as es)
+                let linearOK = True -- and $ Prelude.map (linCheck t te) (zip as es)
                 r <- infer te e'
                 case linearOK of
                     False -> error "Linear fail"
@@ -163,8 +166,8 @@ initLocal env (p:ps) = case p of
 
 -- returns the inner expression of a case-expression
 getExp :: Exp -> Exp
-getExp (ECase _ ((p,e):pes)) = getExp e
 getExp (ECase _ ((p,e):[]))  = e
+getExp (ECase _ ((p,e):pes)) = getExp e
 getExp e                     = e
 
 args :: Exp -> [[Pattern]]
