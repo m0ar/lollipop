@@ -1,16 +1,17 @@
+layout toplevel ;
+layout "of" ;
+
 -- A program is 0 or more imports followed by
 -- zero or more function declarations
-PImports.       Program         ::= Import ";" Program ;
 PFuncs.         Program1        ::= Declaration Program1 ;
 PLast.          Program1        ::= Declaration ;
 coercions Program 1 ;
 
 -- A declaration of function definitions, imports or algebraic data types
-DImport.        Import          ::= "import" Id ;
 DFunc.          Declaration     ::= "function" Id ":" Type ";" [Def] ;
 DData.          Declaration     ::= "datatype" TypeIdent [Id] ":=" [Constr] ";" ;
 separator nonempty Constr "|" ;
-DSyn.           Declaration     ::= "type" TypeIdent [Id] ":=" Type Deriving ;
+DSyn.           Declaration     ::= "type" TypeIdent [Id] ":=" Type ";" ;
 layout toplevel ;
 
 -- Function definition
@@ -36,11 +37,6 @@ DConstr1.        Constr         ::= TypeIdent [TypeParameter] ;
 -- type parameter for constructors of datatypes
 TParameter.     TypeParameter   ::= Type2 ;
 separator TypeParameter "" ;
-
--- Deriving structure, DerArg can be any TypeClass,
--- predefined or custom-made
-DDeriving1.     Deriving        ::= ";" ;
-DDeriving2.     Deriving        ::= "deriving" "(" [TypeId] ")" ";" ;
 
 -- Pattern matching
 PWild.          Pattern1        ::= "_" ;
@@ -139,5 +135,3 @@ LiTypeIdent.    TypeIdent       ::= Id ;
 -- Haskell-style comments for now
 comment "--" ;
 comment "{-" "-}" ;
-layout toplevel ;
-layout "of" ;
