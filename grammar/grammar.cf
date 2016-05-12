@@ -53,8 +53,6 @@ PTuplePat.      Pattern1        ::= "(" Pattern "," Pattern ")" ;
 PTruplePat.     Pattern1        ::= "(" Pattern "," Pattern "," Pattern ")" ;
 PDataConstr.    Pattern1        ::= "(" TypeIdent Pattern1 [Pattern1] ")" ;
 PCons.          Pattern         ::= Pattern1 ":" Pattern ;
--- PConsConstr.    Pattern         ::= "(" TypeId Pattern [Pattern] ")" ":" Pattern ;
---_.              Pattern2        ::= "(" Pattern ")" ; This is still broken
 coercions Pattern 1 ;
 separator Pattern1 "" ;
 
@@ -86,7 +84,6 @@ EVar.           Exp11           ::= Id ;
 ETuple.         Exp11           ::= Tuple ;
 ELiteral.       Exp11           ::= Literal ;
 EConst.         Exp11           ::= Cons ;
-EListComp.      Exp11           ::= "[" Exp "|" LCPatterns "]" ;
 EList.          Exp11           ::= "[" [Exp] "]" ;
 EEmptyList.     Exp11           ::= "[]" ;
 EApp.           Exp10           ::= Exp10 Exp11 ;
@@ -124,26 +121,6 @@ ECases3.        Cases1          ::= Pattern "->" Exp ;
 --Fixed size tuples
 Tuple1.         Tuple           ::= "(" Exp "," Exp ")" ;
 Tuple2.         Tuple           ::= "(" Exp "," Exp "," Exp ")" ;
-
--- Structure of list comprehensions input set(s) and predicates.
--- The elements drawn from the input set are either bound
--- to an identifier  or a wild-card.
-ELCPatterns1.   LCPatterns      ::= BoundVar "<-" InputSet ;
-ELCPatterns2.   LCPatterns      ::= BoundVar "<-" InputSet "," LCPatterns ;
-ELCPatterns3.   LCPatterns      ::= BoundVar "<-" InputSet "when" Exp ;
-
-Awild.          BoundVar        ::= "_" ;
-AId.            BoundVar        ::= Id ;
-
--- input set in list comprehensions
-LInputSet1.     InputSet        ::= Id ;
-LInputSet2.     InputSet        ::= "[" [Literal] "]" ;
-LInputSet3.     InputSet        ::= "[" EnumElem ".." EnumElem "]" ;
-
--- condensed way of enumerated elements in the list comprehensions
-LEnumElem1.     EnumElem        ::= Integer ;
-LEnumElem2.     EnumElem        ::= Double ;
-LEnumElem3.     EnumElem        ::= Char ;
 
 -- Types, either regular or linear
 TypeIds.        Type2           ::= TypeIdent ;
