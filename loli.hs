@@ -64,9 +64,9 @@ repl file env tEnv = do
                     putStrLn "TYPE ERROR:"
                     putStrLn $ error ++ " in expression: \n" ++ (show e)
                     case eval env (cExp e) of  --for testing, remove when startTIEnv implemented
-                        VIO io   -> putStrLn "running" >> io >> loop  --for testing
-                        (VFun _) -> putStrLn "function" >> loop  --for testing
-                        v        -> print v >> loop  --for testing
+                        VIO io   -> io >> loop
+                        (VFun _) -> loop
+                        v        -> loop
                     --loop
                 (Right t,_)    -> case eval env (cExp e) of
                     VIO io   -> putStrLn "running" >> io >> loop
