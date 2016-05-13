@@ -219,7 +219,7 @@ elem xs := any (\x y -> x==y) xs
 
 -- Returns the sum of all elements of the list
 function sumList : [a] -> a
-sumList := foldr (\x y -> x+y) 0
+sumList xs := foldr (\x y -> x+y) 0 xs
 
 -- Returns the greatest element of the list
 function maximum : [a] -> a
@@ -281,6 +281,6 @@ zipWith _ _ []          := []
 zipWith f (x:xs) (y:ys) := (f x y):(zipWith f xs ys)
 
 -- print takes a list of characters and calls printChar one every element
-function print : [Char] -> IO ()
+function print : [Char] -> (IO Char)
 print []     := printChar '\n'
 print (c:cs) := printChar c >> print cs

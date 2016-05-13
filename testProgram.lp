@@ -2,6 +2,10 @@ datatype Gender := Man a b | Woman Cake | Frog
 
 datatype D a := C (Cake a)
 
+-- overloading a f functions
+function id : Int
+id := 5
+
 function minz : IO
 minz (C x) := case x of
     (Sweet y) -> print "sweet y"
@@ -10,7 +14,7 @@ minz (C x) := case x of
 minz _     := print "gick inge bra"
 
 
-function testGen : Gender -> IO
+function testGen : Gender -> (IO Char)
 testGen Frog := print "hello"
 -- testGen x := case x of
     -- (Woman a) -> print "She's a lady"
@@ -40,7 +44,7 @@ dv := 5 + 2
 function pw : Int
 pw := 5 ^ (-2)
 
-function putStrLn : Int
+function putStrLn : (IO Char)
 putStrLn := (print "hej" >> print " da, ") >> print " mamma"
 
 function testLam : [Int] -> Int
