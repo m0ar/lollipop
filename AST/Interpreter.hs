@@ -15,7 +15,7 @@ interpret (Program dd fd) = do
         VIO v -> v >> return ()
         v     -> (putStrLn $ show v) >> return ()
     where
-        interpret' dd fd = let e = addFuncDeclsToEnv e fd in
+        interpret' dd fd = let e = addFuncDeclsToEnv e startEnv fd in
                         lookupInEnv (addDataDeclsToEnv e dd) "main"
 
 addDataDeclsToEnv :: Env -> [DataDecl] -> Env
@@ -30,12 +30,12 @@ mkConstr (ConstrDecl name ts) = (name, (vConstructor name (length ts) id))
 
 -- addDecsToEnv is a helper function to interpret
 -- Adds declarations to the environment
-addFuncDeclsToEnv :: Env -> [FuncDecl] -> Env
-addFuncDeclsToEnv env []     = startEnv
-addFuncDeclsToEnv env (d:ds) = insertAll e' (makeBinding d env)
+addFuncDeclsToEnv :: Env -> Env -> [FuncDecl] -> Env
+addFuncDeclsToEnv env sEnv []     = sEnv
+addFuncDeclsToEnv env sEnv (d:ds) = insertAll e' (makeBinding d env)
 --addDecsToEnv env (d:ds) = uncurry M.insert (makeBinding d env) e'
     where
-        e' = addFuncDeclsToEnv env ds
+        e' = addFuncDeclsToEnv env sEnv ds
 
 insertAll :: Env -> [(Var,Value)] -> Env
 insertAll e []     = e

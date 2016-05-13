@@ -63,14 +63,10 @@ repl file env tEnv = do
                 (Left error,_) -> do
                     putStrLn "TYPE ERROR:"
                     putStrLn $ error ++ " in expression: \n" ++ (show e)
-                    case eval env (cExp e) of  --for testing, remove when startTIEnv implemented
-                        VIO io   -> putStrLn "running" >> io >> loop  --for testing
-                        (VFun _) -> putStrLn "function" >> loop  --for testing
-                        v        -> print v >> loop  --for testing
-                    --loop
+                    loop
                 (Right t,_)    -> case eval env (cExp e) of
-                    VIO io   -> putStrLn "running" >> io >> loop
-                    (VFun _) -> putStrLn "function" >> loop
+                    VIO io   -> io >> loop
+                    (VFun _) -> putStrLn "Invalid parameters to function" >> loop
                     v        -> print v >> loop
 
 
@@ -89,16 +85,15 @@ buildEnv progEnv tiEnv file = do
                 Ok tree -> return tree
             (sEnv, (TypeEnv sTEnv)) <- return (progEnv, tiEnv)
             let p@(Program ds fs) = cProgram prog
-                env   = addFuncDeclsToEnv env fs
+                env   = addFuncDeclsToEnv env sEnv fs
                 env'  = addDataDeclsToEnv env ds
-                env'' = M.union env' sEnv
                 (TypeEnv pTEnv) = progToTypeEnv p
                 tEnv  = M.union pTEnv sTEnv
                 tiTypes = checkDecls p (TypeEnv tEnv)
             case getLefts tiTypes of
                 [] -> putStrLn $ "\nSuccessfully loaded " ++ file
                 s  -> putStrLn $ "Type error: " ++ s
-            return (env'', (TypeEnv tEnv))
+            return (env', (TypeEnv tEnv))
         Left  err     -> do
             putStrLn "No such file, nothing loaded."
             throw NoSuchFile

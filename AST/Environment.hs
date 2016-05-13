@@ -10,9 +10,7 @@ type Env = Map Var Value
 
 -- Adds a variable, value mapping to environment
 addToEnv :: Env -> Var -> Value -> Env
-addToEnv env var val = case M.lookup var env of
-                Nothing  -> M.insert var val env
-                Just val -> M.insert var val (M.delete var env)
+addToEnv env var val = M.insert var val env
 
 -- Adds many variable, value mappings to environment.
 -- Used in case and pattern matching
@@ -24,7 +22,7 @@ addManyToEnv env (v1:vars) (v2:vals) = addManyToEnv (addToEnv env v1 v2) vars va
 
 lookupInEnv :: Env -> Var -> Value
 lookupInEnv env var = case M.lookup var env of
-        Nothing -> throw $ Undefined "Internal error: Not found in environment"
+        Nothing -> throw $ Undefined $ "Internal error: Not found in environment: " ++ var
         Just v  -> v
 
 -- consumes, and unbinds a linear variable
@@ -108,7 +106,7 @@ startEnvironment = [
                     ,VFun $ \(VIO a1) -> VFun $ \(VIO a2) -> VIO $ a1 >> a2
                     ,Scheme ["a","b"] $ TFun (TApp (TConstr "IO") a) 
                                              (TFun (TApp (TConstr "IO") b) 
-                                                   (TConstr "IO"))
+                                                   (TApp (TConstr "IO") b))
                 ),
                 (    "(,)"
                     ,vConstructor "(,)" 2 id
