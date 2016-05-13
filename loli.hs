@@ -48,7 +48,7 @@ repl file env tEnv = do
         "" -> loop
         ":q" -> return ()
         ":r" -> buildEnv env tEnv file >>= uncurry (repl file) -- WOOOT
-        (':':'t':' ':s) -> putStrLn (show (lookupType' tEnv s))
+        (':':'t':' ':s) -> putStrLn (s ++ " : " ++ show (lookupType' tEnv s))
                                >> (repl file env tEnv)
         (':':'l':s) -> case words s of
             [newfile] -> do
