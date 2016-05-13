@@ -143,9 +143,20 @@ checkDecls p t = Prelude.map (checkDecl t) (getDFuncs p)
 
 
 linCheck :: Type -> TypeEnv -> ([Pattern], Exp) -> Bool
-linCheck t te (ps,e) = let te' = bindLocalVars ps t te
-                           lEnv = initLocal M.empty ps
-                      in linearCheck lEnv te' e
+linCheck t te (ps,e) = case isLinearType t of
+                    False -> True
+                    True  -> let te' = bindLocalVars ps t te
+                                 lEnv = initLocal M.empty ps
+                             in linearCheck lEnv te' e
+
+isLinearType :: Type -> Bool
+isLinearType t = case t of
+    (TVar v)      -> head v == 'i'
+    (TiVar _)     -> True
+    (TConstr cid) -> head cid == 'i'
+    (TiConstr _)  -> True
+    (TFun t1 t2)  -> (isLinearType t1) && (isLinearType t2)
+    (TApp t1 t2)  -> (isLinearType t1) && (isLinearType t2)
 
 -- creates a local startenv inits all variables into it
 initLocal :: (M.Map Var Int) -> [Pattern] -> (M.Map Var Int)
