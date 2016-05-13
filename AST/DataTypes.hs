@@ -24,7 +24,6 @@ data ConstrDecl = ConstrDecl ConstrID [Type]
     deriving (Show)
 
 data Scheme = Scheme [Var] Type
-    deriving Show
 
 
 data Exp = EApp Exp Exp
@@ -149,6 +148,9 @@ instance Show Value where
             "Nil"   -> "[]"
             "Cons"  -> "[" ++ (AST.DataTypes.showList vs) ++ "]"
             _       -> cid ++ " " ++ concat (Prelude.map show vs)
+
+instance Show Scheme where
+    show (Scheme vs t) = show t
 
 showList :: [Value] -> String
 showList [v, (VConstr "Nil"  [])] = show v

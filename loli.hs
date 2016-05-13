@@ -48,7 +48,7 @@ repl file env tEnv = do
         "" -> loop
         ":q" -> return ()
         ":r" -> buildEnv env tEnv file >>= uncurry (repl file) -- WOOOT
-        (':':'t':' ':s) -> putStrLn (show (lookupType' tEnv s))
+        (':':'t':' ':s) -> putStrLn (s ++ " : " ++ show (lookupType' tEnv s))
                                >> (repl file env tEnv)
         (':':'l':s) -> case words s of
             [newfile] -> do
@@ -63,10 +63,12 @@ repl file env tEnv = do
                 (Left error,_) -> do
                     putStrLn "TYPE ERROR:"
                     putStrLn $ error ++ " in expression: \n" ++ (show e)
-                    loop
+                    case eval env (cExp e) of  --for testing, remove when startTIEnv implemented
+                        VIO io   -> io >> loop
+                        _        -> loop
                 (Right t,_)    -> case eval env (cExp e) of
                     VIO io   -> io >> loop
-                    (VFun _) -> putStrLn "Invalid parameters to function" >> loop
+                    (VFun _) -> putStrLn "Invalid parameters for function" >> loop
                     v        -> print v >> loop
 
 
