@@ -6,7 +6,7 @@ import Control.Exception
 import Data.Typeable
 import qualified Text.PrettyPrint as PP
 
-data LoliException = NoSuchFile | SyntaxError | LinearException
+data LoliException = NoSuchFile | SyntaxError | LinearException String
                     | TypeException String | Undefined String
     deriving (Show, Typeable)
 instance Exception LoliException

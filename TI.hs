@@ -201,8 +201,8 @@ infer env ex = ti env ex >>= refresh
 linearCheck :: (M.Map Var Int) -> TypeEnv -> Exp -> Bool
 linearCheck m te e =  let lst = (M.filterWithKey (\k v -> v /= 1 && (isLinear te k)) (lc e te m)) in
                         case M.size lst of
-                            0       -> True -- success
-                            n       -> error $ "linear error: " ++ (show lst) -- fail--}
+                            0       -> True
+                            n       -> throw $ LinearException $ (show lst)
 
 isLinear :: TypeEnv -> Var -> Bool
 isLinear te v = case lookupType' te v of
@@ -213,7 +213,6 @@ isLinear te v = case lookupType' te v of
                 (TVar ('i':_))    -> True
                 (TConstr ('i':_)) -> True
                 _                 -> False
-    _             -> False
 
 lc ::  Exp -> TypeEnv -> (M.Map Var Int) -> (M.Map Var Int)
 lc e tEnv m = case e of
