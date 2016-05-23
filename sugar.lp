@@ -7,11 +7,9 @@ datatype Cake a := Sweet a | Lie
 -- either the cake is a Sweet or
 -- the cake is a lie
 
-datatype Undefined := Undefined
-
-function getCake : Cake -> a
+function getCake : (Cake a) -> b
 getCake (Sweet x) := x
-getCake _         := Undefined
+getCake Lie       := undefined
 
 datatype Boolean := True | False
 
@@ -52,7 +50,7 @@ sign x
 
 -- Integer division
 function div : Int -> Int -> Int
-div _ 0 := Undefined
+div _ 0 := undefined
 div 0 _ := 0
 div x y
     := div (-x) (-y)    when y < 0
@@ -149,25 +147,25 @@ min (x,y)
 
 -- Returns the first elements in the list
 function head : [a] -> a
-head []     := Undefined
+head []     := undefined
 head (x:xs) := x
 
 -- Returns the list of all elements except
 -- for the last in the input list
 function init : [a] -> [a]
-init []     := Undefined
+init []     := undefined
 init (x:[]) := []
 init (x:xs) := x:(init xs)
 
 -- Returns the list of all elements except
 -- for the first in the input list
 function tail : [a] -> [a]
-tail []     := Undefined
+tail []     := undefined
 tail (x:xs) := xs
 
 -- Returns the last elements in the list
 function last : [a] -> a
-last []     := Undefined
+last []     := undefined
 last (x:[]) := x
 last (x:xs) := last xs
 
@@ -214,8 +212,8 @@ reverse (x:xs) := reverse xs ++ [x]
 
 -- Returns true if the given value is an element
 -- in the list, otherwise false.
-function elem : [a] -> a -> Boolean
-elem xs := any (\x y -> x==y) xs
+-- function elem : [a] -> a -> Boolean
+-- elem xs := any (\x y -> x==y) xs
 
 -- Returns the sum of all elements of the list
 function sumList : [a] -> a
