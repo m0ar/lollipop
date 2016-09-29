@@ -5,6 +5,8 @@ lollipop is a general purpose, functional programming language with support for 
 ### Goal
 The main goal is to develop a proof-of-concept of linear types in a basic functional language. This is to enable easy access to the concept for developers that are interested in learning about linear types, in a practical environment.
 
+The project thesis can be found [HERE!](https://github.com/m0ar/lollipop/blob/develop/Lollipop_publish.pdf)
+
 ### Running programs in lollipop
 The lollipop interpreter, loli, (loli.hs) is used to load and run programs written in lollipop (.lp).
 
