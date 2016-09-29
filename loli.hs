@@ -55,7 +55,8 @@ repl file env tEnv = do
             res <- try $ buildEnv env tEnv newfile
             case (res :: Either LoliException (Env, TypeEnv)) of
                 Right (env, tEnv) -> repl newfile env tEnv
-                Left  err         -> repl "" env tEnv
+                Left  err         -> do putStrLn $ "\n" ++ show err ++ "\n" ++ newfile ++ " not loaded"
+                                        repl "" env tEnv
         _ -> case pExp (myLexer i) of
             Bad s -> do putStrLn s
                         loop
@@ -134,7 +135,7 @@ checkDecls p t = Prelude.map (checkDecl t) (getDFuncs p)
                 let linearOK = and $ Prelude.map (linCheck t te) (zip as es')
                 r <- infer te e'
                 case linearOK of
-                    False -> error "Linear fail"
+                    False -> throw $ LinearException $ " Linear Check failed"
                     True  -> unify t r)
                       where e' = Prelude.foldr ELam e vs
 
@@ -152,7 +153,7 @@ isLinearType t = case t of
     (TiVar _)     -> True
     (TConstr cid) -> head cid == 'i'
     (TiConstr _)  -> True
-    (TFun t1 t2)  -> (isLinearType t1) && (isLinearType t2)
+    (TFun t1 t2)  -> (isLinearType t1) || (isLinearType t2)
     (TApp t1 t2)  -> (isLinearType t1) && (isLinearType t2)
 
 -- creates a local startenv inits all variables into it

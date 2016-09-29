@@ -124,6 +124,9 @@ dbl x := case x of
     1 -> 2
     x -> 2 * x
 
+function linearError : Int -> Int -> iInt -o Int
+linearError x y z := x + y + z + x + y + z
+
 function ca : Int -> Int -> Int -> Int
 ca 3 x 2 := case x of
     2 -> 2 + x
